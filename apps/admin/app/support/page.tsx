@@ -123,6 +123,7 @@ export default function SupportPage() {
         { href: "/support", label: "Support", active: true },
         { href: "/notifications", label: "Notifications" },
         { href: "/analytics", label: "Analytics" },
+        { href: "/ops", label: "Ops / Gate" },
       ]}
     >
       <div style={{ display: "grid", gap: 16 }}>

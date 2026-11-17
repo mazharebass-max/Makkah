@@ -1,6 +1,21 @@
 # Changelog
 
+## 0.8.0 — 2026-11-17
+
+### Added (M8)
+
+- Staging readiness / compliance gate / security checklist APIs (non-clearance)
+- Security headers, auth/OTP rate limits, liveness + readiness probes
+- Admin Ops / Gate UI; staging + backup dry-run scripts
+- Repo security/deployment/compliance docs and ops runbooks
+- CI dependency audit step (advisory)
+
+### Explicit non-claims
+
+- No regulatory clearance, pen-test completion, or production go-live
+
 ## 0.7.0 — 2026-11-17
+
 
 ### Added (M7)
 

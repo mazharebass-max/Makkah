@@ -4,10 +4,24 @@ import { AuthService } from "./auth.service";
 import { LoginDto, RefreshDto, RegisterDto } from "./auth.dto";
 import { AuthGuard, type AuthedRequest } from "./auth.guard";
 import { loadEnv } from "../../config/env";
+import { RateLimitService } from "../../common/rate-limit.service";
 
 @Controller("auth")
 export class AuthController {
-  constructor(@Inject(AuthService) private readonly auth: AuthService) {}
+  constructor(
+    @Inject(AuthService) private readonly auth: AuthService,
+    @Inject(RateLimitService) private readonly rateLimit: RateLimitService,
+  ) {}
+
+  private async limitAuth(req: Request, action: string) {
+    const env = loadEnv();
+    const ip = req.ip || "unknown";
+    await this.rateLimit.consume(
+      `auth:${action}:${ip}`,
+      env.AUTH_RATE_LIMIT,
+      env.AUTH_RATE_WINDOW_SEC,
+    );
+  }
 
   private setCookies(res: Response, accessToken: string, refreshToken: string) {
     const secure = loadEnv().NODE_ENV === "production";
@@ -27,6 +41,7 @@ export class AuthController {
 
   @Post("register")
   async register(@Body() body: RegisterDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    await this.limitAuth(req, "register");
     const result = await this.auth.register(
       { ...body, locale: body.locale ?? "en" },
       {
@@ -40,6 +55,7 @@ export class AuthController {
 
   @Post("login")
   async login(@Body() body: LoginDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    await this.limitAuth(req, "login");
     const result = await this.auth.login(body, {
       userAgent: req.headers["user-agent"],
       ip: req.ip,

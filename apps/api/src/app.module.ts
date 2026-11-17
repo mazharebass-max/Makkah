@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { PrismaModule } from "./prisma/prisma.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { CatalogModule } from "./modules/catalog/catalog.module";
@@ -14,9 +14,13 @@ import { PaymentsModule } from "./modules/payments/payments.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { SupportModule } from "./modules/support/support.module";
 import { AnalyticsModule } from "./modules/analytics/analytics.module";
+import { OpsModule } from "./modules/ops/ops.module";
+import { SecurityHeadersMiddleware } from "./common/security-headers.middleware";
+import { CommonModule } from "./common/common.module";
 
 @Module({
   imports: [
+    CommonModule,
     PrismaModule,
     OwnershipModule,
     AuthModule,
@@ -29,12 +33,17 @@ import { AnalyticsModule } from "./modules/analytics/analytics.module";
     NotificationsModule,
     SupportModule,
     AnalyticsModule,
+    OpsModule,
     AdminModule,
     SandboxModule,
   ],
   controllers: [HealthController],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(SecurityHeadersMiddleware).forRoutes("*");
+  }
+}
 
 
 

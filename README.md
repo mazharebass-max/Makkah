@@ -16,7 +16,8 @@ Premium pilgrim & tourism ground-transport platform (Jeddah · Makkah · Madinah
 
 ## Current milestone
 
-**M2** — public landing (EN/AR RTL), route search with DB availability, quote engine, checkout UI + sandbox payment. See `PROJECT_STATUS.md`.
+**M8** — staging hardening, security/ops checklists, compliance gate mirrors, runbooks.  
+**Not** production go-live. See `PROJECT_STATUS.md` and `docs/COMPLIANCE_GATE.md`.
 
 ## Quick start
 
@@ -34,8 +35,16 @@ pnpm --filter @haramain/web dev      # http://localhost:3000
 pnpm --filter @haramain/admin dev    # http://localhost:3001
 ```
 
-OpenAPI (dev): http://localhost:4000/api/docs  
-Health: http://localhost:4000/api/v1/health
+OpenAPI (dev only): http://localhost:4000/api/docs  
+Health: http://localhost:4000/api/v1/health  
+Ready: http://localhost:4000/api/v1/health/ready  
+Staging readiness: http://localhost:4000/api/v1/ops/readiness  
+Admin Ops / Gate: http://localhost:3001/ops
+
+```bash
+./scripts/staging-checklist.sh   # requires API up
+./scripts/backup-dry-run.sh      # local dump dry-run, not PITR proof
+```
 
 ### Without Docker
 
@@ -50,6 +59,7 @@ Provide local PostgreSQL + Redis matching `.env.example`, then run `./scripts/se
 | `dispatcher@haramain.local` | `DispatchDev!234` | fleet_dispatcher |
 | `compliance@haramain.local` | `ComplianceDev!2` | compliance_officer |
 | `finance@haramain.local` | `FinanceDev!2345` | finance_officer |
+| `support@haramain.local` | `SupportDev!2345` | support_agent |
 
 ## Tests
 
@@ -72,4 +82,5 @@ pnpm typecheck
 ## Status docs
 
 - `PROJECT_STATUS.md` · `CHANGELOG.md` · `DECISIONS.md`
-- Architecture & PRD companions live in the Project Context store (`docs/`)
+- `docs/SECURITY.md` · `docs/DEPLOYMENT.md` · `docs/COMPLIANCE_GATE.md` · `docs/runbooks/`
+- Architecture & PRD companions also in the Project Context store

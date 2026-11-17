@@ -15,7 +15,10 @@ import { AuthGuard, type AuthedRequest } from "../auth/auth.guard";
 import { Roles } from "../auth/roles.decorator";
 import { RolesGuard } from "../auth/roles.guard";
 import { NotificationsService } from "./notifications.service";
+import { RateLimitService } from "../../common/rate-limit.service";
+import { loadEnv } from "../../config/env";
 import { randomInt } from "node:crypto";
+import type { Request } from "express";
 
 class OtpDto {
   @IsEmail()
@@ -24,7 +27,10 @@ class OtpDto {
 
 @Controller()
 export class NotificationsController {
-  constructor(@Inject(NotificationsService) private readonly notifications: NotificationsService) {}
+  constructor(
+    @Inject(NotificationsService) private readonly notifications: NotificationsService,
+    @Inject(RateLimitService) private readonly rateLimit: RateLimitService,
+  ) {}
 
   @UseGuards(AuthGuard)
   @Get("notifications/me")
@@ -34,7 +40,13 @@ export class NotificationsController {
 
   /** Sandbox OTP — queues outbox email, never claims live delivery. */
   @Post("auth/otp/request")
-  async requestOtp(@Body() body: OtpDto) {
+  async requestOtp(@Req() req: Request, @Body() body: OtpDto) {
+    const env = loadEnv();
+    await this.rateLimit.consume(
+      `otp:${req.ip || "unknown"}:${body.email}`,
+      Math.min(env.AUTH_RATE_LIMIT, 10),
+      env.AUTH_RATE_WINDOW_SEC,
+    );
     const code = String(randomInt(100000, 999999));
     const queued = await this.notifications.enqueueOtp({ email: body.email, code });
     // Process immediately in API for local/dev so inbox shows sandbox send

@@ -83,6 +83,7 @@ export default function NotificationsPage() {
         { href: "/support", label: "Support" },
         { href: "/notifications", label: "Notifications", active: true },
         { href: "/analytics", label: "Analytics" },
+        { href: "/ops", label: "Ops / Gate" },
       ]}
     >
       <div style={{ display: "grid", gap: 16 }}>

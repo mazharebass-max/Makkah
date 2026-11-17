@@ -75,6 +75,7 @@ export default function FinancePage() {
         { href: "/support", label: "Support" },
         { href: "/notifications", label: "Notifications" },
         { href: "/analytics", label: "Analytics" },
+        { href: "/ops", label: "Ops / Gate" },
       ]}
     >
       <div style={{ display: "grid", gap: 16 }}>

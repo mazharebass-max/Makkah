@@ -83,6 +83,7 @@ export default function AnalyticsPage() {
         { href: "/support", label: "Support" },
         { href: "/notifications", label: "Notifications" },
         { href: "/analytics", label: "Analytics", active: true },
+        { href: "/ops", label: "Ops / Gate" },
       ]}
     >
       <div style={{ display: "grid", gap: 16 }}>

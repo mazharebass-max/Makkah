@@ -16,3 +16,6 @@ tmp
 .vercel
 apps/api/.env
 *.tsbuildinfo
+dump.rdb
+tmp/
+*.rdb
