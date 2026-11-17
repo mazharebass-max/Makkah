@@ -41,6 +41,16 @@
 **Decision:** Creating a quote inserts an `AvailabilityHold` that reduces category availability until expiry/release; booking creation excludes the quote’s own hold from the re-check.  
 **Consequence:** Checkout inventory is soft-reserved without inventing live fleet.
 
+## D-009 — Human-only provider approval (2026-11-17)
+
+**Decision:** Provider applications always start `APPLIED`. Only `compliance_officer` / `super_admin` may transition to `APPROVED`, and approvals require an explicit review note. Expired documents block approval.  
+**Consequence:** No auto-approve path; `verificationClaim` is always false in API responses.
+
+## D-010 — Provider data isolation (2026-11-17)
+
+**Decision:** Object-level ownership via `OwnershipService.assertProviderAccess` on every provider document/driver read.  
+**Consequence:** Cross-provider reads return 403; staff compliance roles retain queue access.
+
 ## Open owner decisions (from PRD §19)
 
 - Legal entity / TGA / tourism authorizations

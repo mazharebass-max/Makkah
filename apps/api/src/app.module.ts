@@ -9,6 +9,7 @@ import { OwnershipModule } from "./modules/ownership/ownership.module";
 import { PricingModule } from "./modules/pricing/pricing.module";
 import { BookingsModule } from "./modules/bookings/bookings.module";
 import { FleetModule } from "./modules/fleet/fleet.module";
+import { ProvidersModule } from "./modules/providers/providers.module";
 
 @Module({
   imports: [
@@ -19,9 +20,11 @@ import { FleetModule } from "./modules/fleet/fleet.module";
     PricingModule,
     BookingsModule,
     FleetModule,
+    ProvidersModule,
     AdminModule,
     SandboxModule,
   ],
   controllers: [HealthController],
 })
 export class AppModule {}
+

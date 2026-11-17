@@ -132,6 +132,7 @@ export default function AdminHome() {
         { href: "/#overview", label: "Overview", active: true },
         { href: "/#bookings", label: "Bookings" },
         { href: "/#fleet", label: "Owned fleet" },
+        { href: "/compliance", label: "Compliance" },
         { href: "/#finance", label: "Finance" },
       ]}
     >

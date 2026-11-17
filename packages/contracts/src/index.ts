@@ -76,6 +76,16 @@ export const refreshSchema = z.object({
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 
+export const providerApplicationSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(10).max(128),
+  legalName: z.string().min(2).max(200),
+  tradeName: z.string().max(200).optional(),
+  registrationNo: z.string().max(64).optional(),
+});
+
+export type ProviderApplicationInput = z.infer<typeof providerApplicationSchema>;
+
 export type AuthUser = {
   id: string;
   email: string;

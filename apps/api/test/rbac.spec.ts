@@ -58,17 +58,17 @@ describe("RBAC & auth security", () => {
     expect(res.body).toHaveProperty("data");
   });
 
-  it("allows compliance officer on provider review stub", async () => {
+  it("allows compliance officer on compliance review queue", async () => {
     const login = await request(app.getHttpServer())
       .post("/api/v1/auth/login")
       .send({ email: "compliance@haramain.local", password: "ComplianceDev!2" });
     expect(login.status).toBe(201);
     const token = login.body.accessToken as string;
     const res = await request(app.getHttpServer())
-      .post("/api/v1/admin/providers/00000000-0000-4000-8000-000000000020/review")
+      .get("/api/v1/admin/compliance/providers")
       .set("Authorization", `Bearer ${token}`);
-    expect(res.status).toBe(201);
-    expect(res.body.mode).toBe("stub");
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.data)).toBe(true);
   });
 
   it("denies customer on finance reconciliation", async () => {

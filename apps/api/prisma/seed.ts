@@ -1,4 +1,9 @@
-import { PrismaClient, FleetOwnership, ProviderStatus } from "@prisma/client";
+import {
+  PrismaClient,
+  DocumentReviewState,
+  FleetOwnership,
+  ProviderStatus,
+} from "@prisma/client";
 import * as argon2 from "argon2";
 import { RoleCode } from "@haramain/contracts";
 
@@ -281,7 +286,7 @@ async function main() {
     });
   }
 
-  await prisma.provider.upsert({
+  const providerA = await prisma.provider.upsert({
     where: { id: "00000000-0000-4000-8000-000000000020" },
     update: { status: ProviderStatus.APPLIED, notes: DRAFT },
     create: {
@@ -295,12 +300,100 @@ async function main() {
     },
   });
 
+  const providerB = await prisma.provider.upsert({
+    where: { id: "00000000-0000-4000-8000-000000000021" },
+    update: { status: ProviderStatus.APPLIED, notes: DRAFT },
+    create: {
+      id: "00000000-0000-4000-8000-000000000021",
+      legalName: "Isolation Test Provider B (DRAFT)",
+      tradeName: "Iso B",
+      registrationNo: "DRAFT-CR-0001",
+      status: ProviderStatus.APPLIED,
+      ownership: FleetOwnership.THIRD_PARTY,
+      notes: "Second seed provider for isolation tests — unverified",
+    },
+  });
+
   await upsertUser("customer@haramain.local", "CustomerDev!234", RoleCode.CUSTOMER);
   await upsertUser("admin@haramain.local", "AdminDev!23456", RoleCode.SUPER_ADMIN);
   await upsertUser("dispatcher@haramain.local", "DispatchDev!234", RoleCode.FLEET_DISPATCHER);
   await upsertUser("fleet@haramain.local", "FleetMgrDev!2345", RoleCode.OWNED_FLEET_MANAGER);
   await upsertUser("compliance@haramain.local", "ComplianceDev!2", RoleCode.COMPLIANCE_OFFICER);
   await upsertUser("finance@haramain.local", "FinanceDev!2345", RoleCode.FINANCE_OFFICER);
+
+  const applicantA = await upsertUser(
+    "provider-a@haramain.local",
+    "ProviderADev!234",
+    RoleCode.PROVIDER_APPLICANT,
+  );
+  const applicantB = await upsertUser(
+    "provider-b@haramain.local",
+    "ProviderBDev!234",
+    RoleCode.PROVIDER_APPLICANT,
+  );
+
+  await prisma.provider.update({
+    where: { id: providerA.id },
+    data: { userId: applicantA.id },
+  });
+  await prisma.provider.update({
+    where: { id: providerB.id },
+    data: { userId: applicantB.id },
+  });
+
+  const applicantRole = await prisma.role.findUniqueOrThrow({
+    where: { code: RoleCode.PROVIDER_APPLICANT },
+  });
+  await prisma.roleAssignment.updateMany({
+    where: { userId: applicantA.id, roleId: applicantRole.id },
+    data: { providerId: providerA.id },
+  });
+  await prisma.roleAssignment.updateMany({
+    where: { userId: applicantB.id, roleId: applicantRole.id },
+    data: { providerId: providerB.id },
+  });
+
+  await prisma.providerDocument.upsert({
+    where: { id: "00000000-0000-4000-8000-000000000040" },
+    update: {},
+    create: {
+      id: "00000000-0000-4000-8000-000000000040",
+      providerId: providerA.id,
+      docType: "commercial_registration",
+      storageKey: "sandbox://provider-a/cr.pdf",
+      reviewState: DocumentReviewState.SUBMITTED,
+      draftLabel: DRAFT,
+    },
+  });
+  await prisma.providerDocument.upsert({
+    where: { id: "00000000-0000-4000-8000-000000000041" },
+    update: {},
+    create: {
+      id: "00000000-0000-4000-8000-000000000041",
+      providerId: providerB.id,
+      docType: "commercial_registration",
+      storageKey: "sandbox://provider-b/cr.pdf",
+      reviewState: DocumentReviewState.SUBMITTED,
+      draftLabel: DRAFT,
+    },
+  });
+  // Expired doc sample for expiry job
+  await prisma.providerDocument.upsert({
+    where: { id: "00000000-0000-4000-8000-000000000042" },
+    update: {
+      expiresAt: new Date("2020-01-01T00:00:00.000Z"),
+      reviewState: DocumentReviewState.SUBMITTED,
+    },
+    create: {
+      id: "00000000-0000-4000-8000-000000000042",
+      providerId: providerA.id,
+      docType: "insurance",
+      storageKey: "sandbox://provider-a/insurance-expired.pdf",
+      expiresAt: new Date("2020-01-01T00:00:00.000Z"),
+      reviewState: DocumentReviewState.SUBMITTED,
+      draftLabel: DRAFT,
+    },
+  });
 
   await prisma.driver.upsert({
     where: { id: "00000000-0000-4000-8000-000000000030" },
