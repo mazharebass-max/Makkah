@@ -10,6 +10,7 @@ import { PricingModule } from "./modules/pricing/pricing.module";
 import { BookingsModule } from "./modules/bookings/bookings.module";
 import { FleetModule } from "./modules/fleet/fleet.module";
 import { ProvidersModule } from "./modules/providers/providers.module";
+import { PaymentsModule } from "./modules/payments/payments.module";
 
 @Module({
   imports: [
@@ -21,10 +22,12 @@ import { ProvidersModule } from "./modules/providers/providers.module";
     BookingsModule,
     FleetModule,
     ProvidersModule,
+    PaymentsModule,
     AdminModule,
     SandboxModule,
   ],
   controllers: [HealthController],
 })
 export class AppModule {}
+
 

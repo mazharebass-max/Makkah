@@ -3,7 +3,15 @@ import { IsInt, IsOptional, IsString, Min } from "class-validator";
 import { AuthGuard } from "../auth/auth.guard";
 import { SandboxService } from "./sandbox.service";
 
-class CheckoutDto {
+class NotifyDto {
+  @IsString()
+  to!: string;
+
+  @IsString()
+  message!: string;
+}
+
+class AmountCheckoutDto {
   @IsInt()
   @Min(1)
   amountHalalas!: number;
@@ -13,31 +21,15 @@ class CheckoutDto {
   currency?: string;
 }
 
-class NotifyDto {
-  @IsString()
-  to!: string;
-
-  @IsString()
-  message!: string;
-}
-
 @Controller()
 export class SandboxController {
   constructor(@Inject(SandboxService) private readonly sandbox: SandboxService) {}
 
+  /** Amount-only smoke helper — booking-linked checkout is POST /payments/checkout */
   @UseGuards(AuthGuard)
-  @Post("payments/checkout")
-  checkout(@Body() body: CheckoutDto) {
+  @Post("sandbox/payments/checkout")
+  amountCheckout(@Body() body: AmountCheckoutDto) {
     return this.sandbox.createPaymentCheckout(body.amountHalalas, body.currency ?? "SAR");
-  }
-
-  @Post("webhooks/payments/:provider")
-  webhook() {
-    return {
-      ok: true,
-      mode: "sandbox",
-      message: "Webhook accepted in sandbox mode — no live settlement",
-    };
   }
 
   @UseGuards(AuthGuard)
@@ -52,3 +44,4 @@ export class SandboxController {
     return this.sandbox.sendEmail(body.to, body.subject ?? body.message);
   }
 }
+

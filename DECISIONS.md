@@ -51,6 +51,16 @@
 **Decision:** Object-level ownership via `OwnershipService.assertProviderAccess` on every provider document/driver read.  
 **Consequence:** Cross-provider reads return 403; staff compliance roles retain queue access.
 
+## D-011 — Sandbox-only payments with signed webhooks (2026-11-17)
+
+**Decision:** All captures go through `PAYMENT_PROVIDER=sandbox` intents + HMAC-signed webhooks. Booking paid only after verified `payment.succeeded` event; client checkout never marks paid.  
+**Consequence:** Retries are idempotent on `gatewayEventId`; APIs always set `liveCapture: false` / `liveGateway: false`.
+
+## D-012 — Immutable ledger entries (2026-11-17)
+
+**Decision:** Charges and refunds append ledger rows (refunds as negative amounts); invoices are issued as DRAFT-labeled sandbox documents pending ZATCA/tax adviser.  
+**Consequence:** Finance reconciliation is derived from ledger aggregates, not mutable counters.
+
 ## Open owner decisions (from PRD §19)
 
 - Legal entity / TGA / tourism authorizations

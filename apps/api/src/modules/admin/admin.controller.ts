@@ -26,13 +26,5 @@ export class AdminController {
     return { data: bookings };
   }
 
-  @Get("finance/reconciliation")
-  @Roles(RoleCode.SUPER_ADMIN, RoleCode.FINANCE_OFFICER)
-  async reconciliation() {
-    return {
-      mode: "sandbox",
-      message: "Finance reconciliation placeholder — no live gateway claims",
-      totals: { capturedHalalas: 0, refundedHalalas: 0, currency: "SAR" },
-    };
-  }
 }
+

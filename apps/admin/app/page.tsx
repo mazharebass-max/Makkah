@@ -133,7 +133,7 @@ export default function AdminHome() {
         { href: "/#bookings", label: "Bookings" },
         { href: "/#fleet", label: "Owned fleet" },
         { href: "/compliance", label: "Compliance" },
-        { href: "/#finance", label: "Finance" },
+        { href: "/finance", label: "Finance" },
       ]}
     >
       <div style={{ display: "grid", gap: 16 }}>

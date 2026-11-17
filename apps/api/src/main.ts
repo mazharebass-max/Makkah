@@ -8,7 +8,10 @@ import { loadEnv } from "./config/env";
 
 async function bootstrap() {
   const env = loadEnv();
-  const app = await NestFactory.create(AppModule, { cors: false });
+  const app = await NestFactory.create(AppModule, {
+    cors: false,
+    rawBody: true,
+  });
   app.setGlobalPrefix("api/v1");
   app.use(cookieParser());
   const corsOrigins = new Set([
