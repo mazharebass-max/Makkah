@@ -109,6 +109,10 @@ export default function CompliancePage() {
       navItems={[
         { href: "/", label: "Overview" },
         { href: "/compliance", label: "Compliance", active: true },
+        { href: "/finance", label: "Finance" },
+        { href: "/support", label: "Support" },
+        { href: "/notifications", label: "Notifications" },
+        { href: "/analytics", label: "Analytics" },
       ]}
     >
       <div style={{ display: "grid", gap: 16 }}>

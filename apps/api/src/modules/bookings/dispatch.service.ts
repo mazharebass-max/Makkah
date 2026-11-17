@@ -9,6 +9,7 @@ import { BookingStatus, FleetOwnership, Prisma } from "@prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
 import { AvailabilityService } from "./availability.service";
 import { assertTransition } from "./booking-state.machine";
+import { NotificationsService } from "../notifications/notifications.service";
 
 const TRIP_DURATION_MS = 3 * 60 * 60 * 1000;
 
@@ -17,6 +18,7 @@ export class DispatchService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(AvailabilityService) private readonly availability: AvailabilityService,
+    @Inject(NotificationsService) private readonly notifications: NotificationsService,
   ) {}
 
   /**
@@ -31,7 +33,7 @@ export class DispatchService {
     reason?: string;
   }) {
     try {
-      return await this.prisma.$transaction(
+      const result = await this.prisma.$transaction(
         async (tx) => {
           await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${input.bookingId}))`;
 
@@ -201,6 +203,8 @@ export class DispatchService {
 
           return {
             bookingId: booking.id,
+            reference: booking.reference,
+            customerId: booking.customerId,
             status: BookingStatus.ASSIGNED,
             assignment: {
               id: assignment.id,
@@ -213,6 +217,24 @@ export class DispatchService {
         },
         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
       );
+
+      const customer = await this.prisma.user.findUnique({
+        where: { id: result.customerId },
+      });
+      await this.notifications.enqueue("notification.driver_assigned", {
+        userId: result.customerId,
+        bookingId: result.bookingId,
+        toEmail: customer?.email,
+        templateCode: "driver_assigned",
+        vars: { reference: result.reference },
+        dedupeKey: `driver_assigned:${result.bookingId}:${result.assignment.id}`,
+      });
+
+      return {
+        bookingId: result.bookingId,
+        status: result.status,
+        assignment: result.assignment,
+      };
     } catch (err) {
       if (
         err instanceof ConflictException ||

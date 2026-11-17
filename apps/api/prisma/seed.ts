@@ -2,6 +2,7 @@ import {
   PrismaClient,
   DocumentReviewState,
   FleetOwnership,
+  NotificationChannel,
   ProviderStatus,
 } from "@prisma/client";
 import * as argon2 from "argon2";
@@ -320,6 +321,63 @@ async function main() {
   await upsertUser("fleet@haramain.local", "FleetMgrDev!2345", RoleCode.OWNED_FLEET_MANAGER);
   await upsertUser("compliance@haramain.local", "ComplianceDev!2", RoleCode.COMPLIANCE_OFFICER);
   await upsertUser("finance@haramain.local", "FinanceDev!2345", RoleCode.FINANCE_OFFICER);
+  await upsertUser("support@haramain.local", "SupportDev!2345", RoleCode.SUPPORT_AGENT);
+
+  const templates: {
+    code: string;
+    channel: NotificationChannel;
+    subjectEn: string;
+    bodyEn: string;
+    bodyAr: string;
+  }[] = [
+    {
+      code: "otp_email",
+      channel: NotificationChannel.EMAIL,
+      subjectEn: "Your Haramain Ride verification code",
+      bodyEn: "Your sandbox OTP is {{code}}. Not a live SMS/email delivery.",
+      bodyAr: "رمز التحقق التجريبي هو {{code}}. ليست رسالة حقيقية.",
+    },
+    {
+      code: "booking_created",
+      channel: NotificationChannel.EMAIL,
+      subjectEn: "Booking draft {{reference}}",
+      bodyEn: "Booking {{reference}} created (PENDING_PAYMENT). Sandbox notice only.",
+      bodyAr: "تم إنشاء الحجز {{reference}} (بانتظار الدفع). إشعار تجريبي فقط.",
+    },
+    {
+      code: "booking_confirmed",
+      channel: NotificationChannel.EMAIL,
+      subjectEn: "Booking confirmed {{reference}}",
+      bodyEn: "Booking {{reference}} confirmed via sandbox payment webhook.",
+      bodyAr: "تم تأكيد الحجز {{reference}} عبر بوابة الدفع التجريبية.",
+    },
+    {
+      code: "driver_assigned",
+      channel: NotificationChannel.EMAIL,
+      subjectEn: "Driver assigned for {{reference}}",
+      bodyEn: "A driver was assigned to booking {{reference}}. Sandbox notice only.",
+      bodyAr: "تم تعيين سائق للحجز {{reference}}. إشعار تجريبي فقط.",
+    },
+    {
+      code: "booking_status",
+      channel: NotificationChannel.EMAIL,
+      subjectEn: "Trip update {{reference}}: {{status}}",
+      bodyEn: "Booking {{reference}} is now {{status}}.",
+      bodyAr: "الحجز {{reference}} أصبح {{status}}.",
+    },
+  ];
+  for (const t of templates) {
+    await prisma.notificationTemplate.upsert({
+      where: { code: t.code },
+      update: {
+        channel: t.channel,
+        subjectEn: t.subjectEn,
+        bodyEn: t.bodyEn,
+        bodyAr: t.bodyAr,
+      },
+      create: t,
+    });
+  }
 
   const applicantA = await upsertUser(
     "provider-a@haramain.local",

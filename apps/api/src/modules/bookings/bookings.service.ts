@@ -9,6 +9,7 @@ import { PrismaService } from "../../prisma/prisma.service";
 import { AvailabilityService } from "./availability.service";
 import { assertTransition, canTransition } from "./booking-state.machine";
 import { OwnershipService } from "../ownership/ownership.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import type { RequestUser } from "../auth/auth.types";
 
 @Injectable()
@@ -17,6 +18,7 @@ export class BookingsService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(AvailabilityService) private readonly availability: AvailabilityService,
     @Inject(OwnershipService) private readonly ownership: OwnershipService,
+    @Inject(NotificationsService) private readonly notifications: NotificationsService,
   ) {}
 
   async listMine(user: RequestUser) {
@@ -267,6 +269,16 @@ export class BookingsService {
         },
       });
       return next;
+    });
+
+    const customer = await this.prisma.user.findUnique({ where: { id: booking.customerId } });
+    await this.notifications.enqueue("notification.booking_status", {
+      userId: booking.customerId,
+      bookingId: booking.id,
+      toEmail: customer?.email,
+      templateCode: "booking_status",
+      vars: { reference: updated.reference, status: updated.status },
+      dedupeKey: `booking_status:${booking.id}:${updated.status}:${Date.now()}`,
     });
 
     return {

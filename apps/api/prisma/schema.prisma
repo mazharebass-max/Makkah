@@ -74,6 +74,10 @@ model User {
   bookings         Booking[]
   provider         Provider?
   driver           Driver?
+  notifications    Notification[]
+  supportTickets   SupportTicket[]  @relation("TicketRequester")
+  supportMessages  SupportMessage[]
+  analyticsEvents  AnalyticsEvent[]
 }
 
 model UserIdentity {
@@ -654,6 +658,105 @@ model OutboxEvent {
   payload     Json
   createdAt   DateTime  @default(now())
   processedAt DateTime?
+  attempts    Int       @default(0)
+  lastError   String?
 
   @@index([processedAt, createdAt])
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENT_SANDBOX
+  FAILED
+  SKIPPED
+}
+
+enum SupportTicketStatus {
+  OPEN
+  PENDING
+  RESOLVED
+  CLOSED
+}
+
+model NotificationTemplate {
+  id        String   @id @default(uuid()) @db.Uuid
+  code      String   @unique
+  channel   NotificationChannel
+  subjectEn String?
+  bodyEn    String
+  bodyAr    String?
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id           String              @id @default(uuid()) @db.Uuid
+  userId       String?             @db.Uuid
+  channel      NotificationChannel
+  templateCode String
+  toAddress    String
+  subject      String?
+  body         String
+  status       NotificationStatus  @default(QUEUED)
+  dedupeKey    String              @unique
+  sandboxRef   String?
+  bookingId    String?
+  payload      Json?
+  createdAt    DateTime            @default(now())
+  sentAt       DateTime?
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([templateCode, createdAt])
+  @@index([bookingId])
+}
+
+model SupportTicket {
+  id          String              @id @default(uuid()) @db.Uuid
+  requesterId String              @db.Uuid
+  bookingId   String?
+  subject     String
+  status      SupportTicketStatus @default(OPEN)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  requester User             @relation("TicketRequester", fields: [requesterId], references: [id])
+  messages  SupportMessage[]
+
+  @@index([requesterId, createdAt])
+  @@index([status, createdAt])
+}
+
+model SupportMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  ticketId  String   @db.Uuid
+  authorId  String   @db.Uuid
+  body      String
+  createdAt DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User          @relation(fields: [authorId], references: [id])
+
+  @@index([ticketId, createdAt])
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @db.Uuid
+  name      String
+  props     Json?
+  source    String   @default("web")
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([name, createdAt])
+  @@index([userId, createdAt])
 }

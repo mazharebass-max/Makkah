@@ -9,6 +9,7 @@ import { randomBytes } from "node:crypto";
 import type { CreateBookingInput, CreateQuoteInput, SearchAvailabilityInput } from "@haramain/contracts";
 import { PrismaService } from "../../prisma/prisma.service";
 import { AvailabilityService } from "../bookings/availability.service";
+import { NotificationsService } from "../notifications/notifications.service";
 import {
   buildQuoteLines,
   DRAFT_CANCELLATION_POLICY,
@@ -22,6 +23,7 @@ export class QuoteService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(AvailabilityService) private readonly availability: AvailabilityService,
+    @Inject(NotificationsService) private readonly notifications: NotificationsService,
   ) {}
 
   private parseSchedule(raw: string): Date {
@@ -402,6 +404,16 @@ export class QuoteService {
         bookingId: booking.id,
         expiresAt: new Date(Date.now() + QUOTE_TTL_MS),
       },
+    });
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    await this.notifications.enqueue("notification.booking_created", {
+      userId,
+      bookingId: booking.id,
+      toEmail: user?.email,
+      templateCode: "booking_created",
+      vars: { reference: booking.reference },
+      dedupeKey: `booking_created:${booking.id}`,
     });
 
     const payload = {

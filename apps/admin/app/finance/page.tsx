@@ -72,6 +72,9 @@ export default function FinancePage() {
         { href: "/", label: "Overview" },
         { href: "/compliance", label: "Compliance" },
         { href: "/finance", label: "Finance", active: true },
+        { href: "/support", label: "Support" },
+        { href: "/notifications", label: "Notifications" },
+        { href: "/analytics", label: "Analytics" },
       ]}
     >
       <div style={{ display: "grid", gap: 16 }}>
