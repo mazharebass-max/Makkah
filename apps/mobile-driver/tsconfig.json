@@ -1,0 +1,11 @@
+{
+  "extends": "@haramain/tsconfig/base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "lib": ["ES2022"]
+  },
+  "include": ["app/**/*.tsx", "app/**/*.ts"]
+}

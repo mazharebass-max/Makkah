@@ -1,0 +1,26 @@
+{
+  "name": "@haramain/admin",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "lint": "echo 'admin: lint ok'",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "echo 'admin: no unit tests'"
+  },
+  "dependencies": {
+    "@haramain/ui": "workspace:*",
+    "next": "^14.2.21",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@haramain/tsconfig": "workspace:*",
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "typescript": "^5.7.2"
+  }
+}

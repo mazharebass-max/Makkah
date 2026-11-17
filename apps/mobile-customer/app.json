@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "Haramain Customer",
+    "slug": "haramain-customer",
+    "scheme": "haramain-customer",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": ["expo-router"]
+  }
+}
