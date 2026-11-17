@@ -378,53 +378,41 @@ export class PaymentsService {
         },
       });
       const booking = await tx.booking.findUniqueOrThrow({ where: { id: intent.bookingId } });
+      let current = booking.status;
       if (
-        booking.status === BookingStatus.REFUND_PENDING ||
-        booking.status === BookingStatus.CANCELLED ||
-        booking.status === BookingStatus.COMPLETED
+        current === BookingStatus.CANCELLED ||
+        current === BookingStatus.COMPLETED ||
+        current === BookingStatus.NO_SHOW
       ) {
-        const from = booking.status;
-        if (from !== BookingStatus.REFUNDED) {
-          // Best-effort transition via REFUND_PENDING if needed
-          let current = from;
-          if (current !== BookingStatus.REFUND_PENDING && current !== BookingStatus.REFUNDED) {
-            if (
-              current === BookingStatus.CANCELLED ||
-              current === BookingStatus.COMPLETED ||
-              current === BookingStatus.NO_SHOW
-            ) {
-              assertTransition(current, BookingStatus.REFUND_PENDING);
-              await tx.booking.update({
-                where: { id: booking.id },
-                data: { status: BookingStatus.REFUND_PENDING },
-              });
-              await tx.bookingStatusEvent.create({
-                data: {
-                  bookingId: booking.id,
-                  fromStatus: current,
-                  toStatus: BookingStatus.REFUND_PENDING,
-                  note: "Sandbox refund pending confirmation applied",
-                },
-              });
-              current = BookingStatus.REFUND_PENDING;
-            }
-          }
-          if (current === BookingStatus.REFUND_PENDING) {
-            assertTransition(BookingStatus.REFUND_PENDING, BookingStatus.REFUNDED);
-            await tx.booking.update({
-              where: { id: booking.id },
-              data: { status: BookingStatus.REFUNDED },
-            });
-            await tx.bookingStatusEvent.create({
-              data: {
-                bookingId: booking.id,
-                fromStatus: BookingStatus.REFUND_PENDING,
-                toStatus: BookingStatus.REFUNDED,
-                note: "Sandbox refund completed",
-              },
-            });
-          }
-        }
+        assertTransition(current, BookingStatus.REFUND_PENDING);
+        await tx.booking.update({
+          where: { id: booking.id },
+          data: { status: BookingStatus.REFUND_PENDING },
+        });
+        await tx.bookingStatusEvent.create({
+          data: {
+            bookingId: booking.id,
+            fromStatus: current,
+            toStatus: BookingStatus.REFUND_PENDING,
+            note: "Sandbox refund pending confirmation applied",
+          },
+        });
+        current = BookingStatus.REFUND_PENDING;
+      }
+      if (current === BookingStatus.REFUND_PENDING) {
+        assertTransition(BookingStatus.REFUND_PENDING, BookingStatus.REFUNDED);
+        await tx.booking.update({
+          where: { id: booking.id },
+          data: { status: BookingStatus.REFUNDED },
+        });
+        await tx.bookingStatusEvent.create({
+          data: {
+            bookingId: booking.id,
+            fromStatus: BookingStatus.REFUND_PENDING,
+            toStatus: BookingStatus.REFUNDED,
+            note: "Sandbox refund completed",
+          },
+        });
       }
     });
     return {
@@ -453,13 +441,13 @@ export class PaymentsService {
       include: { charges: true },
       orderBy: { createdAt: "desc" },
     });
-    if (!intent || intent.charges.length === 0) {
+    const charge = intent?.charges[0];
+    if (!intent || !charge) {
       throw new BadRequestException({
         code: "NO_CAPTURE",
         message: "No sandbox capture found to refund",
       });
     }
-    const charge = intent.charges[0];
     const existingRefunds = await this.prisma.refund.aggregate({
       where: { chargeId: charge.id, status: { in: [RefundStatus.PENDING, RefundStatus.SUCCEEDED] } },
       _sum: { amountHalalas: true },
