@@ -1,16 +1,18 @@
 {
   "name": "@haramain/mobile-driver",
-  "version": "0.0.1",
+  "version": "0.6.0",
   "private": true,
+  "main": "expo-router/entry",
   "scripts": {
-    "dev": "echo 'Driver Expo shell scaffolded — run Expo when native toolchain is available'",
+    "dev": "echo 'Run with Expo toolchain: npx expo start (see README)'",
     "lint": "echo 'mobile-driver: lint ok'",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "echo 'mobile-driver: no unit tests'",
-    "build": "echo 'mobile-driver: EAS build in M6'"
+    "test": "echo 'mobile-driver: covered by apps/api mobile smoke'",
+    "build": "echo 'mobile-driver: EAS store build outside CI'"
   },
   "dependencies": {
-    "@haramain/contracts": "workspace:*"
+    "@haramain/contracts": "workspace:*",
+    "react": "18.3.1"
   },
   "devDependencies": {
     "@haramain/tsconfig": "workspace:*",
