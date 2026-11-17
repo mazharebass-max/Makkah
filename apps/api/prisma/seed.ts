@@ -41,7 +41,8 @@ async function upsertUser(email: string, password: string, roleCode: string, loc
       passwordHash,
       locale,
       identities: { create: { provider: "email", subject: email, verifiedAt: new Date() } },
-      customerProfile: roleCode === RoleCode.CUSTOMER ? { create: { displayName: email.split("@")[0] } } : undefined,
+      customerProfile:
+        roleCode === RoleCode.CUSTOMER ? { create: { displayName: email.split("@")[0] } } : undefined,
       roleAssignments: { create: { roleId: role.id } },
     },
   });
@@ -53,6 +54,35 @@ async function upsertUser(email: string, password: string, roleCode: string, loc
     await prisma.roleAssignment.create({ data: { userId: user.id, roleId: role.id } });
   }
   return user;
+}
+
+async function ensurePricing(categoryId: string, ruleId: string, baseHalalas: number, name: string) {
+  const existing = await prisma.pricingRule.findUnique({ where: { id: ruleId } });
+  if (existing) {
+    await prisma.pricingRule.update({
+      where: { id: ruleId },
+      data: { draftLabel: DRAFT, active: true, name },
+    });
+    const latest = await prisma.pricingRuleVersion.findFirst({
+      where: { pricingRuleId: ruleId },
+      orderBy: { version: "desc" },
+    });
+    if (!latest) {
+      await prisma.pricingRuleVersion.create({
+        data: { pricingRuleId: ruleId, version: 1, baseHalalas, currency: "SAR" },
+      });
+    }
+    return;
+  }
+  await prisma.pricingRule.create({
+    data: {
+      id: ruleId,
+      categoryId,
+      name,
+      draftLabel: DRAFT,
+      versions: { create: { version: 1, baseHalalas, currency: "SAR" } },
+    },
+  });
 }
 
 async function main() {
@@ -82,11 +112,15 @@ async function main() {
     });
   }
 
-  // Synthetic zones & routes — DRAFT
   const jed = await prisma.serviceZone.upsert({
     where: { code: "JED_AIRPORT" },
     update: {},
     create: { code: "JED_AIRPORT", nameEn: "Jeddah Airport (JED)", nameAr: "مطار جدة" },
+  });
+  const jeddahCity = await prisma.serviceZone.upsert({
+    where: { code: "JEDDAH_CITY" },
+    update: {},
+    create: { code: "JEDDAH_CITY", nameEn: "Jeddah city", nameAr: "مدينة جدة" },
   });
   const makkah = await prisma.serviceZone.upsert({
     where: { code: "MAKKAH_HOTELS" },
@@ -98,31 +132,54 @@ async function main() {
     update: {},
     create: { code: "MADINAH_HOTELS", nameEn: "Madinah hotel zones", nameAr: "فنادق المدينة" },
   });
-
-  await prisma.route.upsert({
-    where: { code: "JED-MAKKAH" },
-    update: { draftLabel: DRAFT },
+  const med = await prisma.serviceZone.upsert({
+    where: { code: "MED_AIRPORT" },
+    update: {},
     create: {
+      code: "MED_AIRPORT",
+      nameEn: "Madinah Airport (MED)",
+      nameAr: "مطار المدينة",
+    },
+  });
+
+  const routes = [
+    {
       code: "JED-MAKKAH",
       nameEn: "JED Airport ↔ Makkah hotels",
       nameAr: "مطار جدة ↔ فنادق مكة",
       fromZoneId: jed.id,
       toZoneId: makkah.id,
-      draftLabel: DRAFT,
     },
-  });
-  await prisma.route.upsert({
-    where: { code: "MAKKAH-MADINAH" },
-    update: { draftLabel: DRAFT },
-    create: {
+    {
+      code: "JEDDAH-MAKKAH",
+      nameEn: "Jeddah city ↔ Makkah",
+      nameAr: "جدة ↔ مكة",
+      fromZoneId: jeddahCity.id,
+      toZoneId: makkah.id,
+    },
+    {
       code: "MAKKAH-MADINAH",
       nameEn: "Makkah ↔ Madinah",
       nameAr: "مكة ↔ المدينة",
       fromZoneId: makkah.id,
       toZoneId: madinah.id,
-      draftLabel: DRAFT,
     },
-  });
+    {
+      code: "MED-MADINAH",
+      nameEn: "MED Airport ↔ Madinah hotels",
+      nameAr: "مطار المدينة ↔ فنادق المدينة",
+      fromZoneId: med.id,
+      toZoneId: madinah.id,
+    },
+  ];
+
+  for (const r of routes) {
+    await prisma.route.upsert({
+      where: { code: r.code },
+      update: { draftLabel: DRAFT, nameEn: r.nameEn, nameAr: r.nameAr, active: true },
+      create: { ...r, draftLabel: DRAFT },
+    });
+  }
 
   const sedan = await prisma.vehicleCategory.upsert({
     where: { code: "SEDAN" },
@@ -136,7 +193,7 @@ async function main() {
       draftLabel: DRAFT,
     },
   });
-  await prisma.vehicleCategory.upsert({
+  const van = await prisma.vehicleCategory.upsert({
     where: { code: "VAN" },
     update: { draftLabel: DRAFT },
     create: {
@@ -148,40 +205,82 @@ async function main() {
       draftLabel: DRAFT,
     },
   });
-
-  const pricing = await prisma.pricingRule.upsert({
-    where: { id: "00000000-0000-4000-8000-000000000001" },
+  // Catalog category with pricing but zero eligible inventory — honest empty state
+  const coach = await prisma.vehicleCategory.upsert({
+    where: { code: "COACH" },
     update: { draftLabel: DRAFT },
     create: {
-      id: "00000000-0000-4000-8000-000000000001",
-      categoryId: sedan.id,
-      name: "Draft sedan base — owner approval required",
+      code: "COACH",
+      nameEn: "Coach",
+      nameAr: "حافلة",
+      passengerCap: 20,
+      luggageCap: 20,
       draftLabel: DRAFT,
-      versions: {
-        create: { version: 1, baseHalalas: 25_000, currency: "SAR" },
-      },
     },
   });
-  void pricing;
 
-  // Owned fleet vehicle (synthetic) — not a live availability claim
-  await prisma.vehicle.upsert({
-    where: { id: "00000000-0000-4000-8000-000000000010" },
-    update: {},
-    create: {
+  await ensurePricing(
+    sedan.id,
+    "00000000-0000-4000-8000-000000000001",
+    25_000,
+    "Draft sedan base — owner approval required",
+  );
+  await ensurePricing(
+    van.id,
+    "00000000-0000-4000-8000-000000000002",
+    45_000,
+    "Draft van base — owner approval required",
+  );
+  await ensurePricing(
+    coach.id,
+    "00000000-0000-4000-8000-000000000003",
+    120_000,
+    "Draft coach base — owner approval required",
+  );
+
+  const vehicles = [
+    {
       id: "00000000-0000-4000-8000-000000000010",
-      ownership: FleetOwnership.OWNED,
       categoryId: sedan.id,
       plateNumber: "SYN-001",
       makeModel: "Synthetic Sedan",
-      modelYear: 2024,
       passengerCap: 3,
       luggageCap: 3,
-      availabilityNote: "Synthetic seed inventory — not live availability",
     },
-  });
+    {
+      id: "00000000-0000-4000-8000-000000000011",
+      categoryId: sedan.id,
+      plateNumber: "SYN-002",
+      makeModel: "Synthetic Sedan B",
+      passengerCap: 3,
+      luggageCap: 3,
+    },
+    {
+      id: "00000000-0000-4000-8000-000000000012",
+      categoryId: van.id,
+      plateNumber: "SYN-V01",
+      makeModel: "Synthetic Van",
+      passengerCap: 7,
+      luggageCap: 7,
+    },
+  ];
 
-  // Third-party provider in APPLIED state only — no fake verified licence
+  for (const v of vehicles) {
+    await prisma.vehicle.upsert({
+      where: { id: v.id },
+      update: {
+        active: true,
+        availabilityNote: "Synthetic seed inventory — not live availability",
+      },
+      create: {
+        ...v,
+        ownership: FleetOwnership.OWNED,
+        modelYear: 2024,
+        availabilityNote: "Synthetic seed inventory — not live availability",
+      },
+    });
+  }
+
   await prisma.provider.upsert({
     where: { id: "00000000-0000-4000-8000-000000000020" },
     update: { status: ProviderStatus.APPLIED, notes: DRAFT },
@@ -196,7 +295,6 @@ async function main() {
     },
   });
 
-  // Dev users — documented credentials only for local/dev
   await upsertUser("customer@haramain.local", "CustomerDev!234", RoleCode.CUSTOMER);
   await upsertUser("admin@haramain.local", "AdminDev!23456", RoleCode.SUPER_ADMIN);
   await upsertUser("dispatcher@haramain.local", "DispatchDev!234", RoleCode.FLEET_DISPATCHER);

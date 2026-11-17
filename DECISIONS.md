@@ -21,6 +21,16 @@
 **Decision:** Routes, categories, and pricing seeds carry `DRAFT — OWNER APPROVAL REQUIRED`. Providers seed as `APPLIED` only.  
 **Open:** Owner must approve real fares, zones, legal entity, and verification evidence before production.
 
+## D-005 — Availability source for M2 quotes (2026-11-17)
+
+**Decision:** Availability counts only active **OWNED** vehicles or **THIRD_PARTY** vehicles whose provider status is `APPROVED`. APPLIED providers never contribute inventory. Categories with zero eligible rows return `NO_INVENTORY` (e.g. seeded COACH).  
+**Consequence:** Honest empty states; no fabricated live fleet or verified licences.
+
+## D-006 — Draft tax line in quotes (2026-11-17)
+
+**Decision:** Quotes include a `TAX_PLACEHOLDER` line (15% of subtotal) labeled **DRAFT — OWNER APPROVAL REQUIRED**. This is not a ZATCA/VAT determination.  
+**Open:** Owner + tax adviser must replace before live invoicing.
+
 ## Open owner decisions (from PRD §19)
 
 - Legal entity / TGA / tourism authorizations

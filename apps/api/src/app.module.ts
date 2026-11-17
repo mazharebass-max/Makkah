@@ -6,6 +6,7 @@ import { AdminModule } from "./modules/admin/admin.module";
 import { HealthController } from "./modules/health/health.controller";
 import { SandboxModule } from "./modules/sandbox/sandbox.module";
 import { OwnershipModule } from "./modules/ownership/ownership.module";
+import { PricingModule } from "./modules/pricing/pricing.module";
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { OwnershipModule } from "./modules/ownership/ownership.module";
     OwnershipModule,
     AuthModule,
     CatalogModule,
+    PricingModule,
     AdminModule,
     SandboxModule,
   ],

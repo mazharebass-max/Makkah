@@ -14,6 +14,10 @@ Premium pilgrim & tourism ground-transport platform (Jeddah · Makkah · Madinah
 - **Worker:** BullMQ (`apps/worker`)
 - **Shared:** `@haramain/ui`, `@haramain/contracts`
 
+## Current milestone
+
+**M2** — public landing (EN/AR RTL), route search with DB availability, quote engine, checkout UI + sandbox payment. See `PROJECT_STATUS.md`.
+
 ## Quick start
 
 ```bash

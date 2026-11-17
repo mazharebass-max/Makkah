@@ -1,52 +1,49 @@
 # Project Status — Haramain Ride
 
 **Updated:** 2026-11-17  
-**Current milestone:** M1 exit gate met (local)
+**Current milestone:** M2 (public search / quote / checkout UI) — ready for review
 
 ## Repository assumption
 
-Greenfield on `mazharebass-max/Makkah`. **No** legacy MVP (`server.py`, `haramain.db`) present. See Project Context `docs/GAP_ANALYSIS.md`.
+Greenfield on `mazharebass-max/Makkah`. No legacy MVP data. M1 lives on PR #1; M2 stacks on that branch until merge.
 
 ## Milestone progress
 
 | Milestone | Status | Notes |
 |---|---|---|
-| M0 Audit / architecture | Done | Greenfield gap + architecture pack in Project `docs/` |
-| M1 Monorepo, auth, RBAC, Postgres, CI, design system | Done (local) | Migrations + RBAC tests pass; shells running |
-| M2–M8 | Not started | Per PRD |
+| M0 Audit / architecture | Done | Project `docs/` |
+| M1 Monorepo, auth, RBAC, Postgres, CI, design system | Done (PR #1, CI green) | Foundation |
+| M2 Public site, search, catalog, quote, checkout UI | Done (this PR) | EN/AR RTL + responsive screenshots in `media/m2/` |
+| M3+ | Not started | Booking SM, dispatch concurrency |
 
-## Verified locally (M1)
+## M2 verified
 
-- pnpm monorepo: web, admin, api, worker, mobile shells, `@haramain/ui`, `@haramain/contracts`
-- Docker Compose file for Postgres / Redis / MinIO (host Postgres/Redis used in this agent env)
-- Prisma migration `m1_init` + synthetic DRAFT seed
-- Auth (email/password, JWT + refresh rotation, cookies) + RBAC + ownership stubs
-- Anonymous `/admin/*` → 401; wrong role → 403 (vitest suite)
-- Sandbox payment/SMS/email adapters (`mode: "sandbox"`)
-- Design system tokens + public/admin shells; screenshots in Project `media/m1/`
-- GitHub Actions CI workflow
+- Launch corridors seeded: JED↔Makkah, Jeddah↔Makkah, Makkah↔Madinah, MED↔Madinah
+- `GET /api/v1/search` — capacity + **DB inventory** (owned / approved-provider only); COACH shows honest `NO_INVENTORY`
+- `POST /api/v1/quotes` — itemized draft pricing + cancellation policy placeholders
+- `POST /api/v1/bookings` — auth required → `PENDING_PAYMENT`; sandbox payment checkout only
+- Public web: landing booking widget, search results, checkout (login gate), `?lang=ar` RTL
+- Tests: 14 passing (RBAC + pricing math + quote/search/checkout)
 
 ## Run commands
 
 ```bash
-docker compose up -d   # or local Postgres/Redis
+docker compose up -d
 ./scripts/setup.sh
+pnpm --filter @haramain/api prisma:migrate
+pnpm --filter @haramain/api prisma:seed
 pnpm --filter @haramain/api dev
 pnpm --filter @haramain/web dev
-pnpm --filter @haramain/admin dev
 pnpm --filter @haramain/api test
 ```
 
-## Dev credentials (seed only)
+## Dev credentials (seed)
 
-| Email | Password | Role |
-|---|---|---|
-| customer@haramain.local | CustomerDev!234 | customer |
-| admin@haramain.local | AdminDev!23456 | super_admin |
-| dispatcher@haramain.local | DispatchDev!234 | fleet_dispatcher |
-| compliance@haramain.local | ComplianceDev!2 | compliance_officer |
-| finance@haramain.local | FinanceDev!2345 | finance_officer |
+| Email | Password |
+|---|---|
+| customer@haramain.local | CustomerDev!234 |
+| admin@haramain.local | AdminDev!23456 |
 
-## Owner decisions still open
+## Remaining for M3
 
-See `DECISIONS.md` and Project `docs/COMPLIANCE_GATE.md`.
+Booking state machine transitions, concurrency-safe dispatch/assignment, owned-fleet ops depth, quote hold/expiry jobs.

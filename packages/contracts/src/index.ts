@@ -96,3 +96,47 @@ export type SandboxResult = {
   message: string;
   reference: string;
 };
+
+export const DRAFT_OWNER_LABEL = "DRAFT — OWNER APPROVAL REQUIRED" as const;
+
+export const searchAvailabilitySchema = z.object({
+  routeCode: z.string().min(2).max(64),
+  scheduledAt: z.string().datetime({ offset: true }).or(z.string().min(10)),
+  passengers: z.coerce.number().int().min(1).max(20),
+  luggage: z.coerce.number().int().min(0).max(40).default(0),
+});
+
+export const createQuoteSchema = z.object({
+  routeCode: z.string().min(2).max(64),
+  categoryCode: z.string().min(2).max(64),
+  scheduledAt: z.string().datetime({ offset: true }).or(z.string().min(10)),
+  passengers: z.coerce.number().int().min(1).max(20),
+  luggage: z.coerce.number().int().min(0).max(40).default(0),
+});
+
+export const createBookingSchema = z.object({
+  quoteId: z.string().uuid(),
+  contactName: z.string().min(1).max(120),
+  contactPhone: z.string().min(7).max(32),
+  specialInstructions: z.string().max(500).optional(),
+  acceptTerms: z.literal(true),
+  idempotencyKey: z.string().min(8).max(128).optional(),
+});
+
+export type SearchAvailabilityInput = z.infer<typeof searchAvailabilitySchema>;
+export type CreateQuoteInput = z.infer<typeof createQuoteSchema>;
+export type CreateBookingInput = z.infer<typeof createBookingSchema>;
+
+export type QuoteLineDto = {
+  code: string;
+  label: string;
+  amountHalalas: number;
+  draftLabel?: string;
+};
+
+export type CancellationPolicyDto = {
+  version: string;
+  summaryEn: string;
+  summaryAr: string;
+  draftLabel: typeof DRAFT_OWNER_LABEL;
+};
