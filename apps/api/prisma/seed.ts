@@ -298,8 +298,21 @@ async function main() {
   await upsertUser("customer@haramain.local", "CustomerDev!234", RoleCode.CUSTOMER);
   await upsertUser("admin@haramain.local", "AdminDev!23456", RoleCode.SUPER_ADMIN);
   await upsertUser("dispatcher@haramain.local", "DispatchDev!234", RoleCode.FLEET_DISPATCHER);
+  await upsertUser("fleet@haramain.local", "FleetMgrDev!2345", RoleCode.OWNED_FLEET_MANAGER);
   await upsertUser("compliance@haramain.local", "ComplianceDev!2", RoleCode.COMPLIANCE_OFFICER);
   await upsertUser("finance@haramain.local", "FinanceDev!2345", RoleCode.FINANCE_OFFICER);
+
+  await prisma.driver.upsert({
+    where: { id: "00000000-0000-4000-8000-000000000030" },
+    update: { active: true, ownership: FleetOwnership.OWNED },
+    create: {
+      id: "00000000-0000-4000-8000-000000000030",
+      ownership: FleetOwnership.OWNED,
+      displayName: "Synthetic Owned Driver",
+      phoneE164: "+966500000099",
+      active: true,
+    },
+  });
 
   // eslint-disable-next-line no-console
   console.log("Seed complete (synthetic DRAFT data only).");

@@ -393,6 +393,7 @@ model BookingAssignment {
   providerId String?  @db.Uuid
   startsAt   DateTime
   endsAt     DateTime
+  reason     String?
   createdAt  DateTime @default(now())
 
   booking  Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
@@ -402,6 +403,25 @@ model BookingAssignment {
 
   @@index([vehicleId, startsAt, endsAt])
   @@index([driverId, startsAt, endsAt])
+}
+
+/// Soft inventory hold during quote/checkout. Counts against availability until expiry/release.
+model AvailabilityHold {
+  id         String    @id @default(uuid()) @db.Uuid
+  categoryId String    @db.Uuid
+  vehicleId  String?   @db.Uuid
+  quoteId    String?   @db.Uuid
+  bookingId  String?   @db.Uuid
+  startsAt   DateTime
+  endsAt     DateTime
+  expiresAt  DateTime
+  releasedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([categoryId, startsAt, endsAt])
+  @@index([expiresAt, releasedAt])
+  @@index([quoteId])
+  @@index([bookingId])
 }
 
 model IdempotencyKey {

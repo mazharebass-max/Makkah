@@ -7,6 +7,8 @@ import { HealthController } from "./modules/health/health.controller";
 import { SandboxModule } from "./modules/sandbox/sandbox.module";
 import { OwnershipModule } from "./modules/ownership/ownership.module";
 import { PricingModule } from "./modules/pricing/pricing.module";
+import { BookingsModule } from "./modules/bookings/bookings.module";
+import { FleetModule } from "./modules/fleet/fleet.module";
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { PricingModule } from "./modules/pricing/pricing.module";
     AuthModule,
     CatalogModule,
     PricingModule,
+    BookingsModule,
+    FleetModule,
     AdminModule,
     SandboxModule,
   ],

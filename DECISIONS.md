@@ -31,6 +31,16 @@
 **Decision:** Quotes include a `TAX_PLACEHOLDER` line (15% of subtotal) labeled **DRAFT — OWNER APPROVAL REQUIRED**. This is not a ZATCA/VAT determination.  
 **Open:** Owner + tax adviser must replace before live invoicing.
 
+## D-007 — Concurrency-safe assignment (2026-11-17)
+
+**Decision:** Use serializable transactions + `pg_advisory_xact_lock` + overlap queries, plus Postgres `EXCLUDE` constraint on vehicle time ranges.  
+**Consequence:** Double allocation attempts fail with `VEHICLE_OVERLAP` / `CONCURRENT_DISPATCH`.
+
+## D-008 — Quote soft holds (2026-11-17)
+
+**Decision:** Creating a quote inserts an `AvailabilityHold` that reduces category availability until expiry/release; booking creation excludes the quote’s own hold from the re-check.  
+**Consequence:** Checkout inventory is soft-reserved without inventing live fleet.
+
 ## Open owner decisions (from PRD §19)
 
 - Legal entity / TGA / tourism authorizations
