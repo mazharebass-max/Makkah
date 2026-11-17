@@ -184,11 +184,14 @@ model Provider {
   ownership        FleetOwnership @default(THIRD_PARTY)
   /// DRAFT label for operational notes — never invent verified licences
   notes            String?
+  suspensionReason String?
+  suspendedAt      DateTime?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
-  user            User?             @relation(fields: [userId], references: [id])
+  user            User?              @relation(fields: [userId], references: [id])
   documents       ProviderDocument[]
+  reviews         ProviderReview[]
   drivers         Driver[]
   vehicles        Vehicle[]
   roleAssignments RoleAssignment[]
@@ -202,10 +205,27 @@ model ProviderDocument {
   storageKey   String
   expiresAt    DateTime?
   reviewState  DocumentReviewState @default(SUBMITTED)
+  /// Never claim scanned/verified content — metadata + sandbox key only
+  draftLabel   String              @default("DRAFT — OWNER APPROVAL REQUIRED")
   createdAt    DateTime            @default(now())
   updatedAt    DateTime            @updatedAt
 
   provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+}
+
+model ProviderReview {
+  id         String         @id @default(uuid()) @db.Uuid
+  providerId String         @db.Uuid
+  reviewerId String         @db.Uuid
+  fromStatus ProviderStatus?
+  toStatus   ProviderStatus
+  decision   String
+  note       String?
+  createdAt  DateTime       @default(now())
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId, createdAt])
 }
 
 model Driver {
@@ -219,9 +239,26 @@ model Driver {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
-  user       User?               @relation(fields: [userId], references: [id])
-  provider   Provider?           @relation(fields: [providerId], references: [id])
+  user        User?             @relation(fields: [userId], references: [id])
+  provider    Provider?         @relation(fields: [providerId], references: [id])
+  documents   DriverDocument[]
   assignments BookingAssignment[]
+}
+
+model DriverDocument {
+  id           String              @id @default(uuid()) @db.Uuid
+  driverId     String              @db.Uuid
+  docType      String
+  storageKey   String
+  expiresAt    DateTime?
+  reviewState  DocumentReviewState @default(SUBMITTED)
+  draftLabel   String              @default("DRAFT — OWNER APPROVAL REQUIRED")
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  driver Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@index([driverId])
 }
 
 model Vehicle {

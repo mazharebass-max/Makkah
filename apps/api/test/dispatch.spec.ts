@@ -38,6 +38,8 @@ describe("M3 dispatch + holds", () => {
       where: { releasedAt: null },
       data: { releasedAt: new Date() },
     });
+    // Clear leftover assignments from prior local runs so inventory is honest
+    await prisma.bookingAssignment.deleteMany({});
   });
 
   afterAll(async () => {
@@ -45,7 +47,7 @@ describe("M3 dispatch + holds", () => {
   });
 
   it("holds reduce availability and concurrent assign conflicts", async () => {
-    const scheduledAt = futureIso(120);
+    const scheduledAt = futureIso(240);
     const customer = await login(app, "customer@haramain.local", "CustomerDev!234");
     const dispatcher = await login(app, "dispatcher@haramain.local", "DispatchDev!234");
 

@@ -1,18 +1,14 @@
-import { Controller, Get, Inject, Param, Post, Req, UseGuards } from "@nestjs/common";
+import { Controller, Get, Inject, UseGuards } from "@nestjs/common";
 import { RoleCode } from "@haramain/contracts";
-import { AuthGuard, type AuthedRequest } from "../auth/auth.guard";
+import { AuthGuard } from "../auth/auth.guard";
 import { Roles } from "../auth/roles.decorator";
 import { RolesGuard } from "../auth/roles.guard";
 import { PrismaService } from "../../prisma/prisma.service";
-import { OwnershipService } from "../ownership/ownership.service";
 
 @Controller("admin")
 @UseGuards(AuthGuard, RolesGuard)
 export class AdminController {
-  constructor(
-    @Inject(PrismaService) private readonly prisma: PrismaService,
-    @Inject(OwnershipService) private readonly ownership: OwnershipService,
-  ) {}
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
   @Get("bookings")
   @Roles(
@@ -28,29 +24,6 @@ export class AdminController {
       include: { route: true, category: true },
     });
     return { data: bookings };
-  }
-
-  @Post("providers/:id/review")
-  @Roles(RoleCode.SUPER_ADMIN, RoleCode.COMPLIANCE_OFFICER)
-  async reviewProvider(@Param("id") id: string, @Req() req: AuthedRequest) {
-    await this.ownership.assertProviderAccess(req.user!, id);
-    await this.prisma.auditEvent.create({
-      data: {
-        actorId: req.user!.id,
-        action: "admin.provider.review_stub",
-        resource: "provider",
-        resourceId: id,
-        metadata: {
-          note: "Human verification required — never auto-approve fabricated licences",
-        },
-      },
-    });
-    return {
-      ok: true,
-      mode: "stub",
-      message: "Review recorded as audit stub; approval workflow completes in M4",
-      providerId: id,
-    };
   }
 
   @Get("finance/reconciliation")
