@@ -61,6 +61,16 @@
 **Decision:** Charges and refunds append ledger rows (refunds as negative amounts); invoices are issued as DRAFT-labeled sandbox documents pending ZATCA/tax adviser.  
 **Consequence:** Finance reconciliation is derived from ledger aggregates, not mutable counters.
 
+## D-013 — Consented location only (2026-11-17)
+
+**Decision:** Drivers must explicitly grant per-booking location consent before samples are accepted; samples expire in 24h. Customers can read latest non-expired sample for owned bookings.  
+**Consequence:** No background tracking without consent; aligns with PDPL minimization.
+
+## D-014 — Expo Router mobile shells with CI shims (2026-11-17)
+
+**Decision:** Ship Expo Router source for customer/driver apps; CI typechecks via lightweight RN/Expo shims so native toolchain is not required in GitHub Actions. EAS store builds remain out-of-band.  
+**Consequence:** Mobile UX is real code against the shared API; device binaries need local Expo/EAS.
+
 ## Open owner decisions (from PRD §19)
 
 - Legal entity / TGA / tourism authorizations

@@ -395,11 +395,18 @@ async function main() {
     },
   });
 
+  const driverUser = await upsertUser(
+    "driver@haramain.local",
+    "DriverDev!23456",
+    RoleCode.DRIVER,
+  );
+
   await prisma.driver.upsert({
     where: { id: "00000000-0000-4000-8000-000000000030" },
-    update: { active: true, ownership: FleetOwnership.OWNED },
+    update: { active: true, ownership: FleetOwnership.OWNED, userId: driverUser.id },
     create: {
       id: "00000000-0000-4000-8000-000000000030",
+      userId: driverUser.id,
       ownership: FleetOwnership.OWNED,
       displayName: "Synthetic Owned Driver",
       phoneE164: "+966500000099",

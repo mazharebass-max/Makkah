@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Haramain Mobile M6 Preview</title>
+    <style>
+      :root {
+        --navy: #0b1f3a;
+        --blue: #1b4f8a;
+        --teal: #087f6d;
+        --sand: #f4f7fb;
+        --muted: #526276;
+      }
+      body {
+        margin: 0;
+        font-family: Manrope, system-ui, sans-serif;
+        background: linear-gradient(160deg, #0b1f3a, #1b4f8a 55%, #087f6d);
+        min-height: 100vh;
+        display: flex;
+        gap: 32px;
+        justify-content: center;
+        align-items: center;
+        padding: 40px 16px;
+        flex-wrap: wrap;
+      }
+      .phone {
+        width: 320px;
+        height: 640px;
+        background: var(--sand);
+        border-radius: 28px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .bar {
+        background: var(--navy);
+        color: #fff;
+        padding: 16px 18px;
+        font-weight: 700;
+      }
+      .content {
+        padding: 18px;
+        flex: 1;
+      }
+      h1 {
+        margin: 0 0 8px;
+        color: var(--navy);
+        font-size: 22px;
+      }
+      p {
+        color: var(--muted);
+        margin: 0 0 12px;
+        line-height: 1.4;
+      }
+      .card {
+        background: #fff;
+        border-radius: 14px;
+        padding: 12px;
+        margin-bottom: 10px;
+        border: 1px solid #e6edf5;
+      }
+      .btn {
+        display: block;
+        text-align: center;
+        background: var(--blue);
+        color: #fff;
+        padding: 12px;
+        border-radius: 12px;
+        font-weight: 600;
+        margin-top: 10px;
+      }
+      .btn.teal {
+        background: var(--teal);
+      }
+      .tabs {
+        display: flex;
+        border-top: 1px solid #d5dee8;
+        background: #fff;
+      }
+      .tabs span {
+        flex: 1;
+        text-align: center;
+        padding: 12px 4px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .tabs .active {
+        color: var(--blue);
+        font-weight: 700;
+      }
+      .label {
+        color: #fff;
+        text-align: center;
+        width: 320px;
+        margin-bottom: -24px;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <div class="label">Customer · Trips</div>
+      <div class="phone" id="customer">
+        <div class="bar">Haramain Ride</div>
+        <div class="content">
+          <h1>My trips</h1>
+          <p>Authenticated history from API — no invented availability.</p>
+          <div class="card">
+            <strong>HR-MOBILE1</strong>
+            <p>ASSIGNED · JED-MAKKAH · 250.00 SAR</p>
+          </div>
+          <div class="card">
+            <strong>HR-MOBILE0</strong>
+            <p>COMPLETED · MAKKAH-MADINAH · 320.00 SAR</p>
+          </div>
+        </div>
+        <div class="tabs">
+          <span>Home</span><span class="active">Trips</span><span>Help</span><span>Account</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="label">Driver · Trip ops</div>
+      <div class="phone" id="driver">
+        <div class="bar">Driver</div>
+        <div class="content">
+          <h1>Trip ops</h1>
+          <p>Current status: ASSIGNED</p>
+          <div class="btn teal">En route</div>
+          <div class="btn teal">Arrived</div>
+          <div class="btn teal">Start trip</div>
+          <div class="btn">Share location (consent)</div>
+          <p style="margin-top: 14px; font-size: 12px">
+            Location only after explicit consent; samples expire in 24h
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

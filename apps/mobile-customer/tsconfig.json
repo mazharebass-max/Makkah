@@ -5,7 +5,13 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "noEmit": true,
-    "lib": ["ES2022"]
+    "lib": ["ES2022", "DOM"],
+    "baseUrl": ".",
+    "paths": {
+      "react-native": ["./shims/react-native.ts"],
+      "expo-router": ["./shims/expo-router.ts"],
+      "expo-secure-store": ["./shims/expo-secure-store.ts"]
+    }
   },
-  "include": ["app/**/*.tsx", "app/**/*.ts"]
+  "include": ["app/**/*.tsx", "app/**/*.ts", "lib/**/*.ts", "shims/**/*.ts"]
 }

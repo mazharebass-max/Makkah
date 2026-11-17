@@ -10,7 +10,16 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { BookingStatus } from "@prisma/client";
-import { IsEnum, IsOptional, IsString, IsUUID, MaxLength } from "class-validator";
+import {
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Max,
+  MaxLength,
+  Min,
+} from "class-validator";
 import { RoleCode } from "@haramain/contracts";
 import { AuthGuard, type AuthedRequest } from "../auth/auth.guard";
 import { Roles } from "../auth/roles.decorator";
@@ -55,6 +64,23 @@ class SandboxConfirmDto {
   bookingId!: string;
 }
 
+class LocationDto {
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  latitude!: number;
+
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  longitude!: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  accuracyM?: number;
+}
+
 @Controller()
 export class BookingsController {
   constructor(
@@ -63,20 +89,59 @@ export class BookingsController {
   ) {}
 
   @UseGuards(AuthGuard)
+  @Get("bookings")
+  listMine(@Req() req: AuthedRequest) {
+    return this.bookings.listMine(req.user!);
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(RoleCode.DRIVER)
+  @Get("driver/trips")
+  driverTrips(@Req() req: AuthedRequest) {
+    return this.bookings.listDriverTrips(req.user!);
+  }
+
+  @UseGuards(AuthGuard)
   @Get("bookings/:id")
   getOne(@Req() req: AuthedRequest, @Param("id") id: string) {
     return this.bookings.getBooking(req.user!, id);
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(RoleCode.DRIVER)
+  @Post("bookings/:id/location/consent")
+  grantConsent(@Req() req: AuthedRequest, @Param("id") id: string) {
+    return this.bookings.grantLocationConsent(req.user!, id);
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(RoleCode.DRIVER)
+  @Post("bookings/:id/location/revoke")
+  revokeConsent(@Req() req: AuthedRequest, @Param("id") id: string) {
+    return this.bookings.revokeLocationConsent(req.user!, id);
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(RoleCode.DRIVER)
+  @Post("bookings/:id/location")
+  postLocation(@Req() req: AuthedRequest, @Param("id") id: string, @Body() body: LocationDto) {
+    return this.bookings.postLocationSample(req.user!, id, body);
+  }
+
   @UseGuards(AuthGuard)
-  @Post("bookings/:id/transition")
-  @UseGuards(RolesGuard)
+  @Get("bookings/:id/location")
+  latestLocation(@Req() req: AuthedRequest, @Param("id") id: string) {
+    return this.bookings.latestLocation(req.user!, id);
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
   @Roles(
     RoleCode.SUPER_ADMIN,
     RoleCode.FLEET_DISPATCHER,
     RoleCode.SUPPORT_AGENT,
     RoleCode.DRIVER,
   )
+  @Post("bookings/:id/transition")
   transition(@Req() req: AuthedRequest, @Param("id") id: string, @Body() body: TransitionDto) {
     return this.bookings.transition({
       user: req.user!,

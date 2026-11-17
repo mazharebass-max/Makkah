@@ -1,11 +1,16 @@
 {
   "expo": {
-    "name": "Haramain Customer",
+    "name": "Haramain Ride",
     "slug": "haramain-customer",
     "scheme": "haramain-customer",
-    "version": "0.1.0",
+    "version": "0.6.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "plugins": ["expo-router"]
+    "plugins": ["expo-router", "expo-secure-store"],
+    "android": { "package": "sa.haramain.customer" },
+    "ios": { "bundleIdentifier": "sa.haramain.customer" },
+    "extra": {
+      "eas": { "projectId": "replace-with-eas-id" }
+    }
   }
 }

@@ -19,6 +19,52 @@ export class BookingsService {
     @Inject(OwnershipService) private readonly ownership: OwnershipService,
   ) {}
 
+  async listMine(user: RequestUser) {
+    const bookings = await this.prisma.booking.findMany({
+      where: { customerId: user.id, deletedAt: null },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      include: {
+        route: true,
+        category: true,
+        assignment: { select: { vehicleId: true, driverId: true, startsAt: true, endsAt: true } },
+      },
+    });
+    return {
+      data: bookings.map((b) => this.tripSummary(b)),
+      source: "database" as const,
+      inventedAvailability: false as const,
+    };
+  }
+
+  async listDriverTrips(user: RequestUser) {
+    const driver = await this.prisma.driver.findUnique({ where: { userId: user.id } });
+    if (!driver) {
+      throw new NotFoundException({ code: "NO_DRIVER", message: "No driver profile for user" });
+    }
+    const assignments = await this.prisma.bookingAssignment.findMany({
+      where: { driverId: driver.id },
+      include: {
+        booking: {
+          include: { route: true, category: true },
+        },
+      },
+      orderBy: { startsAt: "desc" },
+      take: 50,
+    });
+    return {
+      driverId: driver.id,
+      data: assignments.map((a) => ({
+        ...this.tripSummary(a.booking),
+        assignment: {
+          startsAt: a.startsAt.toISOString(),
+          endsAt: a.endsAt.toISOString(),
+          vehicleId: a.vehicleId,
+        },
+      })),
+    };
+  }
+
   async getBooking(user: RequestUser, id: string) {
     await this.ownership.assertBookingAccess(user, id);
     const booking = await this.prisma.booking.findUnique({
@@ -33,7 +79,158 @@ export class BookingsService {
     if (!booking || booking.deletedAt) {
       throw new NotFoundException({ code: "NOT_FOUND", message: "Booking not found" });
     }
-    return booking;
+    return {
+      ...booking,
+      tripTimeline: booking.statusEvents.map((e) => ({
+        from: e.fromStatus,
+        to: e.toStatus,
+        at: e.createdAt.toISOString(),
+        note: e.note,
+      })),
+    };
+  }
+
+  async grantLocationConsent(user: RequestUser, bookingId: string) {
+    const driver = await this.prisma.driver.findUnique({ where: { userId: user.id } });
+    if (!driver) {
+      throw new NotFoundException({ code: "NO_DRIVER", message: "Driver profile required" });
+    }
+    await this.ownership.assertBookingAccess(user, bookingId);
+    const assignment = await this.prisma.bookingAssignment.findUnique({ where: { bookingId } });
+    if (!assignment || assignment.driverId !== driver.id) {
+      throw new BadRequestException({
+        code: "NOT_ASSIGNED",
+        message: "Location sharing only for your assigned trip",
+      });
+    }
+    const consent = await this.prisma.locationConsent.upsert({
+      where: { bookingId_driverId: { bookingId, driverId: driver.id } },
+      create: { bookingId, driverId: driver.id, purpose: "active_trip_tracking" },
+      update: { revokedAt: null, grantedAt: new Date() },
+    });
+    await this.prisma.auditEvent.create({
+      data: {
+        actorId: user.id,
+        action: "location.consent.grant",
+        resource: "booking",
+        resourceId: bookingId,
+        metadata: { purpose: consent.purpose },
+      },
+    });
+    return {
+      bookingId,
+      consented: true,
+      purpose: consent.purpose,
+      message: "Location sharing enabled for this active trip only",
+    };
+  }
+
+  async revokeLocationConsent(user: RequestUser, bookingId: string) {
+    const driver = await this.prisma.driver.findUnique({ where: { userId: user.id } });
+    if (!driver) {
+      throw new NotFoundException({ code: "NO_DRIVER", message: "Driver profile required" });
+    }
+    await this.prisma.locationConsent.updateMany({
+      where: { bookingId, driverId: driver.id, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    return { bookingId, consented: false };
+  }
+
+  async postLocationSample(
+    user: RequestUser,
+    bookingId: string,
+    input: { latitude: number; longitude: number; accuracyM?: number },
+  ) {
+    const driver = await this.prisma.driver.findUnique({ where: { userId: user.id } });
+    if (!driver) {
+      throw new NotFoundException({ code: "NO_DRIVER", message: "Driver profile required" });
+    }
+    const consent = await this.prisma.locationConsent.findUnique({
+      where: { bookingId_driverId: { bookingId, driverId: driver.id } },
+    });
+    if (!consent || consent.revokedAt) {
+      throw new BadRequestException({
+        code: "CONSENT_REQUIRED",
+        message: "Explicit location consent required before sharing",
+      });
+    }
+    const booking = await this.prisma.booking.findUnique({ where: { id: bookingId } });
+    if (!booking) throw new NotFoundException({ code: "NOT_FOUND", message: "Booking not found" });
+    const active: BookingStatus[] = [
+      BookingStatus.ASSIGNED,
+      BookingStatus.DRIVER_EN_ROUTE,
+      BookingStatus.ARRIVED,
+      BookingStatus.IN_PROGRESS,
+    ];
+    if (!active.includes(booking.status)) {
+      throw new BadRequestException({
+        code: "TRIP_NOT_ACTIVE",
+        message: "Location samples only during active trip states",
+      });
+    }
+    const sample = await this.prisma.locationSample.create({
+      data: {
+        bookingId,
+        driverId: driver.id,
+        latitude: input.latitude,
+        longitude: input.longitude,
+        accuracyM: input.accuracyM,
+        expiresAt: new Date(Date.now() + 24 * 3600_000),
+      },
+    });
+    return {
+      id: sample.id,
+      recordedAt: sample.recordedAt.toISOString(),
+      expiresAt: sample.expiresAt.toISOString(),
+      retentionNote: "Sample expires within 24h — precise location minimized per PDPL",
+    };
+  }
+
+  async latestLocation(user: RequestUser, bookingId: string) {
+    await this.ownership.assertBookingAccess(user, bookingId);
+    const sample = await this.prisma.locationSample.findFirst({
+      where: { bookingId, expiresAt: { gt: new Date() } },
+      orderBy: { recordedAt: "desc" },
+    });
+    if (!sample) {
+      return { bookingId, sample: null, message: "No active consented location sample" };
+    }
+    return {
+      bookingId,
+      sample: {
+        latitude: sample.latitude,
+        longitude: sample.longitude,
+        accuracyM: sample.accuracyM,
+        recordedAt: sample.recordedAt.toISOString(),
+      },
+    };
+  }
+
+  private tripSummary(b: {
+    id: string;
+    reference: string;
+    status: BookingStatus;
+    scheduledAt: Date;
+    totalHalalas: number;
+    currency: string;
+    passengerCount: number;
+    route?: { code: string; nameEn: string } | null;
+    category?: { code: string; nameEn: string } | null;
+    assignment?: unknown;
+  }) {
+    return {
+      id: b.id,
+      reference: b.reference,
+      status: b.status,
+      scheduledAt: b.scheduledAt.toISOString(),
+      totalHalalas: b.totalHalalas,
+      currency: b.currency,
+      passengers: b.passengerCount,
+      route: b.route ? { code: b.route.code, nameEn: b.route.nameEn } : null,
+      category: b.category ? { code: b.category.code, nameEn: b.category.nameEn } : null,
+      liveAvailabilityClaim: false as const,
+    };
   }
 
   async transition(input: {
