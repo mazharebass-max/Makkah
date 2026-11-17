@@ -11,6 +11,9 @@ import { BookingsModule } from "./modules/bookings/bookings.module";
 import { FleetModule } from "./modules/fleet/fleet.module";
 import { ProvidersModule } from "./modules/providers/providers.module";
 import { PaymentsModule } from "./modules/payments/payments.module";
+import { NotificationsModule } from "./modules/notifications/notifications.module";
+import { SupportModule } from "./modules/support/support.module";
+import { AnalyticsModule } from "./modules/analytics/analytics.module";
 
 @Module({
   imports: [
@@ -23,11 +26,15 @@ import { PaymentsModule } from "./modules/payments/payments.module";
     FleetModule,
     ProvidersModule,
     PaymentsModule,
+    NotificationsModule,
+    SupportModule,
+    AnalyticsModule,
     AdminModule,
     SandboxModule,
   ],
   controllers: [HealthController],
 })
 export class AppModule {}
+
 
 

@@ -71,6 +71,16 @@
 **Decision:** Ship Expo Router source for customer/driver apps; CI typechecks via lightweight RN/Expo shims so native toolchain is not required in GitHub Actions. EAS store builds remain out-of-band.  
 **Consequence:** Mobile UX is real code against the shared API; device binaries need local Expo/EAS.
 
+## D-015 — Transactional outbox + sandbox channels (2026-11-17)
+
+**Decision:** All OTP and booking lifecycle notices enqueue `OutboxEvent` rows, then deliver through sandbox SMS/email adapters with `SENT_SANDBOX` status and `liveDelivery: false`. Deduping uses unique `Notification.dedupeKey`.  
+**Consequence:** CI/local runnable without Twilio/SendGrid; worker drains via `WORKER_SECRET` — never invents live delivery success.
+
+## D-016 — Support inbox in-platform (2026-11-17)
+
+**Decision:** First-pass support is ticket + message tables with role-gated staff replies; no third-party helpdesk.  
+**Consequence:** Customers and support agents share one API surface; escalation tooling remains an owner decision.
+
 ## Open owner decisions (from PRD §19)
 
 - Legal entity / TGA / tourism authorizations

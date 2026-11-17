@@ -1,7 +1,7 @@
 # Project Status — Haramain Ride
 
 **Updated:** 2026-11-17  
-**Current milestone:** M6 (mobile apps) — ready for review
+**Current milestone:** M7 (notifications / support / analytics) — ready for review
 
 ## Merges
 
@@ -12,28 +12,31 @@
 | #4 M3 | `ccd1fd50997561c238c65019fe0fbd67edcdf009` |
 | #5 M4 | `c350c06857329cf1c69e2af9d5314b0393403326` |
 | #6 M5 | `0613259680004cbda1cec46b35b9d33ea17364e9` |
+| #7 M6 | `57f79fded09241b06137572138559c4ca1832fe2` |
 
 ## Milestone progress
 
 | Milestone | Status |
 |---|---|
-| M0–M5 | Merged to `main` |
-| M6 Customer + driver Expo apps | This PR |
-| M7+ | Not started |
+| M0–M6 | Merged to `main` |
+| M7 Notifications, support, analytics | This PR |
+| M8+ | Not started |
 
-## M6 verified
+## M7 verified
 
-- Expo Router customer app: login, tabs (Home/Trips/Help/Account), trip detail + location view
-- Expo Router driver app: login, assigned trips, status transitions, consented location share
-- APIs: `GET /bookings`, `GET /driver/trips`, location consent/sample endpoints
-- Location samples require consent + active trip; 24h expiry note
-- Mobile smoke test (booking → pay → assign → driver location → customer read)
-- 26 API tests passing; no live gateway/availability claims
+- Transactional outbox → Notification / NotificationTemplate (sandbox email/SMS adapters)
+- OTP request + booking lifecycle hooks (created / confirmed / status / driver assigned)
+- Support tickets + staff inbox; analytics event hooks + admin summary
+- BullMQ worker drains outbox via `POST /internal/outbox/process` (WORKER_SECRET)
+- Admin pages: `/support`, `/notifications`, `/analytics`
+- 31 API tests passing; `liveDelivery: false` / no live channel claims
 
 ## Run
 
 ```bash
 pnpm --filter @haramain/api prisma:migrate && pnpm --filter @haramain/api prisma:seed
 pnpm --filter @haramain/api test
-# Native: configure Expo toolchain, then `pnpm --filter @haramain/mobile-customer dev`
+pnpm --filter @haramain/api dev
+pnpm --filter @haramain/admin dev
+pnpm --filter @haramain/worker dev
 ```

@@ -1,6 +1,18 @@
 # Changelog
 
+## 0.7.0 — 2026-11-17
+
+### Added (M7)
+
+- Transactional notification outbox with sandbox email/SMS delivery
+- OTP request endpoint (sandbox debug code only)
+- Support tickets inbox + staff status updates
+- Analytics event hooks and admin summary
+- BullMQ worker outbox drain via worker secret
+- Admin UI: support, notifications, analytics
+
 ## 0.6.0 — 2026-11-17
+
 
 ### Added (M6)
 

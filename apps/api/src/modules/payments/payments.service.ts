@@ -22,12 +22,14 @@ import { PrismaService } from "../../prisma/prisma.service";
 import { OwnershipService } from "../ownership/ownership.service";
 import type { RequestUser } from "../auth/auth.types";
 import { assertTransition } from "../bookings/booking-state.machine";
+import { NotificationsService } from "../notifications/notifications.service";
 
 @Injectable()
 export class PaymentsService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(OwnershipService) private readonly ownership: OwnershipService,
+    @Inject(NotificationsService) private readonly notifications: NotificationsService,
   ) {}
 
   /**
@@ -160,7 +162,15 @@ export class PaymentsService {
       status: PaymentIntentStatus;
       sandboxRef: string;
       charges: { id: string }[];
-      booking: { id: string; status: BookingStatus; reference: string; totalHalalas: number; currency: string; priceSnapshot: unknown };
+      booking: {
+        id: string;
+        customerId: string;
+        status: BookingStatus;
+        reference: string;
+        totalHalalas: number;
+        currency: string;
+        priceSnapshot: unknown;
+      };
     },
     input: { gatewayEventId: string; type: string; sandboxRef: string; amountHalalas?: number },
   ) {
@@ -284,6 +294,18 @@ export class PaymentsService {
       }
 
       return { charge, invoice };
+    });
+
+    const customer = await this.prisma.user.findUnique({
+      where: { id: intent.booking.customerId },
+    });
+    await this.notifications.enqueue("notification.booking_confirmed", {
+      userId: intent.booking.customerId,
+      bookingId: intent.bookingId,
+      toEmail: customer?.email,
+      templateCode: "booking_confirmed",
+      vars: { reference: intent.booking.reference },
+      dedupeKey: `booking_confirmed:${intent.bookingId}`,
     });
 
     return {
