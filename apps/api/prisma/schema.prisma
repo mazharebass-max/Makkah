@@ -402,12 +402,155 @@ model Booking {
   updatedAt       DateTime      @updatedAt
   deletedAt       DateTime?
 
-  customer    User                 @relation(fields: [customerId], references: [id])
-  route       Route                @relation(fields: [routeId], references: [id])
-  category    VehicleCategory      @relation(fields: [categoryId], references: [id])
-  quote       Quote?               @relation(fields: [quoteId], references: [id])
-  statusEvents BookingStatusEvent[]
-  assignment  BookingAssignment?
+  customer       User                  @relation(fields: [customerId], references: [id])
+  route          Route                 @relation(fields: [routeId], references: [id])
+  category       VehicleCategory       @relation(fields: [categoryId], references: [id])
+  quote          Quote?                @relation(fields: [quoteId], references: [id])
+  statusEvents   BookingStatusEvent[]
+  assignment     BookingAssignment?
+  paymentIntents PaymentIntent[]
+  invoices       Invoice[]
+  ledgerEntries  LedgerEntry[]
+}
+
+enum PaymentIntentStatus {
+  REQUIRES_PAYMENT
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
+enum ChargeStatus {
+  CAPTURED
+  VOIDED
+}
+
+enum RefundStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+}
+
+enum LedgerEntryType {
+  CHARGE
+  REFUND
+  ADJUSTMENT
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  VOID
+}
+
+model PaymentIntent {
+  id              String              @id @default(uuid()) @db.Uuid
+  bookingId       String              @db.Uuid
+  amountHalalas   Int
+  currency        String              @default("SAR")
+  status          PaymentIntentStatus @default(REQUIRES_PAYMENT)
+  sandboxRef      String              @unique
+  idempotencyKey  String              @unique
+  mode            String              @default("sandbox")
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  booking  Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  events   PaymentEvent[]
+  charges  Charge[]
+
+  @@index([bookingId])
+}
+
+model PaymentEvent {
+  id             String   @id @default(uuid()) @db.Uuid
+  gatewayEventId String   @unique
+  intentId       String   @db.Uuid
+  type           String
+  payload        Json
+  processedAt    DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  intent PaymentIntent @relation(fields: [intentId], references: [id], onDelete: Cascade)
+
+  @@index([intentId, type])
+}
+
+model Charge {
+  id            String       @id @default(uuid()) @db.Uuid
+  intentId      String       @db.Uuid
+  amountHalalas Int
+  currency      String       @default("SAR")
+  status        ChargeStatus @default(CAPTURED)
+  sandboxRef    String       @unique
+  createdAt     DateTime     @default(now())
+
+  intent  PaymentIntent @relation(fields: [intentId], references: [id], onDelete: Cascade)
+  refunds Refund[]
+}
+
+model Refund {
+  id            String       @id @default(uuid()) @db.Uuid
+  chargeId      String       @db.Uuid
+  bookingId     String       @db.Uuid
+  amountHalalas Int
+  currency      String       @default("SAR")
+  status        RefundStatus @default(PENDING)
+  reason        String?
+  sandboxRef    String       @unique
+  mode          String       @default("sandbox")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  charge Charge @relation(fields: [chargeId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+}
+
+model LedgerEntry {
+  id              String          @id @default(uuid()) @db.Uuid
+  bookingId       String?         @db.Uuid
+  paymentIntentId String?         @db.Uuid
+  refundId        String?         @db.Uuid
+  type            LedgerEntryType
+  amountHalalas   Int
+  currency        String          @default("SAR")
+  note            String?
+  /// Immutable row — never update amounts after insert
+  createdAt       DateTime        @default(now())
+
+  booking Booking? @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId, createdAt])
+  @@index([type, createdAt])
+}
+
+model Invoice {
+  id            String        @id @default(uuid()) @db.Uuid
+  bookingId     String        @db.Uuid
+  number        String        @unique
+  currency      String        @default("SAR")
+  totalHalalas  Int
+  status        InvoiceStatus @default(DRAFT)
+  /// DRAFT — ZATCA / VAT treatment requires owner + tax adviser
+  draftLabel    String        @default("DRAFT — OWNER APPROVAL REQUIRED")
+  issuedAt      DateTime?
+  createdAt     DateTime      @default(now())
+
+  booking Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  lines   InvoiceLine[]
+
+  @@index([bookingId])
+}
+
+model InvoiceLine {
+  id            String @id @default(uuid()) @db.Uuid
+  invoiceId     String @db.Uuid
+  label         String
+  amountHalalas Int
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 }
 
 model BookingStatusEvent {

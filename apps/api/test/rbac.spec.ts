@@ -94,10 +94,12 @@ describe("RBAC & auth security", () => {
       .send({ email: "customer@haramain.local", password: "CustomerDev!234" });
     const token = login.body.accessToken as string;
     const res = await request(app.getHttpServer())
-      .post("/api/v1/payments/checkout")
+      .post("/api/v1/sandbox/payments/checkout")
       .set("Authorization", `Bearer ${token}`)
       .send({ amountHalalas: 10000 });
     expect(res.status).toBe(201);
     expect(res.body.mode).toBe("sandbox");
+    expect(String(res.body.message)).toMatch(/not a live/i);
   });
 });
+

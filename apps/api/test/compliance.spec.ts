@@ -28,6 +28,25 @@ describe("M4 provider compliance + isolation", () => {
       new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }),
     );
     await app.init();
+    // Reset seed providers to APPLIED so approval-path tests are deterministic
+    const { PrismaService } = await import("../src/prisma/prisma.service");
+    const { ProviderStatus } = await import("@prisma/client");
+    const prisma = app.get(PrismaService);
+    await prisma.provider.updateMany({
+      where: {
+        id: {
+          in: [
+            "00000000-0000-4000-8000-000000000020",
+            "00000000-0000-4000-8000-000000000021",
+          ],
+        },
+      },
+      data: {
+        status: ProviderStatus.APPLIED,
+        suspensionReason: null,
+        suspendedAt: null,
+      },
+    });
   });
 
   afterAll(async () => {

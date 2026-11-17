@@ -120,8 +120,10 @@ describe("Search / quote / checkout draft", () => {
     const pay = await request(app.getHttpServer())
       .post("/api/v1/payments/checkout")
       .set("Authorization", `Bearer ${token}`)
-      .send({ amountHalalas: booked.body.booking.totalHalalas });
+      .send({ bookingId: booked.body.booking.id });
     expect(pay.status).toBe(201);
     expect(pay.body.mode).toBe("sandbox");
+    expect(pay.body.liveCapture).toBe(false);
   });
 });
+
