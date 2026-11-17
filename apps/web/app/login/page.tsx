@@ -1,11 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Input, PublicShell } from "@haramain/ui";
-
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
+import { useSearchParams } from "next/navigation";
+import { Button, Input } from "@haramain/ui";
+import { SiteChrome } from "../../components/SiteChrome";
+import { API } from "../../lib/api";
+import { t, type Locale } from "../../lib/i18n";
 
 export default function LoginPage() {
+  const params = useSearchParams();
+  const locale: Locale = params.get("lang") === "ar" ? "ar" : "en";
   const [email, setEmail] = useState("customer@haramain.local");
   const [password, setPassword] = useState("CustomerDev!234");
   const [message, setMessage] = useState<string | null>(null);
@@ -30,7 +34,7 @@ export default function LoginPage() {
   }
 
   return (
-    <PublicShell>
+    <SiteChrome locale={locale}>
       <form
         onSubmit={onSubmit}
         style={{
@@ -43,7 +47,7 @@ export default function LoginPage() {
           boxShadow: "0 12px 40px rgba(11,31,58,0.08)",
         }}
       >
-        <h1 style={{ margin: 0, fontSize: 28 }}>Customer sign in</h1>
+        <h1 style={{ margin: 0, fontSize: 28 }}>{t(locale, "signIn")}</h1>
         <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <Input
           label="Password"
@@ -51,10 +55,14 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        {error ? <p role="alert" style={{ color: "#B42318", margin: 0 }}>{error}</p> : null}
+        {error ? (
+          <p role="alert" style={{ color: "#B42318", margin: 0 }}>
+            {error}
+          </p>
+        ) : null}
         {message ? <p style={{ color: "#087F6D", margin: 0 }}>{message}</p> : null}
-        <Button type="submit">Sign in</Button>
+        <Button type="submit">{t(locale, "signIn")}</Button>
       </form>
-    </PublicShell>
+    </SiteChrome>
   );
 }

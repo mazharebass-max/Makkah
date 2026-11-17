@@ -327,6 +327,9 @@ model Quote {
   totalHalalas    Int
   expiresAt       DateTime
   pricingVersion  Int?
+  scheduledAt     DateTime
+  passengers      Int      @default(1)
+  luggage         Int      @default(0)
   createdAt       DateTime @default(now())
 
   route    Route           @relation(fields: [routeId], references: [id])
