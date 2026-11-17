@@ -81,6 +81,16 @@
 **Decision:** First-pass support is ticket + message tables with role-gated staff replies; no third-party helpdesk.  
 **Consequence:** Customers and support agents share one API surface; escalation tooling remains an owner decision.
 
+## D-017 — Go-live hard lock until written sign-offs (2026-11-17)
+
+**Decision:** `GO_LIVE_LOCKED=true` by default; `ALLOW_LIVE_PAYMENTS` / `ALLOW_LIVE_PROVIDERS` default false. Ops readiness APIs always report `productionGoLive: false` and `regulatoryClearance: false` until a future process change backed by owner signatures in `COMPLIANCE_GATE.md`.  
+**Consequence:** Staging can be hardened and probed without inventing legal clearance or live ops.
+
+## D-018 — Baseline security headers + rate limits in-app (2026-11-17)
+
+**Decision:** Ship CSP/frame/nosniff headers and Redis/memory auth rate limits in the API for M8; treat CDN/WAF, secrets manager, admin MFA, and external pen test as owner/partner follow-ups.  
+**Consequence:** CI-verifiable baseline without claiming full ASVS or production hardening complete.
+
 ## Open owner decisions (from PRD §19)
 
 - Legal entity / TGA / tourism authorizations

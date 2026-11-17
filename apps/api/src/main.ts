@@ -40,19 +40,32 @@ async function bootstrap() {
     }),
   );
 
-  if (env.NODE_ENV !== "production") {
+  const appEnv = process.env.APP_ENV ?? env.NODE_ENV;
+  const swaggerAllowed = env.NODE_ENV !== "production" && appEnv !== "staging";
+  if (swaggerAllowed) {
     const config = new DocumentBuilder()
       .setTitle("Haramain Ride API")
-      .setDescription("Production modular monolith — sandbox adapters in M1")
-      .setVersion("0.1.0")
+      .setDescription(
+        "Modular monolith — sandbox adapters only until compliance gate sign-off. Not live ops.",
+      )
+      .setVersion("0.8.0")
       .addBearerAuth()
       .build();
     SwaggerModule.setup("api/docs", app, SwaggerModule.createDocument(app, config));
   }
 
+  if (env.ALLOW_LIVE_PAYMENTS || env.ALLOW_LIVE_PROVIDERS) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "[haramain] ALLOW_LIVE_* flags set — compliance gate still unsigned; do not claim go-live",
+    );
+  }
+
   await app.listen(env.API_PORT, "0.0.0.0");
   // eslint-disable-next-line no-console
-  console.log(`API listening on http://localhost:${env.API_PORT}/api/v1`);
+  console.log(
+    `API listening on http://localhost:${env.API_PORT}/api/v1 (appEnv=${appEnv}, liveOps=false)`,
+  );
 }
 
 bootstrap();

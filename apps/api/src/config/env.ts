@@ -7,6 +7,7 @@ dotenv();
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  APP_ENV: z.enum(["development", "test", "staging", "production"]).optional(),
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().default("redis://127.0.0.1:6379"),
   JWT_ACCESS_SECRET: z.string().min(16),
@@ -20,6 +21,21 @@ const envSchema = z.object({
   SMS_PROVIDER: z.string().default("sandbox"),
   EMAIL_PROVIDER: z.string().default("sandbox"),
   PAYMENT_WEBHOOK_SECRET: z.string().default("dev-webhook-secret"),
+  WORKER_SECRET: z.string().default("dev-worker-secret"),
+  GO_LIVE_LOCKED: z
+    .string()
+    .default("true")
+    .transform((v) => v !== "false"),
+  ALLOW_LIVE_PAYMENTS: z
+    .string()
+    .default("false")
+    .transform((v) => v === "true"),
+  ALLOW_LIVE_PROVIDERS: z
+    .string()
+    .default("false")
+    .transform((v) => v === "true"),
+  AUTH_RATE_LIMIT: z.coerce.number().default(30),
+  AUTH_RATE_WINDOW_SEC: z.coerce.number().default(60),
 });
 
 export type Env = z.infer<typeof envSchema>;

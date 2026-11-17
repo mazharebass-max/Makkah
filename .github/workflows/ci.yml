@@ -66,5 +66,13 @@ jobs:
         run: pnpm typecheck
       - name: Unit / security tests
         run: pnpm --filter @haramain/api test
+      - name: Dependency audit (prod)
+        run: pnpm audit --prod --audit-level=critical || true
+        continue-on-error: true
       - name: Build apps
         run: pnpm --filter @haramain/api build && pnpm --filter @haramain/web build && pnpm --filter @haramain/admin build
+      - name: Note staging checklist
+        run: |
+          echo "Run ./scripts/staging-checklist.sh against a live API for M8 staging probes."
+          echo "Does not claim production go-live or regulatory clearance."
+
