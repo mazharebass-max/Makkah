@@ -1,7 +1,7 @@
 # Project Status — Haramain Ride
 
 **Updated:** 2026-11-17  
-**Current milestone:** M8 (staging hardening) — ready for review
+**Current milestone:** M8 complete (merged). Go-live **blocked** — compliance gate unsigned.
 
 ## Merges
 
@@ -14,24 +14,22 @@
 | #6 M5 | `0613259680004cbda1cec46b35b9d33ea17364e9` |
 | #7 M6 | `57f79fded09241b06137572138559c4ca1832fe2` |
 | #8 M7 | `6787430ca3b281e4084894ccedee1afb138a8ba4` |
+| #9 M8 | `77f8cc4b52b9cb2cd5c43657159e19fef936dda8` |
 
 ## Milestone progress
 
 | Milestone | Status |
 |---|---|
-| M0–M7 | Merged to `main` |
-| M8 Staging hardening / security-ops / runbooks | This PR |
-| Go-live | **Blocked** — compliance gate unsigned |
+| M0–M8 | Merged to `main` |
+| Go-live / regulatory clearance | **Blocked** — owner written sign-offs required (`docs/COMPLIANCE_GATE.md`) |
 
-## M8 verified
+## M8 on main
 
-- Security headers + auth/OTP rate limits; readiness vs liveness probes
-- Ops APIs: `/ops/readiness`, admin compliance gate + security checklist (always `productionGoLive: false`, `regulatoryClearance: false`)
-- Admin **Ops / Gate** page
-- Repo docs: `docs/SECURITY.md`, `DEPLOYMENT.md`, `COMPLIANCE_GATE.md`, runbooks
-- Scripts: `staging-checklist.sh`, `backup-dry-run.sh`
-- CI dependency audit note; API ops tests
-- **No** live regulatory clearance or production go-live claims
+- Staging hardening, ops readiness / compliance gate / security checklist APIs
+- Always `productionGoLive: false`, `regulatoryClearance: false`, `liveOps: false`
+- Security headers, auth/OTP rate limits, liveness + readiness probes
+- Admin Ops / Gate UI; runbooks under `docs/runbooks/`
+- **No** production go-live or regulatory clearance claimed
 
 ## Run
 
