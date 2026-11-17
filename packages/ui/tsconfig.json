@@ -1,0 +1,13 @@
+{
+  "extends": "@haramain/tsconfig/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "declaration": true
+  },
+  "include": ["src/**/*"]
+}

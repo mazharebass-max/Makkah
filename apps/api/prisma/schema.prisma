@@ -1,0 +1,421 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+  PENDING
+}
+
+enum FleetOwnership {
+  OWNED
+  THIRD_PARTY
+}
+
+enum ProviderStatus {
+  APPLIED
+  IN_REVIEW
+  NEEDS_INFORMATION
+  APPROVED
+  SUSPENDED
+  REJECTED
+}
+
+enum DocumentReviewState {
+  SUBMITTED
+  IN_REVIEW
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum BookingStatus {
+  DRAFT
+  QUOTED
+  PENDING_PAYMENT
+  CONFIRMED
+  ASSIGNMENT_PENDING
+  ASSIGNED
+  DRIVER_EN_ROUTE
+  ARRIVED
+  IN_PROGRESS
+  COMPLETED
+  PAYMENT_FAILED
+  EXPIRED
+  CANCEL_REQUESTED
+  CANCELLED
+  NO_SHOW
+  DISPUTED
+  REFUND_PENDING
+  REFUNDED
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  email        String     @unique
+  passwordHash String
+  status       UserStatus @default(ACTIVE)
+  locale       String     @default("en")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  deletedAt    DateTime?
+
+  identities       UserIdentity[]
+  roleAssignments  RoleAssignment[]
+  sessions         Session[]
+  customerProfile  CustomerProfile?
+  auditEvents      AuditEvent[]     @relation("AuditActor")
+  bookings         Booking[]
+  provider         Provider?
+  driver           Driver?
+}
+
+model UserIdentity {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  provider   String
+  subject    String
+  verifiedAt DateTime?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, subject])
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  code        String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  permissions RolePermission[]
+  assignments RoleAssignment[]
+}
+
+model Permission {
+  id          String   @id @default(uuid()) @db.Uuid
+  code        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  roles RolePermission[]
+}
+
+model RolePermission {
+  roleId       String @db.Uuid
+  permissionId String @db.Uuid
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model RoleAssignment {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  roleId     String    @db.Uuid
+  providerId String?   @db.Uuid
+  createdAt  DateTime  @default(now())
+  revokedAt  DateTime?
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role     Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  provider Provider? @relation(fields: [providerId], references: [id])
+
+  @@index([userId])
+}
+
+model Session {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @db.Uuid
+  refreshTokenHash String
+  userAgent        String?
+  ip               String?
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  createdAt        DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CustomerProfile {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @unique @db.Uuid
+  displayName String?
+  phoneE164   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AuditEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  actorId    String?  @db.Uuid
+  action     String
+  resource   String
+  resourceId String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([action, createdAt])
+}
+
+model Provider {
+  id               String         @id @default(uuid()) @db.Uuid
+  userId           String?        @unique @db.Uuid
+  legalName        String
+  tradeName        String?
+  registrationNo   String?
+  status           ProviderStatus @default(APPLIED)
+  ownership        FleetOwnership @default(THIRD_PARTY)
+  /// DRAFT label for operational notes — never invent verified licences
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  user            User?             @relation(fields: [userId], references: [id])
+  documents       ProviderDocument[]
+  drivers         Driver[]
+  vehicles        Vehicle[]
+  roleAssignments RoleAssignment[]
+  assignments     BookingAssignment[]
+}
+
+model ProviderDocument {
+  id           String              @id @default(uuid()) @db.Uuid
+  providerId   String              @db.Uuid
+  docType      String
+  storageKey   String
+  expiresAt    DateTime?
+  reviewState  DocumentReviewState @default(SUBMITTED)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+}
+
+model Driver {
+  id           String         @id @default(uuid()) @db.Uuid
+  userId       String?        @unique @db.Uuid
+  providerId   String?        @db.Uuid
+  ownership    FleetOwnership @default(OWNED)
+  displayName  String
+  phoneE164    String?
+  active       Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  user       User?               @relation(fields: [userId], references: [id])
+  provider   Provider?           @relation(fields: [providerId], references: [id])
+  assignments BookingAssignment[]
+}
+
+model Vehicle {
+  id              String         @id @default(uuid()) @db.Uuid
+  providerId      String?        @db.Uuid
+  ownership       FleetOwnership @default(OWNED)
+  categoryId      String?        @db.Uuid
+  plateNumber     String
+  makeModel       String
+  modelYear       Int?
+  passengerCap    Int
+  luggageCap      Int            @default(0)
+  active          Boolean        @default(true)
+  /// Never claim live availability outside synthetic inventory
+  availabilityNote String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  provider   Provider?           @relation(fields: [providerId], references: [id])
+  category   VehicleCategory?    @relation(fields: [categoryId], references: [id])
+  assignments BookingAssignment[]
+}
+
+model ServiceZone {
+  id        String   @id @default(uuid()) @db.Uuid
+  code      String   @unique
+  nameEn    String
+  nameAr    String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  routesFrom Route[] @relation("RouteFrom")
+  routesTo   Route[] @relation("RouteTo")
+}
+
+model Route {
+  id           String   @id @default(uuid()) @db.Uuid
+  code         String   @unique
+  nameEn       String
+  nameAr       String?
+  fromZoneId   String   @db.Uuid
+  toZoneId     String   @db.Uuid
+  active       Boolean  @default(true)
+  /// DRAFT — OWNER APPROVAL REQUIRED
+  draftLabel   String   @default("DRAFT — OWNER APPROVAL REQUIRED")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  fromZone ServiceZone @relation("RouteFrom", fields: [fromZoneId], references: [id])
+  toZone   ServiceZone @relation("RouteTo", fields: [toZoneId], references: [id])
+  quotes   Quote[]
+  bookings Booking[]
+}
+
+model VehicleCategory {
+  id            String   @id @default(uuid()) @db.Uuid
+  code          String   @unique
+  nameEn        String
+  nameAr        String?
+  passengerCap  Int
+  luggageCap    Int
+  active        Boolean  @default(true)
+  draftLabel    String   @default("DRAFT — OWNER APPROVAL REQUIRED")
+  createdAt     DateTime @default(now())
+
+  vehicles Vehicle[]
+  quotes   Quote[]
+  bookings Booking[]
+  pricing  PricingRule[]
+}
+
+model PricingRule {
+  id         String   @id @default(uuid()) @db.Uuid
+  categoryId String   @db.Uuid
+  name       String
+  active     Boolean  @default(true)
+  draftLabel String   @default("DRAFT — OWNER APPROVAL REQUIRED")
+  createdAt  DateTime @default(now())
+
+  category VehicleCategory     @relation(fields: [categoryId], references: [id])
+  versions PricingRuleVersion[]
+}
+
+model PricingRuleVersion {
+  id            String   @id @default(uuid()) @db.Uuid
+  pricingRuleId String   @db.Uuid
+  version       Int
+  baseHalalas   Int
+  currency      String   @default("SAR")
+  effectiveFrom DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  pricingRule PricingRule @relation(fields: [pricingRuleId], references: [id], onDelete: Cascade)
+
+  @@unique([pricingRuleId, version])
+}
+
+model Quote {
+  id              String   @id @default(uuid()) @db.Uuid
+  routeId         String   @db.Uuid
+  categoryId      String   @db.Uuid
+  currency        String   @default("SAR")
+  totalHalalas    Int
+  expiresAt       DateTime
+  pricingVersion  Int?
+  createdAt       DateTime @default(now())
+
+  route    Route           @relation(fields: [routeId], references: [id])
+  category VehicleCategory @relation(fields: [categoryId], references: [id])
+  lines    QuoteLine[]
+  bookings Booking[]
+}
+
+model QuoteLine {
+  id          String @id @default(uuid()) @db.Uuid
+  quoteId     String @db.Uuid
+  label       String
+  amountHalalas Int
+
+  quote Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+}
+
+model Booking {
+  id              String        @id @default(uuid()) @db.Uuid
+  reference       String        @unique
+  customerId      String        @db.Uuid
+  routeId         String        @db.Uuid
+  categoryId      String        @db.Uuid
+  quoteId         String?       @db.Uuid
+  status          BookingStatus @default(DRAFT)
+  scheduledAt     DateTime
+  passengerCount  Int
+  luggageCount    Int           @default(0)
+  currency        String        @default("SAR")
+  totalHalalas    Int
+  priceSnapshot   Json?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  deletedAt       DateTime?
+
+  customer    User                 @relation(fields: [customerId], references: [id])
+  route       Route                @relation(fields: [routeId], references: [id])
+  category    VehicleCategory      @relation(fields: [categoryId], references: [id])
+  quote       Quote?               @relation(fields: [quoteId], references: [id])
+  statusEvents BookingStatusEvent[]
+  assignment  BookingAssignment?
+}
+
+model BookingStatusEvent {
+  id         String        @id @default(uuid()) @db.Uuid
+  bookingId  String        @db.Uuid
+  fromStatus BookingStatus?
+  toStatus   BookingStatus
+  actorId    String?       @db.Uuid
+  note       String?
+  createdAt  DateTime      @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+model BookingAssignment {
+  id         String   @id @default(uuid()) @db.Uuid
+  bookingId  String   @unique @db.Uuid
+  driverId   String?  @db.Uuid
+  vehicleId  String?  @db.Uuid
+  providerId String?  @db.Uuid
+  startsAt   DateTime
+  endsAt     DateTime
+  createdAt  DateTime @default(now())
+
+  booking  Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  driver   Driver?   @relation(fields: [driverId], references: [id])
+  vehicle  Vehicle?  @relation(fields: [vehicleId], references: [id])
+  provider Provider? @relation(fields: [providerId], references: [id])
+
+  @@index([vehicleId, startsAt, endsAt])
+  @@index([driverId, startsAt, endsAt])
+}
+
+model IdempotencyKey {
+  id        String   @id @default(uuid()) @db.Uuid
+  key       String   @unique
+  userId    String?  @db.Uuid
+  response  Json?
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+model OutboxEvent {
+  id          String    @id @default(uuid()) @db.Uuid
+  type        String
+  payload     Json
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+
+  @@index([processedAt, createdAt])
+}

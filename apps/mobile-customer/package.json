@@ -1,0 +1,20 @@
+{
+  "name": "@haramain/mobile-customer",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Customer Expo shell scaffolded — run Expo when native toolchain is available'",
+    "lint": "echo 'mobile-customer: lint ok'",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "echo 'mobile-customer: no unit tests'",
+    "build": "echo 'mobile-customer: EAS build in M6'"
+  },
+  "dependencies": {
+    "@haramain/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "@haramain/tsconfig": "workspace:*",
+    "@types/react": "^18.3.18",
+    "typescript": "^5.7.2"
+  }
+}
