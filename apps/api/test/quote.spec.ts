@@ -5,6 +5,7 @@ import request from "supertest";
 import cookieParser from "cookie-parser";
 import { AppModule } from "../src/app.module";
 import { loadEnv } from "../src/config/env";
+import { PrismaService } from "../src/prisma/prisma.service";
 
 function futureIso(hoursFromNow = 48) {
   return new Date(Date.now() + hoursFromNow * 3600_000).toISOString();
@@ -24,6 +25,11 @@ describe("Search / quote / checkout draft", () => {
       new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }),
     );
     await app.init();
+    const prisma = app.get(PrismaService);
+    await prisma.availabilityHold.updateMany({
+      where: { releasedAt: null },
+      data: { releasedAt: new Date() },
+    });
   });
 
   afterAll(async () => {

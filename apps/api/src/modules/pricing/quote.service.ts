@@ -4,10 +4,11 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { BookingStatus, FleetOwnership, ProviderStatus } from "@prisma/client";
+import { BookingStatus } from "@prisma/client";
 import { randomBytes } from "node:crypto";
 import type { CreateBookingInput, CreateQuoteInput, SearchAvailabilityInput } from "@haramain/contracts";
 import { PrismaService } from "../../prisma/prisma.service";
+import { AvailabilityService } from "../bookings/availability.service";
 import {
   buildQuoteLines,
   DRAFT_CANCELLATION_POLICY,
@@ -18,7 +19,10 @@ const QUOTE_TTL_MS = 30 * 60 * 1000;
 
 @Injectable()
 export class QuoteService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(AvailabilityService) private readonly availability: AvailabilityService,
+  ) {}
 
   private parseSchedule(raw: string): Date {
     const d = new Date(raw);
@@ -45,46 +49,16 @@ export class QuoteService {
     return route;
   }
 
-  /**
-   * Eligible inventory: active OWNED vehicles, or THIRD_PARTY only under APPROVED providers.
-   * Never invent availability; APPLIED providers do not count.
-   */
   async countAvailableVehicles(input: {
     categoryId: string;
     passengerCapMin: number;
     luggageCapMin: number;
     startsAt: Date;
     endsAt: Date;
+    excludeQuoteId?: string;
   }) {
-    const candidates = await this.prisma.vehicle.findMany({
-      where: {
-        active: true,
-        categoryId: input.categoryId,
-        passengerCap: { gte: input.passengerCapMin },
-        luggageCap: { gte: input.luggageCapMin },
-        OR: [
-          { ownership: FleetOwnership.OWNED },
-          {
-            ownership: FleetOwnership.THIRD_PARTY,
-            provider: { status: ProviderStatus.APPROVED },
-          },
-        ],
-      },
-      select: { id: true },
-    });
-    if (candidates.length === 0) return 0;
-
-    const ids = candidates.map((v) => v.id);
-    const conflicts = await this.prisma.bookingAssignment.findMany({
-      where: {
-        vehicleId: { in: ids },
-        startsAt: { lt: input.endsAt },
-        endsAt: { gt: input.startsAt },
-      },
-      select: { vehicleId: true },
-    });
-    const busy = new Set(conflicts.map((c) => c.vehicleId).filter(Boolean) as string[]);
-    return ids.filter((id) => !busy.has(id)).length;
+    await this.availability.releaseExpiredHolds();
+    return this.availability.countAvailable(input);
   }
 
   async search(input: SearchAvailabilityInput) {
@@ -243,13 +217,14 @@ export class QuoteService {
       currency: version.currency,
     });
 
+    const expiresAt = new Date(Date.now() + QUOTE_TTL_MS);
     const quote = await this.prisma.quote.create({
       data: {
         routeId: route.id,
         categoryId: category.id,
         currency: priced.currency,
         totalHalalas: priced.totalHalalas,
-        expiresAt: new Date(Date.now() + QUOTE_TTL_MS),
+        expiresAt,
         pricingVersion: version.version,
         scheduledAt,
         passengers,
@@ -262,6 +237,15 @@ export class QuoteService {
         },
       },
       include: { lines: true, route: true, category: true },
+    });
+
+    // Soft category hold until quote expiry — reduces availableCount for others
+    await this.availability.createHold({
+      categoryId: category.id,
+      quoteId: quote.id,
+      startsAt: scheduledAt,
+      endsAt,
+      expiresAt,
     });
 
     return {
@@ -363,6 +347,7 @@ export class QuoteService {
       luggageCapMin: quote.luggage,
       startsAt: quote.scheduledAt,
       endsAt,
+      excludeQuoteId: quote.id,
     });
     if (availableCount < 1) {
       throw new BadRequestException({
@@ -407,6 +392,15 @@ export class QuoteService {
             note: "Checkout draft created — sandbox payment only",
           },
         },
+      },
+    });
+
+    // Attach hold to booking and extend briefly for checkout
+    await this.prisma.availabilityHold.updateMany({
+      where: { quoteId: quote.id, releasedAt: null },
+      data: {
+        bookingId: booking.id,
+        expiresAt: new Date(Date.now() + QUOTE_TTL_MS),
       },
     });
 

@@ -30,27 +30,6 @@ export class AdminController {
     return { data: bookings };
   }
 
-  @Post("bookings/:id/assign")
-  @Roles(RoleCode.SUPER_ADMIN, RoleCode.FLEET_DISPATCHER)
-  async assign(@Param("id") id: string, @Req() req: AuthedRequest) {
-    await this.ownership.assertBookingAccess(req.user!, id);
-    await this.prisma.auditEvent.create({
-      data: {
-        actorId: req.user!.id,
-        action: "admin.booking.assign_stub",
-        resource: "booking",
-        resourceId: id,
-        metadata: { note: "M1 stub — concurrency-safe assign lands in M3" },
-      },
-    });
-    return {
-      ok: true,
-      mode: "stub",
-      message: "Assignment endpoint authenticated; full dispatch in M3",
-      bookingId: id,
-    };
-  }
-
   @Post("providers/:id/review")
   @Roles(RoleCode.SUPER_ADMIN, RoleCode.COMPLIANCE_OFFICER)
   async reviewProvider(@Param("id") id: string, @Req() req: AuthedRequest) {

@@ -1,49 +1,43 @@
 # Project Status — Haramain Ride
 
 **Updated:** 2026-11-17  
-**Current milestone:** M2 (public search / quote / checkout UI) — ready for review
+**Current milestone:** M3 (booking SM + dispatch) — ready for review
 
-## Repository assumption
+## Merges
 
-Greenfield on `mazharebass-max/Makkah`. No legacy MVP data. M1 lives on PR #1; M2 stacks on that branch until merge.
+| PR | Merge commit |
+|---|---|
+| #1 M1 foundation | `2c3226c643491f61b134188cbfe9e1e0235c53c8` |
+| #2 M2 search/checkout | `d9065f564f0e7e0eafa402a6b97e47cf11c01bc8` |
 
 ## Milestone progress
 
 | Milestone | Status | Notes |
 |---|---|---|
-| M0 Audit / architecture | Done | Project `docs/` |
-| M1 Monorepo, auth, RBAC, Postgres, CI, design system | Done (PR #1, CI green) | Foundation |
-| M2 Public site, search, catalog, quote, checkout UI | Done (this PR) | EN/AR RTL + responsive screenshots in `media/m2/` |
-| M3+ | Not started | Booking SM, dispatch concurrency |
+| M0 / M1 / M2 | Merged to `main` | PRs #1 and #2 |
+| M3 Booking SM, holds, concurrency-safe dispatch, owned fleet | This PR | Tests green locally |
+| M4+ | Not started | Provider compliance, etc. |
 
-## M2 verified
+## M3 verified
 
-- Launch corridors seeded: JED↔Makkah, Jeddah↔Makkah, Makkah↔Madinah, MED↔Madinah
-- `GET /api/v1/search` — capacity + **DB inventory** (owned / approved-provider only); COACH shows honest `NO_INVENTORY`
-- `POST /api/v1/quotes` — itemized draft pricing + cancellation policy placeholders
-- `POST /api/v1/bookings` — auth required → `PENDING_PAYMENT`; sandbox payment checkout only
-- Public web: landing booking widget, search results, checkout (login gate), `?lang=ar` RTL
-- Tests: 14 passing (RBAC + pricing math + quote/search/checkout)
+- Booking state machine with allowed transitions
+- Availability holds on quotes (count against inventory; self-hold excluded at checkout)
+- Postgres exclusion constraint + serializable tx + advisory locks on assign
+- Sandbox payment confirm → `CONFIRMED` → `ASSIGNMENT_PENDING` (never live gateway)
+- Owned-fleet list/activate APIs + admin dispatch UI
+- 18 API tests passing
 
-## Run commands
+## Run
 
 ```bash
-docker compose up -d
 ./scripts/setup.sh
 pnpm --filter @haramain/api prisma:migrate
 pnpm --filter @haramain/api prisma:seed
 pnpm --filter @haramain/api dev
-pnpm --filter @haramain/web dev
+pnpm --filter @haramain/admin dev
 pnpm --filter @haramain/api test
 ```
 
-## Dev credentials (seed)
+## Remaining after M3
 
-| Email | Password |
-|---|---|
-| customer@haramain.local | CustomerDev!234 |
-| admin@haramain.local | AdminDev!23456 |
-
-## Remaining for M3
-
-Booking state machine transitions, concurrency-safe dispatch/assignment, owned-fleet ops depth, quote hold/expiry jobs.
+Provider/driver compliance verification (M4), full finance ledger (M5), mobile apps (M6).
