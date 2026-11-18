@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useId, useState, type CSSProperties, type ReactNode } from "react";
+import { Suspense, useEffect, useId, useState, type CSSProperties, type ReactNode } from "react";
 import { PublicShell } from "@haramain/ui";
 import { BrandLockup } from "./BrandLogo";
 import { dirFor, otherLocale, t, type Locale } from "../lib/i18n";
@@ -35,7 +35,7 @@ function WhatsAppIcon({ size = 16 }: { size?: number }) {
   );
 }
 
-export function SiteChrome({
+function SiteChromeInner({
   locale,
   children,
 }: {
@@ -543,5 +543,21 @@ export function SiteChrome({
         </a>
       ) : null}
     </div>
+  );
+}
+
+function SiteChromeFallback({ locale, children }: { locale: Locale; children: ReactNode }) {
+  return (
+    <div dir={dirFor(locale)} lang={locale}>
+      <PublicShell locale={locale}>{children}</PublicShell>
+    </div>
+  );
+}
+
+export function SiteChrome({ locale, children }: { locale: Locale; children: ReactNode }) {
+  return (
+    <Suspense fallback={<SiteChromeFallback locale={locale}>{children}</SiteChromeFallback>}>
+      <SiteChromeInner locale={locale}>{children}</SiteChromeInner>
+    </Suspense>
   );
 }

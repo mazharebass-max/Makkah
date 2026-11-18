@@ -3,6 +3,9 @@ import { Suspense } from "react";
 import "@haramain/ui/styles.css";
 import { siteUrl } from "../lib/seo";
 
+/** Booking + lang query chrome uses search params across the tree. */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: {
