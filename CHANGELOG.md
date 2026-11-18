@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.9.0 — 2026-11-18
+
+### Added (Fresh F1 — customer web journey + SEO)
+
+- `POST /api/v1/payments/sandbox/complete` — authenticated sandbox capture via ledger path (never live)
+- Web confirmation, my trips, trip detail, legal (terms/privacy/cancellation), provider application pages
+- Customer session token helper for trip pages
+- Payment integration test for sandbox UI complete + idempotent retry
+- Public SEO: App Router `generateMetadata` (EN/AR) with Open Graph, Twitter, canonical, hreflang
+- `robots.ts` + `sitemap.ts`; Organization / Service / FAQ JSON-LD (no fake ratings or availability)
+- Footer + brand home link; `noindex` for login/checkout/confirmation/trips
+- `NEXT_PUBLIC_SITE_URL` for canonical/sitemap base
+
+### Fixed
+
+- Web checkout previously sent `{ amountHalalas }` to payments checkout; now sends required `{ bookingId }` and completes sandbox payment
+
+### Explicit non-claims
+
+- Sandbox only — no live gateway capture, no regulatory clearance, no verified licences
+- Meta/structured data do not claim live licensed operations
+
 ## 0.8.0 — 2026-11-17
 
 ### Added (M8)

@@ -1,10 +1,40 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import "@haramain/ui/styles.css";
+import { siteUrl } from "../lib/seo";
 
 export const metadata: Metadata = {
-  title: "Haramain Ride",
-  description: "Premium pilgrim and tourism ground transport — Jeddah, Makkah, Madinah",
+  metadataBase: new URL(siteUrl()),
+  title: {
+    default: "Haramain Ride — Premium pilgrim ground transport",
+    template: "%s · Haramain Ride",
+  },
+  description:
+    "Pilot booking platform for private transfers across Jeddah, Makkah and Madinah. Not live licensed operations until compliance sign-off.",
+  applicationName: "Haramain Ride",
+  keywords: [
+    "Haramain Ride",
+    "Jeddah",
+    "Makkah",
+    "Madinah",
+    "pilgrim transport",
+    "airport transfer",
+    "Saudi Arabia",
+  ],
+  authors: [{ name: "Haramain Ride" }],
+  openGraph: {
+    type: "website",
+    siteName: "Haramain Ride",
+    locale: "en_US",
+    alternateLocale: ["ar_SA"],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

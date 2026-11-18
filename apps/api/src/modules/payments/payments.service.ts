@@ -79,6 +79,67 @@ export class PaymentsService {
     return this.checkoutResponse(intent);
   }
 
+  /**
+   * Authenticated sandbox completion for browser checkout.
+   * Applies the same ledger path as a signed webhook without exposing the webhook secret to clients.
+   * Always liveCapture: false. Refuses when live payments are enabled or go-live is unlocked incorrectly.
+   */
+  async completeSandboxCheckout(
+    user: RequestUser,
+    input: { bookingId: string },
+  ) {
+    const env = loadEnv();
+    if (env.ALLOW_LIVE_PAYMENTS || !env.GO_LIVE_LOCKED) {
+      throw new BadRequestException({
+        code: "SANDBOX_COMPLETE_DISABLED",
+        message:
+          "Sandbox simulate-complete is disabled when live payment flags are not locked — use signed webhooks only",
+      });
+    }
+
+    await this.ownership.assertBookingAccess(user, input.bookingId);
+    const intent = await this.prisma.paymentIntent.findFirst({
+      where: { bookingId: input.bookingId, mode: "sandbox" },
+      orderBy: { createdAt: "desc" },
+    });
+    if (!intent || !intent.sandboxRef) {
+      throw new NotFoundException({
+        code: "INTENT_NOT_FOUND",
+        message: "No sandbox payment intent for booking — create checkout first",
+      });
+    }
+
+    const event = {
+      gatewayEventId: `evt_sandbox_ui_${intent.id}`,
+      type: "payment.succeeded",
+      sandboxRef: intent.sandboxRef,
+      amountHalalas: intent.amountHalalas,
+    };
+
+    const result = await this.handleWebhook(event);
+
+    await this.prisma.auditEvent.create({
+      data: {
+        actorId: user.id,
+        action: "payments.sandbox.complete",
+        resource: "payment_intent",
+        resourceId: intent.id,
+        metadata: { mode: "sandbox", liveCapture: false, bookingId: input.bookingId },
+      },
+    });
+
+    return {
+      ...result,
+      mode: "sandbox" as const,
+      liveCapture: false as const,
+      bookingId: input.bookingId,
+      paymentIntentId: intent.id,
+      sandboxRef: intent.sandboxRef,
+      message:
+        "Sandbox checkout completed via authenticated simulate — not a live gateway capture",
+    };
+  }
+
   verifyWebhookSignature(rawBody: string, signatureHeader: string | undefined) {
     const secret = loadEnv().PAYMENT_WEBHOOK_SECRET;
     if (!signatureHeader) {

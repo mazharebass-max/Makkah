@@ -217,8 +217,8 @@ export class BookingsService {
     totalHalalas: number;
     currency: string;
     passengerCount: number;
-    route?: { code: string; nameEn: string } | null;
-    category?: { code: string; nameEn: string } | null;
+    route?: { code: string; nameEn: string; nameAr?: string | null } | null;
+    category?: { code: string; nameEn: string; nameAr?: string | null } | null;
     assignment?: unknown;
   }) {
     return {
@@ -229,8 +229,16 @@ export class BookingsService {
       totalHalalas: b.totalHalalas,
       currency: b.currency,
       passengers: b.passengerCount,
-      route: b.route ? { code: b.route.code, nameEn: b.route.nameEn } : null,
-      category: b.category ? { code: b.category.code, nameEn: b.category.nameEn } : null,
+      route: b.route
+        ? { code: b.route.code, nameEn: b.route.nameEn, nameAr: b.route.nameAr ?? null }
+        : null,
+      category: b.category
+        ? {
+            code: b.category.code,
+            nameEn: b.category.nameEn,
+            nameAr: b.category.nameAr ?? null,
+          }
+        : null,
       liveAvailabilityClaim: false as const,
     };
   }
