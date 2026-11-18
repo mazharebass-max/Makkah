@@ -93,53 +93,12 @@ export default async function HomePage({
     t(locale, "highlight1"),
     t(locale, "highlight2"),
     t(locale, "highlight3"),
+    t(locale, "highlight4"),
   ];
-  const included = [
-    t(locale, "included1"),
-    t(locale, "included2"),
-    t(locale, "included3"),
-    t(locale, "included4"),
-    t(locale, "included5"),
-  ];
-  const transferSteps = [
-    { title: t(locale, "transferStep1Title"), body: t(locale, "transferStep1Body") },
-    { title: t(locale, "transferStep2Title"), body: t(locale, "transferStep2Body") },
-    { title: t(locale, "transferStep3Title"), body: t(locale, "transferStep3Body") },
-    { title: t(locale, "transferStep4Title"), body: t(locale, "transferStep4Body") },
-  ];
-  const corridorOps = [
-    {
-      codes: ["JED-MAKKAH", "JEDDAH-MAKKAH"],
-      titleEn: "JED Airport ↔ Makkah hotels",
-      titleAr: "مطار جدة ↔ فنادق مكة",
-      pickup: t(locale, "corridorJedMakkahPickup"),
-      dropoff: t(locale, "corridorJedMakkahDropoff"),
-      duration: t(locale, "corridorJedMakkahDuration"),
-      note: t(locale, "corridorJedMakkahNote"),
-    },
-    {
-      codes: ["MAKKAH-MADINAH"],
-      titleEn: "Makkah ↔ Madinah",
-      titleAr: "مكة ↔ المدينة",
-      pickup: t(locale, "corridorMakkahMadinahPickup"),
-      dropoff: t(locale, "corridorMakkahMadinahDropoff"),
-      duration: t(locale, "corridorMakkahMadinahDuration"),
-      note: t(locale, "corridorMakkahMadinahNote"),
-    },
-    {
-      codes: ["MED-MADINAH"],
-      titleEn: "MED Airport ↔ Madinah hotels",
-      titleAr: "مطار المدينة ↔ فنادق المدينة",
-      pickup: t(locale, "corridorMedMadinahPickup"),
-      dropoff: t(locale, "corridorMedMadinahDropoff"),
-      duration: t(locale, "corridorMedMadinahDuration"),
-      note: t(locale, "corridorMedMadinahNote"),
-    },
-  ];
-  const notes = [
-    { title: t(locale, "note1Title"), body: t(locale, "note1Body") },
-    { title: t(locale, "note2Title"), body: t(locale, "note2Body") },
-    { title: t(locale, "note3Title"), body: t(locale, "note3Body") },
+  const easySteps = [
+    { title: t(locale, "easyStep1Title"), body: t(locale, "easyStep1Body") },
+    { title: t(locale, "easyStep2Title"), body: t(locale, "easyStep2Body") },
+    { title: t(locale, "easyStep3Title"), body: t(locale, "easyStep3Body") },
   ];
 
   return (
@@ -148,31 +107,55 @@ export default async function HomePage({
       <JsonLd data={serviceJsonLd()} />
       <JsonLd data={faqJsonLd(locale)} />
 
-      {/* Corridor hero — Taxi Arabia–style service page, Haramain tokens */}
+      {/* Full-bleed corridor hero — service-site feel, not a dashboard */}
       <section
         aria-labelledby="hero-heading"
-        className="hr-hero-grid"
+        className="hr-bleed"
         style={{
+          position: "relative",
+          minHeight: "min(78vh, 720px)",
           display: "grid",
-          gap: 28,
-          gridTemplateColumns: "minmax(0, 1.05fr) minmax(280px, 0.95fr)",
-          alignItems: "start",
-          background: "#F6F3EC",
-          marginInline: -8,
-          padding: "8px 8px 8px",
-          animation: "hr-fade 480ms ease both",
+          alignItems: "end",
+          overflow: "hidden",
+          background: "#0B1F3A",
+          animation: "hr-fade 520ms ease both",
         }}
       >
-        <div style={{ display: "grid", gap: 16 }}>
-          <Badge tone="warning">{t(locale, "pilot")}</Badge>
+        <Image
+          src="/vehicles/haram-pack-suv.jpg"
+          alt={locale === "ar" ? fleetRows[0].altAr : fleetRows[0].altEn}
+          fill
+          priority
+          sizes="100vw"
+          style={{ objectFit: "cover", objectPosition: "center 40%" }}
+        />
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(180deg, rgba(11,31,58,0.35) 0%, rgba(11,31,58,0.55) 42%, rgba(11,31,58,0.88) 100%)",
+          }}
+        />
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            padding: "48px clamp(16px, 4vw, 48px) 40px",
+            display: "grid",
+            gap: 16,
+            maxWidth: 720,
+          }}
+        >
           <p
             style={{
               margin: 0,
-              fontSize: "clamp(2.2rem, 5.5vw, 3.2rem)",
+              fontSize: "clamp(2.4rem, 6vw, 3.6rem)",
               fontWeight: 800,
-              letterSpacing: "-0.04em",
-              lineHeight: 1.05,
-              color: "#0B1F3A",
+              letterSpacing: "-0.045em",
+              lineHeight: 1.02,
+              color: "#fff",
             }}
           >
             {t(locale, "heroTitle")}
@@ -181,48 +164,45 @@ export default async function HomePage({
             id="hero-heading"
             style={{
               margin: 0,
-              fontSize: "clamp(1.35rem, 3vw, 1.85rem)",
+              fontSize: "clamp(1.25rem, 2.8vw, 1.75rem)",
               fontWeight: 600,
               letterSpacing: "-0.02em",
               lineHeight: 1.3,
-              color: "#0B1F3A",
+              color: "rgba(255,255,255,0.94)",
             }}
           >
             {t(locale, "heroHeadline")}
           </h1>
-          <p style={{ margin: 0, fontSize: 17, color: "#526276", maxWidth: 540, lineHeight: 1.55 }}>
+          <p
+            style={{
+              margin: 0,
+              fontSize: 17,
+              color: "rgba(255,255,255,0.82)",
+              lineHeight: 1.55,
+              maxWidth: 520,
+            }}
+          >
             {t(locale, "heroBody")}
           </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "center" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, alignItems: "center", marginTop: 4 }}>
             <Link
               href={`/?lang=${locale}#book`}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                minHeight: 44,
-                padding: "10px 18px",
-                borderRadius: 16,
-                background: "#174A8B",
-                color: "#fff",
-                fontWeight: 600,
+                minHeight: 46,
+                padding: "11px 20px",
+                borderRadius: 14,
+                background: "#C6A15B",
+                color: "#0B1F3A",
+                fontWeight: 700,
                 fontSize: 15,
                 textDecoration: "none",
-                boxShadow: "0 8px 24px rgba(23, 74, 139, 0.22)",
+                boxShadow: "0 10px 28px rgba(0,0,0,0.28)",
               }}
             >
               {t(locale, "searchCta")}
-            </Link>
-            <Link
-              href={`/how-it-works?lang=${locale}`}
-              style={{
-                color: "#174A8B",
-                fontWeight: 600,
-                fontSize: 15,
-                textUnderlineOffset: 4,
-              }}
-            >
-              {t(locale, "howItWorks")}
             </Link>
             {wa ? (
               <a
@@ -233,12 +213,12 @@ export default async function HomePage({
                   display: "inline-flex",
                   alignItems: "center",
                   gap: 8,
-                  minHeight: 40,
-                  padding: "8px 12px",
+                  minHeight: 42,
+                  padding: "8px 14px",
                   borderRadius: 999,
-                  border: "1px solid #25D366",
-                  background: "#F0FFF6",
-                  color: "#075E54",
+                  border: "1px solid rgba(37,211,102,0.65)",
+                  background: "rgba(240,255,246,0.12)",
+                  color: "#E8FFF0",
                   fontWeight: 600,
                   fontSize: 14,
                   textDecoration: "none",
@@ -251,210 +231,231 @@ export default async function HomePage({
                   />
                 </svg>
                 {t(locale, "whatsappCta")}
+                <span style={{ opacity: 0.85, fontWeight: 500 }}>{whatsappDisplay(wa)}</span>
               </a>
             ) : null}
-          </div>
-
-          <figure
-            style={{
-              margin: "8px 0 0",
-              overflow: "hidden",
-              background: "#E8E2D6",
-              animation: "hr-rise 640ms ease 60ms both",
-            }}
-          >
-            <Image
-              src="/vehicles/haram-pack-suv.jpg"
-              alt={locale === "ar" ? fleetRows[0].altAr : fleetRows[0].altEn}
-              width={1280}
-              height={720}
-              priority
+            <Link
+              href={`/how-it-works?lang=${locale}`}
               style={{
-                display: "block",
-                width: "100%",
-                height: "auto",
-                objectFit: "cover",
-                maxHeight: 360,
+                color: "rgba(255,255,255,0.9)",
+                fontWeight: 600,
+                fontSize: 15,
+                textUnderlineOffset: 4,
               }}
-            />
-            <figcaption style={{ padding: "10px 2px 0", color: "#526276", fontSize: 13 }}>
-              {t(locale, "fleetHaramPack")} — {t(locale, "fleetCapHaramPack")}
-            </figcaption>
-          </figure>
-        </div>
-
-        <div id="book" style={{ display: "grid", gap: 12 }}>
-          <h2 style={{ margin: 0, fontSize: 22 }}>{t(locale, "bookHeading")}</h2>
-          <p style={{ margin: 0, color: "#526276", fontSize: 14 }}>{t(locale, "bookHint")}</p>
-          <BookingWidget locale={locale} routes={routes} />
+            >
+              {t(locale, "howItWorks")}
+            </Link>
+          </div>
+          <p style={{ margin: "4px 0 0", color: "rgba(255,255,255,0.62)", fontSize: 13 }}>
+            {t(locale, "pilot")}
+          </p>
         </div>
       </section>
 
+      {/* Services strip — calm bullets, not icon cards */}
       <section
-        id="highlights"
-        aria-labelledby="highlights-heading"
+        aria-labelledby="services-heading"
         style={{ marginTop: 56, display: "grid", gap: 14, maxWidth: 720 }}
       >
-        <h2 id="highlights-heading" style={{ margin: 0, fontSize: 28 }}>
-          {t(locale, "highlightsHeading")}
+        <h2 id="services-heading" style={{ margin: 0, fontSize: 28 }}>
+          {t(locale, "servicesHeading")}
         </h2>
-        <ul style={{ margin: 0, paddingInlineStart: 20, color: "#526276", lineHeight: 1.7 }}>
+        <p style={{ margin: 0, color: "#526276", lineHeight: 1.55 }}>{t(locale, "servicesHint")}</p>
+        <ul style={{ margin: 0, paddingInlineStart: 20, color: "#526276", lineHeight: 1.75 }}>
           {highlights.map((h) => (
             <li key={h}>{h}</li>
           ))}
         </ul>
       </section>
 
+      {/* Easy booking steps */}
       <section
-        id="fleet"
-        aria-labelledby="fleet-heading"
-        style={{ marginTop: 56, display: "grid", gap: 16 }}
+        id="easy-book"
+        aria-labelledby="easy-heading"
+        style={{ marginTop: 56, display: "grid", gap: 18, maxWidth: 720 }}
       >
-        <h2 id="fleet-heading" style={{ margin: 0, fontSize: 28 }}>
-          {t(locale, "fleetHeading")}
+        <h2 id="easy-heading" style={{ margin: 0, fontSize: 28 }}>
+          {t(locale, "easyBookHeading")}
         </h2>
-        <p style={{ margin: 0, color: "#526276", maxWidth: 680 }}>{t(locale, "fleetHint")}</p>
-
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              minWidth: 560,
-              background: "#fff",
-            }}
-          >
-            <thead>
-              <tr style={{ textAlign: "start", borderBottom: "2px solid rgba(11,31,58,0.12)" }}>
-                <th style={{ padding: "12px 10px", fontWeight: 700 }}>{t(locale, "fleetTableVehicle")}</th>
-                <th style={{ padding: "12px 10px", fontWeight: 700 }}>{t(locale, "fleetTableCapacity")}</th>
-                <th style={{ padding: "12px 10px", fontWeight: 700 }}>{t(locale, "fleetTableFare")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {fleetRows.map((row) => (
-                <tr key={row.src} style={{ borderBottom: "1px solid rgba(11,31,58,0.08)" }}>
-                  <td style={{ padding: "14px 10px" }}>
-                    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                      <Image
-                        src={row.src}
-                        alt={locale === "ar" ? row.altAr : row.altEn}
-                        width={120}
-                        height={68}
-                        style={{
-                          width: 120,
-                          height: 68,
-                          objectFit: "cover",
-                          background: "#E8E2D6",
-                          flexShrink: 0,
-                        }}
-                      />
-                      <strong style={{ color: "#0B1F3A" }}>{t(locale, row.labelKey)}</strong>
-                    </div>
-                  </td>
-                  <td style={{ padding: "14px 10px", color: "#526276" }}>{t(locale, row.capKey)}</td>
-                  <td style={{ padding: "14px 10px" }}>
-                    <Badge tone="warning">{t(locale, "fleetFareDraft")}</Badge>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section
-        id="how-it-works"
-        aria-labelledby="how-heading"
-        style={{ marginTop: 56, display: "grid", gap: 16, maxWidth: 720 }}
-      >
-        <h2 id="how-heading" style={{ margin: 0, fontSize: 28 }}>
-          {t(locale, "howItWorksHeading")}
-        </h2>
-        <p style={{ margin: 0, color: "#526276" }}>{t(locale, "howItWorksHint")}</p>
-        <ol style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 16 }}>
-          {transferSteps.map((s) => (
-            <li key={s.title} style={{ display: "grid", gap: 4 }}>
-              <strong style={{ color: "#0B1F3A" }}>{s.title}</strong>
+        <p style={{ margin: 0, color: "#526276" }}>{t(locale, "easyBookHint")}</p>
+        <ol
+          style={{
+            margin: 0,
+            padding: 0,
+            listStyle: "none",
+            display: "grid",
+            gap: 20,
+            counterReset: "easy",
+          }}
+        >
+          {easySteps.map((s) => (
+            <li
+              key={s.title}
+              style={{
+                display: "grid",
+                gap: 6,
+                paddingBottom: 16,
+                borderBottom: "1px solid rgba(11,31,58,0.08)",
+              }}
+            >
+              <strong style={{ color: "#0B1F3A", fontSize: 18 }}>{s.title}</strong>
               <span style={{ color: "#526276", lineHeight: 1.55 }}>{s.body}</span>
             </li>
           ))}
         </ol>
       </section>
 
+      {/* Book form — product interaction below the story */}
       <section
-        aria-labelledby="included-heading"
-        style={{ marginTop: 56, display: "grid", gap: 12, maxWidth: 680 }}
+        id="book"
+        aria-labelledby="book-heading"
+        style={{
+          marginTop: 56,
+          display: "grid",
+          gap: 14,
+          maxWidth: 520,
+          animation: "hr-rise 640ms ease 40ms both",
+        }}
       >
-        <h2 id="included-heading" style={{ margin: 0, fontSize: 28 }}>
-          {t(locale, "includedHeading")}
+        <h2 id="book-heading" style={{ margin: 0, fontSize: 28 }}>
+          {t(locale, "bookHeading")}
         </h2>
-        <ul style={{ margin: 0, paddingInlineStart: 20, color: "#526276", lineHeight: 1.7 }}>
-          {included.map((item) => (
-            <li key={item}>{item}</li>
+        <p style={{ margin: 0, color: "#526276", fontSize: 15 }}>{t(locale, "bookHint")}</p>
+        <BookingWidget locale={locale} routes={routes} />
+      </section>
+
+      {/* Trips offered */}
+      <section
+        id="trips-offered"
+        aria-labelledby="trips-heading"
+        style={{ marginTop: 64, display: "grid", gap: 16 }}
+      >
+        <h2 id="trips-heading" style={{ margin: 0, fontSize: 28 }}>
+          {t(locale, "tripsOfferedHeading")}
+        </h2>
+        <p style={{ margin: 0, color: "#526276", maxWidth: 680 }}>{t(locale, "tripsOfferedHint")}</p>
+        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 0, maxWidth: 760 }}>
+          {routes.map((r) => (
+            <li
+              key={r.code}
+              style={{
+                padding: "20px 0",
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 16,
+                flexWrap: "wrap",
+                alignItems: "baseline",
+                borderBottom: "1px solid rgba(11,31,58,0.1)",
+              }}
+            >
+              <div style={{ display: "grid", gap: 4 }}>
+                <strong style={{ fontSize: 18, color: "#0B1F3A" }}>
+                  {locale === "ar" && r.nameAr ? r.nameAr : r.nameEn}
+                </strong>
+                <span style={{ color: "#526276", fontSize: 13 }}>{r.code}</span>
+              </div>
+              <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                <Badge tone="warning">{r.draftLabel}</Badge>
+                <Link href={`/?lang=${locale}#book`} style={{ fontWeight: 600, fontSize: 14 }}>
+                  {t(locale, "searchCta")}
+                </Link>
+              </div>
+            </li>
           ))}
+          {routes.length === 0 ? (
+            <li style={{ color: "#526276" }}>{t(locale, "emptySearch")}</li>
+          ) : null}
         </ul>
+        <Link href={`/routes?lang=${locale}`} style={{ fontWeight: 600, width: "fit-content" }}>
+          {t(locale, "tripsOfferedMore")}
+        </Link>
       </section>
 
+      {/* Cars available — photo row, human catalog feel */}
       <section
-        id="corridor-ops"
-        aria-labelledby="corridor-ops-heading"
-        style={{ marginTop: 56, display: "grid", gap: 16 }}
+        id="fleet"
+        aria-labelledby="fleet-heading"
+        style={{ marginTop: 64, display: "grid", gap: 18 }}
       >
-        <h2 id="corridor-ops-heading" style={{ margin: 0, fontSize: 28 }}>
-          {t(locale, "corridorOpsHeading")}
+        <h2 id="fleet-heading" style={{ margin: 0, fontSize: 28 }}>
+          {t(locale, "carsAvailableHeading")}
         </h2>
-        <p style={{ margin: 0, color: "#526276", maxWidth: 720 }}>{t(locale, "corridorOpsHint")}</p>
-        <Badge tone="warning">{t(locale, "draft")}</Badge>
-        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 20 }}>
-          {corridorOps.map((c) => {
-            const live = routes.find((r) => c.codes.includes(r.code));
-            const title =
-              locale === "ar"
-                ? live?.nameAr || c.titleAr
-                : live?.nameEn || c.titleEn;
-            return (
-              <li
-                key={c.codes.join("-")}
-                style={{
-                  paddingBottom: 16,
-                  borderBottom: "1px solid rgba(11,31,58,0.08)",
-                  display: "grid",
-                  gap: 8,
-                  maxWidth: 720,
-                }}
-              >
-                <strong style={{ color: "#0B1F3A", fontSize: 18 }}>{title}</strong>
-                <div style={{ color: "#526276", fontSize: 14, lineHeight: 1.6 }}>
-                  <div>
-                    <span style={{ fontWeight: 600, color: "#0B1F3A" }}>{t(locale, "corridorOpsPickup")}: </span>
-                    {c.pickup}
-                  </div>
-                  <div>
-                    <span style={{ fontWeight: 600, color: "#0B1F3A" }}>{t(locale, "corridorOpsDropoff")}: </span>
-                    {c.dropoff}
-                  </div>
-                  <div>
-                    <span style={{ fontWeight: 600, color: "#0B1F3A" }}>{t(locale, "corridorOpsDuration")}: </span>
-                    {c.duration}
-                  </div>
-                  <div>
-                    <span style={{ fontWeight: 600, color: "#0B1F3A" }}>{t(locale, "corridorOpsNote")}: </span>
-                    {c.note}
-                  </div>
-                </div>
-              </li>
-            );
-          })}
+        <p style={{ margin: 0, color: "#526276", maxWidth: 680 }}>{t(locale, "fleetHint")}</p>
+        <div
+          className="hr-fleet-row"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+            gap: 20,
+          }}
+        >
+          {fleetRows.map((row, i) => (
+            <figure
+              key={row.src}
+              style={{
+                margin: 0,
+                display: "grid",
+                gap: 10,
+                animation: `hr-rise 620ms ease ${80 + i * 70}ms both`,
+              }}
+            >
+              <div style={{ overflow: "hidden", background: "#E8E2D6", aspectRatio: "16 / 10" }}>
+                <Image
+                  src={row.src}
+                  alt={locale === "ar" ? row.altAr : row.altEn}
+                  width={640}
+                  height={400}
+                  style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              </div>
+              <figcaption style={{ display: "grid", gap: 4 }}>
+                <strong style={{ color: "#0B1F3A", fontSize: 17 }}>{t(locale, row.labelKey)}</strong>
+                <span style={{ color: "#526276", fontSize: 14 }}>{t(locale, row.capKey)}</span>
+                <span style={{ color: "#087F6D", fontSize: 12, fontWeight: 600 }}>
+                  {t(locale, "fleetFareDraft")}
+                </span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+        <Link href={`/fleet?lang=${locale}`} style={{ fontWeight: 600, width: "fit-content" }}>
+          {t(locale, "fleetNav")}
+        </Link>
+      </section>
+
+      {/* Meeting points — light, not ops-console dense */}
+      <section
+        id="pickup-points"
+        aria-labelledby="pickup-heading"
+        style={{ marginTop: 64, display: "grid", gap: 14, maxWidth: 720 }}
+      >
+        <h2 id="pickup-heading" style={{ margin: 0, fontSize: 28 }}>
+          {t(locale, "pickupPoints")}
+        </h2>
+        <p style={{ margin: 0, color: "#526276" }}>{t(locale, "pickupHint")}</p>
+        <ul style={{ margin: 0, paddingInlineStart: 20, color: "#526276", lineHeight: 1.7 }}>
+          {pickupPoints.slice(0, 6).map((p) => (
+            <li key={p.code}>
+              <strong style={{ color: "#0B1F3A" }}>
+                {locale === "ar" && p.nameAr ? p.nameAr : p.nameEn}
+              </strong>
+              <span>
+                {" "}
+                · {p.zone.code} · {p.draftLabel}
+              </span>
+            </li>
+          ))}
+          {pickupPoints.length === 0 ? <li>{t(locale, "emptySearch")}</li> : null}
         </ul>
       </section>
 
+      {/* Passenger note */}
       <section
         aria-labelledby="quote-heading"
-        style={{ marginTop: 56, display: "grid", gap: 12, maxWidth: 640 }}
+        style={{ marginTop: 64, display: "grid", gap: 12, maxWidth: 640 }}
       >
         <h2 id="quote-heading" style={{ margin: 0, fontSize: 28 }}>
-          {locale === "ar" ? "ملاحظات الركاب (عينة تجريبية)" : "Passenger feedback (pilot sample)"}
+          {t(locale, "reviewsHeading")}
         </h2>
         <blockquote
           style={{
@@ -474,117 +475,82 @@ export default async function HomePage({
         <p style={{ margin: 0, color: "#087F6D", fontSize: 13 }}>{t(locale, "quoteCaveat")}</p>
       </section>
 
-      <section id="notes" aria-labelledby="notes-heading" style={{ marginTop: 56, display: "grid", gap: 16 }}>
-        <h2 id="notes-heading" style={{ margin: 0, fontSize: 28 }}>
-          {t(locale, "notesHeading")}
-        </h2>
-        <ol style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 18, maxWidth: 640 }}>
-          {notes.map((n, i) => (
-            <li key={n.title} style={{ display: "grid", gap: 4 }}>
-              <strong style={{ color: "#0B1F3A" }}>
-                {i + 1}. {n.title}
-              </strong>
-              <span style={{ color: "#526276", lineHeight: 1.55 }}>{n.body}</span>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section id="routes" aria-labelledby="routes-heading" style={{ marginTop: 56, display: "grid", gap: 16 }}>
-        <h2 id="routes-heading" style={{ margin: 0, fontSize: 28 }}>
-          {t(locale, "routes")}
-        </h2>
-        <p style={{ margin: 0, color: "#526276" }}>{t(locale, "routesHint")}</p>
-        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 0 }}>
-          {routes.map((r) => (
-            <li
-              key={r.code}
-              style={{
-                padding: "16px 0",
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 12,
-                flexWrap: "wrap",
-                alignItems: "center",
-                borderBottom: "1px solid rgba(11,31,58,0.08)",
-              }}
-            >
-              <div>
-                <strong>{locale === "ar" && r.nameAr ? r.nameAr : r.nameEn}</strong>
-                <div style={{ color: "#526276", fontSize: 13 }}>{r.code}</div>
-              </div>
-              <Badge tone="warning">{r.draftLabel}</Badge>
-            </li>
-          ))}
-        </ul>
-      </section>
-
       <section
-        id="pickup-points"
-        aria-labelledby="pickup-heading"
-        style={{ marginTop: 56, display: "grid", gap: 16 }}
+        aria-labelledby="faq-heading"
+        style={{ marginTop: 64, display: "grid", gap: 16, maxWidth: 720 }}
       >
-        <h2 id="pickup-heading" style={{ margin: 0, fontSize: 28 }}>
-          {t(locale, "pickupPoints")}
-        </h2>
-        <p style={{ margin: 0, color: "#526276" }}>{t(locale, "pickupHint")}</p>
-        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 0 }}>
-          {pickupPoints.map((p) => (
-            <li
-              key={p.code}
-              style={{
-                padding: "16px 0",
-                borderBottom: "1px solid rgba(11,31,58,0.08)",
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 12,
-                flexWrap: "wrap",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <strong>{locale === "ar" && p.nameAr ? p.nameAr : p.nameEn}</strong>
-                <div style={{ color: "#526276", fontSize: 13 }}>
-                  {p.code} · {p.zone.code} · {p.kind}
-                </div>
-              </div>
-              <Badge tone="warning">{p.draftLabel}</Badge>
-            </li>
-          ))}
-          {pickupPoints.length === 0 ? (
-            <li style={{ color: "#526276" }}>{t(locale, "emptySearch")}</li>
-          ) : null}
-        </ul>
-      </section>
-
-      <section aria-labelledby="faq-heading" style={{ marginTop: 56, display: "grid", gap: 16, maxWidth: 720 }}>
-        <h2 id="faq-heading" style={{ margin: 0 }}>
+        <h2 id="faq-heading" style={{ margin: 0, fontSize: 28 }}>
           {t(locale, "faqHeading")}
         </h2>
-        <dl style={{ margin: 0, display: "grid", gap: 16 }}>
+        <p style={{ margin: 0, color: "#526276" }}>{t(locale, "faqHomeHint")}</p>
+        <dl style={{ margin: 0, display: "grid", gap: 18 }}>
           {faqs.map((f) => (
-            <div key={f.q}>
+            <div key={f.q} style={{ paddingBottom: 14, borderBottom: "1px solid rgba(11,31,58,0.08)" }}>
               <dt style={{ fontWeight: 700 }}>{f.q}</dt>
-              <dd style={{ margin: "6px 0 0", color: "#526276", lineHeight: 1.6 }}>{f.a}</dd>
+              <dd style={{ margin: "8px 0 0", color: "#526276", lineHeight: 1.6 }}>{f.a}</dd>
             </div>
           ))}
         </dl>
+        <Link href={`/faq?lang=${locale}`} style={{ fontWeight: 600, width: "fit-content" }}>
+          {t(locale, "faqNav")}
+        </Link>
+      </section>
+
+      {/* Soft contact close */}
+      <section
+        aria-labelledby="home-contact-heading"
+        style={{
+          marginTop: 64,
+          padding: "28px 0 8px",
+          borderTop: "1px solid rgba(11,31,58,0.1)",
+          display: "grid",
+          gap: 12,
+          maxWidth: 640,
+        }}
+      >
+        <h2 id="home-contact-heading" style={{ margin: 0, fontSize: 28 }}>
+          {t(locale, "contactHeading")}
+        </h2>
+        <p style={{ margin: 0, color: "#526276", lineHeight: 1.55 }}>{t(locale, "homeContactBody")}</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "center" }}>
+          {wa ? (
+            <a
+              href={whatsappHref(wa, t(locale, "whatsappPrefill"))}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontWeight: 700, fontSize: 16 }}
+            >
+              WhatsApp · {whatsappDisplay(wa)}
+            </a>
+          ) : null}
+          <Link href={`/contact?lang=${locale}`} style={{ fontWeight: 600 }}>
+            {t(locale, "contactNav")}
+          </Link>
+          <Link href={`/signup?lang=${locale}`} style={{ fontWeight: 600 }}>
+            {t(locale, "signUp")}
+          </Link>
+        </div>
       </section>
 
       <style>{`
+        .hr-bleed {
+          width: calc(100% + 2 * clamp(16px, 4vw, 48px));
+          margin-inline: calc(-1 * clamp(16px, 4vw, 48px));
+          margin-top: -28px;
+        }
         @keyframes hr-fade {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: none; }
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
         @keyframes hr-rise {
-          from { opacity: 0; transform: translateY(14px); }
+          from { opacity: 0; transform: translateY(12px); }
           to { opacity: 1; transform: none; }
         }
-        @media (max-width: 900px) {
-          .hr-hero-grid { grid-template-columns: 1fr !important; }
+        @media (max-width: 800px) {
+          .hr-fleet-row { grid-template-columns: 1fr !important; }
         }
         @media (prefers-reduced-motion: reduce) {
-          * { animation: none !important; }
+          .hr-bleed, .hr-fleet-row figure { animation: none !important; }
         }
       `}</style>
     </SiteChrome>

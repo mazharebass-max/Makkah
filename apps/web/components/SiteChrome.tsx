@@ -60,14 +60,10 @@ export function SiteChrome({
         nav={
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
             <Link href={`/how-it-works?lang=${locale}`}>{t(locale, "howItWorks")}</Link>
-            <Link href={`/routes?lang=${locale}`}>{t(locale, "routesNav")}</Link>
+            <Link href={`/routes?lang=${locale}`}>{t(locale, "tripsOfferedHeading")}</Link>
             <Link href={`/fleet?lang=${locale}`}>{t(locale, "fleetNav")}</Link>
-            <Link href={`/about?lang=${locale}`}>{t(locale, "aboutNav")}</Link>
-            <Link href={`/faq?lang=${locale}`}>{t(locale, "faqNav")}</Link>
-            <Link href={`/search?lang=${locale}`}>{t(locale, "searchCta")}</Link>
+            <Link href={`/?lang=${locale}#book`}>{t(locale, "searchCta")}</Link>
             <Link href={`/contact?lang=${locale}`}>{t(locale, "contactNav")}</Link>
-            <Link href={`/providers/apply?lang=${locale}`}>{t(locale, "providerApply")}</Link>
-            <Link href={`/legal/terms?lang=${locale}`}>{t(locale, "legal")}</Link>
             <Link href={`/trips?lang=${locale}`}>{t(locale, "myTrips")}</Link>
             <Link href={`/login?lang=${locale}`}>{t(locale, "signIn")}</Link>
             <Link href={`/signup?lang=${locale}`}>{t(locale, "signUp")}</Link>
