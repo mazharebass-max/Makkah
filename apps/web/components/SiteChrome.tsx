@@ -31,6 +31,9 @@ export function SiteChrome({
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
             <Link href={`/?lang=${locale}#routes`}>{t(locale, "routes")}</Link>
             <Link href={`/search?lang=${locale}`}>{t(locale, "searchCta")}</Link>
+            <Link href={`/trips?lang=${locale}`}>{t(locale, "myTrips")}</Link>
+            <Link href={`/providers/apply?lang=${locale}`}>{t(locale, "providerApply")}</Link>
+            <Link href={`/legal/terms?lang=${locale}`}>{t(locale, "legal")}</Link>
             <Link href={`/login?lang=${locale}`}>{t(locale, "signIn")}</Link>
             <button
               type="button"

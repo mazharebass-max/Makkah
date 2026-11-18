@@ -128,6 +128,40 @@ describe("M5 sandbox payments + ledger", () => {
     expect(invoices.body.data.length).toBeGreaterThan(0);
   });
 
+  it("completes sandbox checkout via authenticated simulate without inventing live capture", async () => {
+    const customer = await login(app, "customer@haramain.local", "CustomerDev!234");
+    const booking = await createPendingBooking(customer);
+
+    const checkout = await request(app.getHttpServer())
+      .post("/api/v1/payments/checkout")
+      .set("Authorization", `Bearer ${customer}`)
+      .send({ bookingId: booking.id, idempotencyKey: `ui-ck-${booking.id}` });
+    expect(checkout.status).toBe(201);
+    expect(checkout.body.liveCapture).toBe(false);
+
+    const complete = await request(app.getHttpServer())
+      .post("/api/v1/payments/sandbox/complete")
+      .set("Authorization", `Bearer ${customer}`)
+      .send({ bookingId: booking.id });
+    expect(complete.status).toBe(201);
+    expect(complete.body.mode).toBe("sandbox");
+    expect(complete.body.liveCapture).toBe(false);
+    expect(complete.body.message).toMatch(/not a live/i);
+
+    const retry = await request(app.getHttpServer())
+      .post("/api/v1/payments/sandbox/complete")
+      .set("Authorization", `Bearer ${customer}`)
+      .send({ bookingId: booking.id });
+    expect(retry.status).toBe(201);
+    expect(retry.body.duplicate).toBe(true);
+
+    const detail = await request(app.getHttpServer())
+      .get(`/api/v1/bookings/${booking.id}`)
+      .set("Authorization", `Bearer ${customer}`);
+    expect(detail.status).toBe(200);
+    expect(["CONFIRMED", "ASSIGNMENT_PENDING"]).toContain(detail.body.status);
+  });
+
   it("rejects invalid webhook signature", async () => {
     const event = {
       gatewayEventId: "evt_bad_sig",

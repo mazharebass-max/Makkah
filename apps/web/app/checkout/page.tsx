@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Badge, Button, Input } from "@haramain/ui";
 import { SiteChrome } from "../../components/SiteChrome";
 import { API } from "../../lib/api";
 import { t, type Locale } from "../../lib/i18n";
+import { readAccessToken, saveAccessToken } from "../../lib/session";
 
 type Quote = {
   id: string;
@@ -20,6 +21,7 @@ type Quote = {
 };
 
 export default function CheckoutPage() {
+  const router = useRouter();
   const params = useSearchParams();
   const locale: Locale = params.get("lang") === "ar" ? "ar" : "en";
   const quoteId = params.get("quoteId") ?? "";
@@ -33,7 +35,11 @@ export default function CheckoutPage() {
   const [accepted, setAccepted] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [sandboxRef, setSandboxRef] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    setToken(readAccessToken());
+  }, []);
 
   useEffect(() => {
     if (!quoteId) return;
@@ -58,55 +64,76 @@ export default function CheckoutPage() {
       setError(body?.message ?? "Login failed");
       return;
     }
+    saveAccessToken(body.accessToken);
     setToken(body.accessToken);
     setMessage(`Signed in as ${body.user.email}`);
   }
 
   async function placeBooking() {
     if (!token || !quote) return;
+    setBusy(true);
     setError(null);
     setMessage(null);
-    const booked = await fetch(`${API}/bookings`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        quoteId: quote.id,
-        contactName: name,
-        contactPhone: phone,
-        acceptTerms: accepted,
-        idempotencyKey: `web-${quote.id}`,
-      }),
-    });
-    const body = await booked.json();
-    if (!booked.ok) {
-      setError(body?.message?.message ?? body?.message ?? "Booking failed");
-      return;
-    }
-    setMessage(
-      `Booking ${body.booking.reference} → ${body.booking.status}. ${body.paymentHint.next}`,
-    );
+    try {
+      const booked = await fetch(`${API}/bookings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          quoteId: quote.id,
+          contactName: name,
+          contactPhone: phone,
+          acceptTerms: accepted,
+          idempotencyKey: `web-${quote.id}`,
+        }),
+      });
+      const body = await booked.json();
+      if (!booked.ok) {
+        setError(body?.message?.message ?? body?.message ?? "Booking failed");
+        return;
+      }
 
-    const pay = await fetch(`${API}/payments/checkout`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ amountHalalas: body.booking.totalHalalas }),
-    });
-    const payBody = await pay.json();
-    if (!pay.ok) {
-      setError(payBody?.message ?? "Sandbox checkout failed");
-      return;
+      const bookingId = body.booking.id as string;
+
+      const pay = await fetch(`${API}/payments/checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          bookingId,
+          idempotencyKey: `web-pay-${bookingId}`,
+        }),
+      });
+      const payBody = await pay.json();
+      if (!pay.ok) {
+        setError(payBody?.message ?? "Sandbox checkout failed");
+        return;
+      }
+
+      const complete = await fetch(`${API}/payments/sandbox/complete`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ bookingId }),
+      });
+      const completeBody = await complete.json();
+      if (!complete.ok) {
+        setError(completeBody?.message ?? "Sandbox complete failed");
+        return;
+      }
+
+      router.push(
+        `/confirmation?lang=${locale}&bookingId=${encodeURIComponent(bookingId)}&ref=${encodeURIComponent(body.booking.reference)}`,
+      );
+    } finally {
+      setBusy(false);
     }
-    setSandboxRef(payBody.reference);
-    setMessage(
-      (m) =>
-        `${m ?? ""}\n${t(locale, "sandboxOnly")}: ${payBody.message} (${payBody.reference})`,
-    );
   }
 
   return (
@@ -193,11 +220,15 @@ export default function CheckoutPage() {
                     onChange={(e) => setAccepted(e.target.checked)}
                     style={{ width: 20, height: 20, marginTop: 2 }}
                   />
-                  <span>{t(locale, "terms")}</span>
+                  <span>
+                    {t(locale, "acceptTerms")} (
+                    <a href={`/legal/terms?lang=${locale}`}>{t(locale, "terms")}</a>,{" "}
+                    <a href={`/legal/cancellation?lang=${locale}`}>{t(locale, "cancelPolicy")}</a>)
+                  </span>
                 </label>
                 <Button
                   type="button"
-                  disabled={!accepted || quote.expired}
+                  disabled={!accepted || quote.expired || busy}
                   onClick={() => void placeBooking()}
                 >
                   {t(locale, "paySandbox")}
@@ -215,7 +246,6 @@ export default function CheckoutPage() {
         {message ? (
           <p style={{ color: "#087F6D", whiteSpace: "pre-wrap" }}>{message}</p>
         ) : null}
-        {sandboxRef ? <code>{sandboxRef}</code> : null}
       </div>
     </SiteChrome>
   );

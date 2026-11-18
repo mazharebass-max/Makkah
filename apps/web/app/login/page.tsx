@@ -1,13 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Input } from "@haramain/ui";
 import { SiteChrome } from "../../components/SiteChrome";
 import { API } from "../../lib/api";
 import { t, type Locale } from "../../lib/i18n";
+import { saveAccessToken } from "../../lib/session";
 
 export default function LoginPage() {
+  const router = useRouter();
   const params = useSearchParams();
   const locale: Locale = params.get("lang") === "ar" ? "ar" : "en";
   const [email, setEmail] = useState("customer@haramain.local");
@@ -30,7 +33,9 @@ export default function LoginPage() {
       setError(body?.message ?? "Login failed");
       return;
     }
+    saveAccessToken(body.accessToken);
     setMessage(`Signed in as ${body.user.email} (${body.user.roles.join(", ")})`);
+    router.push(`/trips?lang=${locale}`);
   }
 
   return (
@@ -62,6 +67,9 @@ export default function LoginPage() {
         ) : null}
         {message ? <p style={{ color: "#087F6D", margin: 0 }}>{message}</p> : null}
         <Button type="submit">{t(locale, "signIn")}</Button>
+        <Link href={`/trips?lang=${locale}`} style={{ fontSize: 14 }}>
+          {t(locale, "myTrips")}
+        </Link>
       </form>
     </SiteChrome>
   );

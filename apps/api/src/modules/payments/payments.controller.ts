@@ -26,6 +26,11 @@ class CheckoutDto {
   idempotencyKey?: string;
 }
 
+class SandboxCompleteDto {
+  @IsUUID()
+  bookingId!: string;
+}
+
 class RefundDto {
   @IsUUID()
   bookingId!: string;
@@ -65,6 +70,13 @@ export class PaymentsController {
   @Post("payments/checkout")
   checkout(@Req() req: AuthedRequest, @Body() body: CheckoutDto) {
     return this.payments.createCheckout(req.user!, body);
+  }
+
+  /** Browser-safe sandbox completion — ledger path without client webhook secrets. */
+  @UseGuards(AuthGuard)
+  @Post("payments/sandbox/complete")
+  sandboxComplete(@Req() req: AuthedRequest, @Body() body: SandboxCompleteDto) {
+    return this.payments.completeSandboxCheckout(req.user!, body);
   }
 
   @Post("webhooks/payments/:provider")
