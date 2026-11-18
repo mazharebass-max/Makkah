@@ -3,26 +3,41 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Badge, Button, Input } from "@haramain/ui";
 import { SiteChrome } from "../../components/SiteChrome";
 import { API } from "../../lib/api";
 import { t, type Locale } from "../../lib/i18n";
 import { saveAccessToken } from "../../lib/session";
 
-type Mode = "signin" | "signup";
 type Step = "form" | "verify";
+
+const REMEMBER_KEY = "hr_remember_email";
+
+function LockMark() {
+  return (
+    <svg width="72" height="72" viewBox="0 0 72 72" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="hr-lock-grad" x1="12" y1="8" x2="60" y2="64" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#E8C878" />
+          <stop offset="0.55" stopColor="#C6A15B" />
+          <stop offset="1" stopColor="#A67C2E" />
+        </linearGradient>
+      </defs>
+      <path
+        fill="url(#hr-lock-grad)"
+        d="M36 8c-8.3 0-15 6.7-15 15v7h8v-7c0-3.9 3.1-7 7-7s7 3.1 7 7v7h8v-7c0-8.3-6.7-15-15-15zm-18 26c-3.3 0-6 2.7-6 6v18c0 3.3 2.7 6 6 6h36c3.3 0 6-2.7 6-6V40c0-3.3-2.7-6-6-6H18zm18 8c2.2 0 4 1.8 4 4 0 1.5-.8 2.8-2 3.4V56h-4v-6.6c-1.2-.6-2-1.9-2-3.4 0-2.2 1.8-4 4-4z"
+      />
+    </svg>
+  );
+}
 
 export default function AuthPage() {
   const router = useRouter();
   const params = useSearchParams();
   const locale: Locale = params.get("lang") === "ar" ? "ar" : "en";
-  const modeParam = params.get("mode");
-  const [mode, setMode] = useState<Mode>(modeParam === "signup" ? "signup" : "signin");
   const [step, setStep] = useState<Step>("form");
-  const [displayName, setDisplayName] = useState("");
-  const [email, setEmail] = useState(modeParam === "signup" ? "" : "customer@haramain.local");
-  const [password, setPassword] = useState(modeParam === "signup" ? "" : "CustomerDev!234");
-  const [confirm, setConfirm] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
   const [otp, setOtp] = useState("");
   const [debugCode, setDebugCode] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -30,36 +45,30 @@ export default function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (modeParam === "signup" || modeParam === "signin") {
-      setMode(modeParam);
-      setStep("form");
-      setError(null);
-      setMessage(null);
-      setOtp("");
-      setDebugCode(null);
+    try {
+      const saved = localStorage.getItem(REMEMBER_KEY);
+      if (saved) {
+        setEmail(saved);
+        setRemember(true);
+      } else if (params.get("mode") !== "signup") {
+        setEmail("customer@haramain.local");
+        setPassword("CustomerDev!234");
+      }
+    } catch {
+      if (params.get("mode") !== "signup") {
+        setEmail("customer@haramain.local");
+        setPassword("CustomerDev!234");
+      }
     }
-  }, [modeParam]);
+  }, [params]);
 
-  function switchMode(next: Mode) {
-    setMode(next);
-    setStep("form");
-    setError(null);
-    setMessage(null);
-    setOtp("");
-    setDebugCode(null);
-    setConfirm("");
-    if (next === "signin") {
-      setEmail("customer@haramain.local");
-      setPassword("CustomerDev!234");
-    } else {
-      setEmail("");
-      setPassword("");
-      setDisplayName("");
+  function persistRemember(nextEmail: string) {
+    try {
+      if (remember) localStorage.setItem(REMEMBER_KEY, nextEmail.trim().toLowerCase());
+      else localStorage.removeItem(REMEMBER_KEY);
+    } catch {
+      /* ignore */
     }
-    const q = new URLSearchParams(params.toString());
-    q.set("lang", locale);
-    q.set("mode", next);
-    router.replace(`/login?${q.toString()}`);
   }
 
   async function requestOtp(targetEmail: string) {
@@ -81,8 +90,7 @@ export default function AuthPage() {
     }
   }
 
-  async function onSignIn(e: React.FormEvent) {
-    e.preventDefault();
+  async function onLogin() {
     setError(null);
     setMessage(null);
     setBusy(true);
@@ -99,6 +107,7 @@ export default function AuthPage() {
         return;
       }
       saveAccessToken(body.accessToken);
+      persistRemember(email);
       setMessage(`${t(locale, "authSignedInAs")} ${body.user.email}`);
       router.push(`/trips?lang=${locale}`);
     } catch (err) {
@@ -108,16 +117,11 @@ export default function AuthPage() {
     }
   }
 
-  async function onSignUp(e: React.FormEvent) {
-    e.preventDefault();
+  async function onRegister() {
     setError(null);
     setMessage(null);
     if (password.length < 10) {
       setError(t(locale, "signupPasswordHint"));
-      return;
-    }
-    if (password !== confirm) {
-      setError(t(locale, "signupPasswordMismatch"));
       return;
     }
     setBusy(true);
@@ -126,21 +130,15 @@ export default function AuthPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          email,
-          password,
-          displayName: displayName.trim() || undefined,
-          locale,
-        }),
+        body: JSON.stringify({ email, password, locale }),
       });
       const body = await res.json();
       if (!res.ok) {
         setError(body?.message ?? body?.code ?? t(locale, "signupFailed"));
         return;
       }
-      if (body.accessToken) {
-        saveAccessToken(body.accessToken);
-      }
+      if (body.accessToken) saveAccessToken(body.accessToken);
+      persistRemember(email);
       await requestOtp(email);
       setStep("verify");
     } catch (err) {
@@ -186,214 +184,219 @@ export default function AuthPage() {
     }
   }
 
-  const title =
-    step === "verify"
-      ? t(locale, "signupVerifyTitle")
-      : mode === "signin"
-        ? t(locale, "signIn")
-        : t(locale, "signUp");
-  const bodyText =
-    step === "verify"
-      ? t(locale, "signupVerifyBody")
-      : mode === "signin"
-        ? t(locale, "authSignInBody")
-        : t(locale, "signupBody");
+  const fieldLabel: React.CSSProperties = {
+    minWidth: 96,
+    fontWeight: 600,
+    fontSize: 15,
+    color: "rgba(255,255,255,0.92)",
+  };
+  const fieldInput: React.CSSProperties = {
+    flex: 1,
+    minHeight: 42,
+    borderRadius: 4,
+    border: "1px solid rgba(255,255,255,0.55)",
+    background: "rgba(255,255,255,0.08)",
+    color: "#fff",
+    padding: "8px 12px",
+    fontFamily: "inherit",
+    fontSize: 15,
+    outline: "none",
+  };
+  const outlineBtn: React.CSSProperties = {
+    minHeight: 42,
+    minWidth: 110,
+    padding: "8px 16px",
+    borderRadius: 4,
+    border: "1px solid rgba(255,255,255,0.75)",
+    background: "transparent",
+    color: "#fff",
+    fontFamily: "inherit",
+    fontWeight: 700,
+    fontSize: 14,
+    cursor: busy ? "wait" : "pointer",
+    opacity: busy ? 0.7 : 1,
+  };
 
   return (
     <SiteChrome locale={locale}>
       <div
         style={{
-          maxWidth: 440,
-          display: "grid",
-          gap: 16,
-          background: "#fff",
-          padding: 24,
-          borderRadius: 20,
-          boxShadow: "0 12px 40px rgba(11,31,58,0.08)",
+          maxWidth: 520,
+          marginInline: "auto",
+          borderRadius: 8,
+          overflow: "hidden",
+          background:
+            "radial-gradient(900px 420px at 20% 10%, rgba(23,74,139,0.55), transparent 55%), linear-gradient(165deg, #0B1F3A 0%, #12345A 48%, #0B1F3A 100%)",
+          boxShadow: "0 18px 50px rgba(11,31,58,0.28)",
+          padding: "28px 28px 24px",
+          color: "#fff",
         }}
       >
-        <Badge tone="warning">{t(locale, "pilot")}</Badge>
-        <h1 style={{ margin: 0, fontSize: 28 }}>{title}</h1>
-        <p style={{ margin: 0, color: "#526276", fontSize: 14, lineHeight: 1.5 }}>{bodyText}</p>
-
-        {step === "form" ? (
-          <div
-            role="tablist"
-            aria-label={t(locale, "authModesLabel")}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 4,
-              padding: 4,
-              background: "#F6F3EC",
-              borderRadius: 12,
-            }}
-          >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === "signin"}
-              onClick={() => switchMode("signin")}
-              style={{
-                border: "none",
-                borderRadius: 10,
-                minHeight: 40,
-                fontFamily: "inherit",
-                fontWeight: 700,
-                fontSize: 14,
-                cursor: "pointer",
-                background: mode === "signin" ? "#fff" : "transparent",
-                color: "#0B1F3A",
-                boxShadow: mode === "signin" ? "0 1px 4px rgba(11,31,58,0.08)" : "none",
-              }}
-            >
-              {t(locale, "signIn")}
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === "signup"}
-              onClick={() => switchMode("signup")}
-              style={{
-                border: "none",
-                borderRadius: 10,
-                minHeight: 40,
-                fontFamily: "inherit",
-                fontWeight: 700,
-                fontSize: 14,
-                cursor: "pointer",
-                background: mode === "signup" ? "#fff" : "transparent",
-                color: "#0B1F3A",
-                boxShadow: mode === "signup" ? "0 1px 4px rgba(11,31,58,0.08)" : "none",
-              }}
-            >
-              {t(locale, "signUp")}
-            </button>
-          </div>
-        ) : null}
+        <p style={{ margin: "0 0 18px", fontSize: 13, color: "rgba(255,255,255,0.7)" }}>
+          {t(locale, "pilot")}
+        </p>
 
         {step === "verify" ? (
-          <form onSubmit={onVerify} style={{ display: "grid", gap: 14 }}>
-            <p style={{ margin: 0, color: "#526276", fontSize: 14 }}>
+          <form onSubmit={onVerify} style={{ display: "grid", gap: 16 }}>
+            <h1 style={{ margin: 0, fontSize: 26, letterSpacing: "-0.02em" }}>
+              {t(locale, "signupVerifyTitle")}
+            </h1>
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.78)", fontSize: 14, lineHeight: 1.5 }}>
+              {t(locale, "signupVerifyBody")}
+            </p>
+            <p style={{ margin: 0, fontSize: 14, color: "rgba(255,255,255,0.85)" }}>
               {t(locale, "signupEmail")}: <strong>{email}</strong>
             </p>
-            <Input
-              label={t(locale, "signupOtpLabel")}
-              inputMode="numeric"
-              pattern="[0-9]{6}"
-              maxLength={6}
-              required
-              value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              autoComplete="one-time-code"
-            />
+            <label style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+              <span style={fieldLabel}>{t(locale, "signupOtpLabel")}</span>
+              <input
+                style={{ ...fieldInput, maxWidth: 180, letterSpacing: "0.2em" }}
+                inputMode="numeric"
+                pattern="[0-9]{6}"
+                maxLength={6}
+                required
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                autoComplete="one-time-code"
+              />
+            </label>
             {debugCode ? (
-              <p style={{ margin: 0, color: "#087F6D", fontSize: 13 }}>
+              <p style={{ margin: 0, color: "#C6A15B", fontSize: 13 }}>
                 {t(locale, "signupSandboxCode")}: <code>{debugCode}</code>
               </p>
             ) : null}
             {error ? (
-              <p role="alert" style={{ color: "#B42318", margin: 0 }}>
+              <p role="alert" style={{ color: "#FFB4A8", margin: 0 }}>
                 {error}
               </p>
             ) : null}
-            {message ? <p style={{ color: "#087F6D", margin: 0 }}>{message}</p> : null}
-            <Button type="submit" disabled={busy || otp.length !== 6}>
-              {busy ? t(locale, "signupWorking") : t(locale, "signupVerifyCta")}
-            </Button>
-            <button
-              type="button"
-              onClick={() => void resendOtp()}
-              disabled={busy}
-              style={{
-                border: "none",
-                background: "transparent",
-                color: "#174A8B",
-                fontWeight: 600,
-                cursor: "pointer",
-                fontFamily: "inherit",
-                padding: 0,
-                textAlign: "start",
-              }}
-            >
-              {t(locale, "signupResendOtp")}
-            </button>
-          </form>
-        ) : mode === "signin" ? (
-          <form onSubmit={onSignIn} style={{ display: "grid", gap: 14 }}>
-            <Input
-              label={t(locale, "signupEmail")}
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-            />
-            <Input
-              label={t(locale, "signupPassword")}
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-            />
-            {error ? (
-              <p role="alert" style={{ color: "#B42318", margin: 0 }}>
-                {error}
-              </p>
-            ) : null}
-            {message ? <p style={{ color: "#087F6D", margin: 0 }}>{message}</p> : null}
-            <Button type="submit" disabled={busy}>
-              {busy ? t(locale, "signupWorking") : t(locale, "signIn")}
-            </Button>
+            {message ? <p style={{ color: "#9BE7C4", margin: 0 }}>{message}</p> : null}
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+              <button type="submit" disabled={busy || otp.length !== 6} style={outlineBtn}>
+                {busy ? t(locale, "signupWorking") : t(locale, "signupVerifyCta")}
+              </button>
+              <button
+                type="button"
+                onClick={() => void resendOtp()}
+                disabled={busy}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  color: "#C6A15B",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  padding: 0,
+                }}
+              >
+                {t(locale, "signupResendOtp")}
+              </button>
+            </div>
           </form>
         ) : (
-          <form onSubmit={onSignUp} style={{ display: "grid", gap: 14 }}>
-            <Input
-              label={t(locale, "signupDisplayName")}
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-            />
-            <Input
-              label={t(locale, "signupEmail")}
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-            />
-            <Input
-              label={t(locale, "signupPassword")}
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="new-password"
-            />
-            <Input
-              label={t(locale, "signupConfirmPassword")}
-              type="password"
-              required
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              autoComplete="new-password"
-            />
-            <p style={{ margin: 0, color: "#526276", fontSize: 13 }}>{t(locale, "signupPasswordHint")}</p>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void onLogin();
+            }}
+            style={{ display: "grid", gap: 18 }}
+          >
+            <h1 style={{ margin: 0, fontSize: 26, letterSpacing: "-0.02em" }}>
+              {t(locale, "accountNav")}
+            </h1>
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.78)", fontSize: 14, lineHeight: 1.5 }}>
+              {t(locale, "authOnePageBody")}
+            </p>
+
+            <label style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+              <span style={fieldLabel}>{t(locale, "signupEmail")}</span>
+              <input
+                style={fieldInput}
+                type="email"
+                required
+                value={email}
+                placeholder="email@example.com"
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+              />
+            </label>
+
+            <label style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+              <span style={fieldLabel}>{t(locale, "signupPassword")}</span>
+              <input
+                style={fieldInput}
+                type="password"
+                required
+                value={password}
+                placeholder="********"
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+              />
+            </label>
+
+            <label
+              style={{
+                display: "inline-flex",
+                gap: 10,
+                alignItems: "center",
+                color: "rgba(255,255,255,0.88)",
+                fontSize: 14,
+                width: "fit-content",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+                style={{ width: 16, height: 16 }}
+              />
+              {t(locale, "authRememberMe")}
+            </label>
+
+            <p style={{ margin: 0, color: "rgba(255,255,255,0.55)", fontSize: 12 }}>
+              {t(locale, "signupPasswordHint")}
+            </p>
+
             {error ? (
-              <p role="alert" style={{ color: "#B42318", margin: 0 }}>
+              <p role="alert" style={{ color: "#FFB4A8", margin: 0 }}>
                 {error}
               </p>
             ) : null}
-            {message ? <p style={{ color: "#087F6D", margin: 0 }}>{message}</p> : null}
-            <Button type="submit" disabled={busy}>
-              {busy ? t(locale, "signupWorking") : t(locale, "signUp")}
-            </Button>
+            {message ? <p style={{ color: "#9BE7C4", margin: 0 }}>{message}</p> : null}
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 16,
+                flexWrap: "wrap",
+                marginTop: 4,
+              }}
+            >
+              <LockMark />
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <button type="submit" disabled={busy} style={outlineBtn}>
+                  {busy ? t(locale, "signupWorking") : t(locale, "authLoginBtn")}
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void onRegister()}
+                  style={outlineBtn}
+                >
+                  {t(locale, "authRegisterBtn")}
+                </button>
+              </div>
+            </div>
           </form>
         )}
 
-        <Link href={`/trips?lang=${locale}`} style={{ fontSize: 14 }}>
-          {t(locale, "myTrips")}
-        </Link>
+        <p style={{ margin: "20px 0 0", fontSize: 13 }}>
+          <Link href={`/trips?lang=${locale}`} style={{ color: "rgba(255,255,255,0.75)" }}>
+            {t(locale, "myTrips")}
+          </Link>
+        </p>
       </div>
     </SiteChrome>
   );

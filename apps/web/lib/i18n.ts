@@ -142,6 +142,11 @@ export const messages = {
     accountNav: "Account",
     authModesLabel: "Sign in or sign up",
     authSignInBody: "Use your pilot customer account. Seed demo credentials are prefilled for local testing only.",
+    authOnePageBody:
+      "One form for this pilot — Login with an existing account, or Register to create one and verify email with a sandbox OTP.",
+    authRememberMe: "Remember me",
+    authLoginBtn: "Login",
+    authRegisterBtn: "Register",
     authSignInFailed: "Sign in failed",
     authSignedInAs: "Signed in as",
     signupBody:
@@ -359,6 +364,11 @@ export const messages = {
     accountNav: "الحساب",
     authModesLabel: "تسجيل الدخول أو إنشاء حساب",
     authSignInBody: "استخدم حساب العميل التجريبي. بيانات البذور معبأة مسبقاً للاختبار المحلي فقط.",
+    authOnePageBody:
+      "نموذج واحد لهذا التجريب — سجّل الدخول بحساب موجود، أو سجّل حساباً جديداً وثّق البريد برمز تجريبي.",
+    authRememberMe: "تذكرني",
+    authLoginBtn: "دخول",
+    authRegisterBtn: "تسجيل",
     authSignInFailed: "فشل تسجيل الدخول",
     authSignedInAs: "تم تسجيل الدخول باسم",
     signupBody:
