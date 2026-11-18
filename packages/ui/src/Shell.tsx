@@ -45,22 +45,34 @@ export function PublicShell({
       </a>
       <header
         role="banner"
+        className="hr-public-header"
         style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           gap: 16,
-          padding: "20px clamp(16px, 4vw, 48px)",
-          borderBottom: "1px solid rgba(11,31,58,0.08)",
-          backdropFilter: "blur(10px)",
-          background: "rgba(246,243,236,0.72)",
+          minHeight: 72,
+          padding: "12px clamp(16px, 4vw, 48px)",
+          borderBottom: "1px solid rgba(11,31,58,0.07)",
+          boxShadow: "0 10px 30px rgba(11,31,58,0.05)",
+          backdropFilter: "blur(16px)",
+          background: "rgba(255,255,255,0.92)",
           position: "sticky",
           top: 0,
-          zIndex: 20,
+          zIndex: 40,
+          overflow: "visible",
         }}
       >
-        {brand ?? <BrandMark size="sm" />}
-        <nav aria-label="Primary">{nav}</nav>
+        <div className="hr-public-brand" style={{ minWidth: 0, flex: "1 1 auto", maxWidth: "min(100%, 280px)" }}>
+          {brand ?? <BrandMark size="sm" />}
+        </div>
+        <nav
+          aria-label="Primary"
+          className="hr-public-nav"
+          style={{ flex: "0 1 auto", display: "flex", justifyContent: "flex-end", alignItems: "center", minWidth: 0 }}
+        >
+          {nav}
+        </nav>
       </header>
       <main id="main" style={{ padding: "28px clamp(16px, 4vw, 48px) 64px", flex: 1 }}>
         {children}
