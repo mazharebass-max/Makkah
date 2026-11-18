@@ -112,6 +112,37 @@ export class DispatchService {
           }
 
           if (input.driverId) {
+            const driverRows = await tx.$queryRaw<
+              { id: string; active: boolean }[]
+            >`SELECT id, active FROM "Driver" WHERE id = ${input.driverId}::uuid FOR UPDATE`;
+            const driver = driverRows[0];
+            if (!driver?.active) {
+              throw new BadRequestException({
+                code: "DRIVER_INACTIVE",
+                message: "Driver not available",
+              });
+            }
+
+            const shiftCount = await tx.driverShift.count({
+              where: { driverId: input.driverId },
+            });
+            if (shiftCount > 0) {
+              const onShift = await tx.driverShift.findFirst({
+                where: {
+                  driverId: input.driverId,
+                  startsAt: { lte: startsAt },
+                  endsAt: { gte: endsAt },
+                },
+              });
+              if (!onShift) {
+                throw new ConflictException({
+                  code: "DRIVER_OFF_SHIFT",
+                  message:
+                    "Driver has shifts defined but none cover this trip window (draft roster)",
+                });
+              }
+            }
+
             const driverOverlap = await tx.bookingAssignment.findFirst({
               where: {
                 driverId: input.driverId,
@@ -124,6 +155,7 @@ export class DispatchService {
               throw new ConflictException({
                 code: "DRIVER_OVERLAP",
                 message: "Driver already assigned for overlapping time",
+                details: { conflictingBookingId: driverOverlap.bookingId },
               });
             }
           }
@@ -254,6 +286,12 @@ export class DispatchService {
         throw new ConflictException({
           code: "VEHICLE_OVERLAP",
           message: "Vehicle overlap rejected by database exclusion constraint",
+        });
+      }
+      if (message.includes("booking_assignment_driver_no_overlap")) {
+        throw new ConflictException({
+          code: "DRIVER_OVERLAP",
+          message: "Driver overlap rejected by database exclusion constraint",
         });
       }
       throw err;

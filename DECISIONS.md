@@ -91,6 +91,11 @@
 **Decision:** Ship CSP/frame/nosniff headers and Redis/memory auth rate limits in the API for M8; treat CDN/WAF, secrets manager, admin MFA, and external pen test as owner/partner follow-ups.  
 **Consequence:** CI-verifiable baseline without claiming full ASVS or production hardening complete.
 
+## D-022 — Driver exclusion + DriverShift skeleton (2026-11-18)
+
+**Decision:** Add Postgres GiST `EXCLUDE` on `BookingAssignment.driverId` + time range (WHERE driverId IS NOT NULL), mirroring the vehicle constraint. Introduce `DriverShift` as a draft roster; when any shifts exist for a driver, assignment requires a covering shift. Trip APIs keep Booking as the trip entity (`tripId` alias) rather than adding a separate Trip table yet.  
+**Consequence:** Concurrent double-driver allocation fails at DB layer; rosters stay DRAFT until owner approval.
+
 ## D-021 — Email OTP verify + gated debugCode; admin TOTP scaffold (2026-11-18)
 
 **Decision:** Persist hashed OTP challenges; verify via `POST /auth/otp/verify`. Expose `debugCode` only when `NODE_ENV`/`APP_ENV` is development or test. Admin/staff roles may enroll TOTP; enabled MFA forces login step-up via `mfaToken`. Secrets stored in DB for local scaffold only — production must use KMS. Ops checklist status `IMPLEMENTED_SCAFFOLD`, not a go-live claim.  

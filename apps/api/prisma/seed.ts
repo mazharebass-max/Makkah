@@ -472,6 +472,42 @@ async function main() {
     },
   });
 
+  // Second owned driver for overlap / shift tests (no login user required)
+  await prisma.driver.upsert({
+    where: { id: "00000000-0000-4000-8000-000000000031" },
+    update: { active: true, ownership: FleetOwnership.OWNED },
+    create: {
+      id: "00000000-0000-4000-8000-000000000031",
+      ownership: FleetOwnership.OWNED,
+      displayName: "Synthetic Owned Driver B",
+      phoneE164: "+966500000098",
+      active: true,
+    },
+  });
+
+  // Wide draft shift windows covering near-term synthetic trips (Asia/Riyadh ops)
+  const shiftStart = new Date(Date.now() - 24 * 3600_000);
+  const shiftEnd = new Date(Date.now() + 60 * 24 * 3600_000);
+  for (const driverId of [
+    "00000000-0000-4000-8000-000000000030",
+    "00000000-0000-4000-8000-000000000031",
+  ]) {
+    const existing = await prisma.driverShift.findFirst({
+      where: { driverId, note: "seed-wide-draft" },
+    });
+    if (!existing) {
+      await prisma.driverShift.create({
+        data: {
+          driverId,
+          startsAt: shiftStart,
+          endsAt: shiftEnd,
+          note: "seed-wide-draft",
+          draftLabel: DRAFT,
+        },
+      });
+    }
+  }
+
   // eslint-disable-next-line no-console
   console.log("Seed complete (synthetic DRAFT data only).");
 }
