@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { noIndexMetadata } from "../../lib/seo";
 
 export const metadata: Metadata = {
-  ...noIndexMetadata,
-  title: "Sign in",
-  description: "Customer sign-in for Haramain Ride — not indexed.",
+  title: "Sign in — Haramain Ride",
+  description: "Sign in or create a Haramain Ride pilot account and verify email via sandbox OTP.",
+  robots: { index: false, follow: false },
 };
 
 export default function LoginLayout({ children }: { children: React.ReactNode }) {

@@ -139,6 +139,11 @@ export const messages = {
     skipToContent: "Skip to content",
     signIn: "Sign in",
     signUp: "Sign up",
+    accountNav: "Account",
+    authModesLabel: "Sign in or sign up",
+    authSignInBody: "Use your pilot customer account. Seed demo credentials are prefilled for local testing only.",
+    authSignInFailed: "Sign in failed",
+    authSignedInAs: "Signed in as",
     signupBody:
       "Create a pilot customer account. Email starts unverified — you will enter a sandbox OTP next. Not a live licensed booking account.",
     signupVerifyTitle: "Verify your email",
@@ -351,6 +356,11 @@ export const messages = {
     skipToContent: "تخطّ إلى المحتوى",
     signIn: "تسجيل الدخول",
     signUp: "إنشاء حساب",
+    accountNav: "الحساب",
+    authModesLabel: "تسجيل الدخول أو إنشاء حساب",
+    authSignInBody: "استخدم حساب العميل التجريبي. بيانات البذور معبأة مسبقاً للاختبار المحلي فقط.",
+    authSignInFailed: "فشل تسجيل الدخول",
+    authSignedInAs: "تم تسجيل الدخول باسم",
     signupBody:
       "أنشئ حساب عميل تجريبي. يبدأ البريد غير موثّق — ستدخل رمز تحقق تجريبي بعد ذلك. ليس حساب حجز مرخّص حي.",
     signupVerifyTitle: "توثيق البريد",

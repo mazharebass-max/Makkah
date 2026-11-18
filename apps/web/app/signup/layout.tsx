@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Sign up — Haramain Ride",
-  description: "Create a Haramain Ride pilot customer account and verify email via sandbox OTP.",
+  description: "Redirects to the unified account page for sign up and email verification.",
   robots: { index: false, follow: false },
 };
 

@@ -526,7 +526,7 @@ export default async function HomePage({
           <Link href={`/contact?lang=${locale}`} style={{ fontWeight: 600 }}>
             {t(locale, "contactNav")}
           </Link>
-          <Link href={`/signup?lang=${locale}`} style={{ fontWeight: 600 }}>
+          <Link href={`/login?lang=${locale}&mode=signup`} style={{ fontWeight: 600 }}>
             {t(locale, "signUp")}
           </Link>
         </div>

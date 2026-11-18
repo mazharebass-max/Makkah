@@ -65,8 +65,7 @@ export function SiteChrome({
             <Link href={`/?lang=${locale}#book`}>{t(locale, "searchCta")}</Link>
             <Link href={`/contact?lang=${locale}`}>{t(locale, "contactNav")}</Link>
             <Link href={`/trips?lang=${locale}`}>{t(locale, "myTrips")}</Link>
-            <Link href={`/login?lang=${locale}`}>{t(locale, "signIn")}</Link>
-            <Link href={`/signup?lang=${locale}`}>{t(locale, "signUp")}</Link>
+            <Link href={`/login?lang=${locale}`}>{t(locale, "accountNav")}</Link>
             {wa ? (
               <a
                 href={whatsappHref(wa, t(locale, "whatsappPrefill"))}
