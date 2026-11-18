@@ -213,33 +213,40 @@ export default async function HomePage({
             >
               {t(locale, "searchCta")}
             </Link>
+            <Link
+              href={`/?lang=${locale}#how-it-works`}
+              style={{
+                color: "#174A8B",
+                fontWeight: 600,
+                fontSize: 15,
+                textUnderlineOffset: 4,
+              }}
+            >
+              {t(locale, "howItWorks")}
+            </Link>
             {wa ? (
               <a
                 href={whatsappHref(wa, t(locale, "whatsappPrefill"))}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  color: "#087F6D",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 44,
+                  padding: "10px 18px",
+                  borderRadius: 16,
+                  background: "#128C7E",
+                  color: "#fff",
                   fontWeight: 600,
                   fontSize: 15,
-                  textUnderlineOffset: 4,
+                  textDecoration: "none",
+                  boxShadow: "0 8px 24px rgba(18, 140, 126, 0.22)",
                 }}
               >
                 {t(locale, "whatsappCta")} · {whatsappDisplay(wa)}
               </a>
-            ) : (
-              <Link
-                href={`/?lang=${locale}#how-it-works`}
-                style={{
-                  color: "#174A8B",
-                  fontWeight: 600,
-                  fontSize: 15,
-                  textUnderlineOffset: 4,
-                }}
-              >
-                {t(locale, "howItWorks")}
-              </Link>
-            )}
+            ) : null}
           </div>
 
           <figure

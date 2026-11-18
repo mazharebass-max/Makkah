@@ -65,7 +65,7 @@ export const messages = {
     includedHeading: "What's included on this pilot",
     included1: "Online search of seed corridors and draft vehicle classes",
     included2: "Sandbox checkout only — never a live payment capture",
-    included3: "WhatsApp contact when the owner publishes a real number",
+    included3: "WhatsApp contact for corridor questions",
     quoteBody:
       "We needed a clear Jeddah–Makkah pickup window and a calm SUV for our parents — no surprise add-ons.",
     quoteAttr: "Pilot feedback sample · replace with an owner-approved real quote",
@@ -204,7 +204,7 @@ export const messages = {
     includedHeading: "ما يشمله هذا التجريب",
     included1: "بحث إلكتروني في الممرات والفئات المسودة",
     included2: "دفع تجريبي فقط — ليس تحصيل بوابة حية",
-    included3: "واتساب عند نشر المالك لرقم حقيقي",
+    included3: "تواصل واتساب لأسئلة الممرات",
     quoteBody:
       "احتجنا موعد التقاط واضحاً بين جدة ومكة وسيارة هادئة لوالدينا — بلا إضافات مفاجئة.",
     quoteAttr: "عينة ملاحظات تجريبية · استبدلها باقتباس حقيقي معتمد من المالك",

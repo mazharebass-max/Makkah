@@ -73,7 +73,19 @@ export function SiteChrome({
                 href={whatsappHref(wa, t(locale, "whatsappPrefill"))}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ color: "#087F6D", fontWeight: 600 }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minHeight: 40,
+                  padding: "8px 14px",
+                  borderRadius: 12,
+                  background: "#128C7E",
+                  color: "#fff",
+                  fontWeight: 600,
+                  fontSize: 14,
+                  textDecoration: "none",
+                }}
               >
                 {t(locale, "whatsappCta")}
               </a>
