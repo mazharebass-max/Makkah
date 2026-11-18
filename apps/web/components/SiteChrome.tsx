@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { PublicShell } from "@haramain/ui";
 import { dirFor, otherLocale, t, type Locale } from "../lib/i18n";
+import { whatsappDisplay, whatsappE164, whatsappHref } from "../lib/whatsapp";
 
 export function SiteChrome({
   locale,
@@ -15,6 +16,7 @@ export function SiteChrome({
   const router = useRouter();
   const pathname = usePathname();
   const search = useSearchParams();
+  const wa = whatsappE164();
 
   function switchLocale() {
     const next = otherLocale(locale);
@@ -64,6 +66,16 @@ export function SiteChrome({
             <Link href={`/legal/terms?lang=${locale}`}>{t(locale, "legal")}</Link>
             <Link href={`/trips?lang=${locale}`}>{t(locale, "myTrips")}</Link>
             <Link href={`/login?lang=${locale}`}>{t(locale, "signIn")}</Link>
+            {wa ? (
+              <a
+                href={whatsappHref(wa, t(locale, "whatsappPrefill"))}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "#087F6D", fontWeight: 600 }}
+              >
+                {t(locale, "whatsappCta")}
+              </a>
+            ) : null}
             <button
               type="button"
               onClick={switchLocale}
@@ -94,6 +106,18 @@ export function SiteChrome({
             }}
           >
             <p style={{ margin: 0 }}>{t(locale, "pilot")}</p>
+            {wa ? (
+              <p style={{ margin: 0 }}>
+                <a
+                  href={whatsappHref(wa, t(locale, "whatsappPrefill"))}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "#087F6D", fontWeight: 600 }}
+                >
+                  {t(locale, "whatsappCta")} · {whatsappDisplay(wa)}
+                </a>
+              </p>
+            ) : null}
             <nav aria-label={t(locale, "legal")} style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
               <Link href={`/legal/terms?lang=${locale}`}>{t(locale, "terms")}</Link>
               <Link href={`/legal/privacy?lang=${locale}`}>{t(locale, "privacy")}</Link>

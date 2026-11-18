@@ -14,6 +14,7 @@ import {
   organizationJsonLd,
   serviceJsonLd,
 } from "../lib/seo";
+import { whatsappDisplay, whatsappE164, whatsappHref } from "../lib/whatsapp";
 
 export async function generateMetadata({
   searchParams,
@@ -51,6 +52,7 @@ export default async function HomePage({
   searchParams?: { lang?: string };
 }) {
   const locale: Locale = localeFromSearchParams(searchParams);
+  const wa = whatsappE164();
   const [routes, pickupPoints] = await Promise.all([fetchRoutes(), fetchPickupPoints()]);
 
   const faqs =
@@ -168,6 +170,21 @@ export default async function HomePage({
             >
               {t(locale, "howItWorks")}
             </Link>
+            {wa ? (
+              <a
+                href={whatsappHref(wa, t(locale, "whatsappPrefill"))}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: "#087F6D",
+                  fontWeight: 600,
+                  fontSize: 15,
+                  textUnderlineOffset: 4,
+                }}
+              >
+                {t(locale, "whatsappCta")} · {whatsappDisplay(wa)}
+              </a>
+            ) : null}
           </div>
         </div>
 
