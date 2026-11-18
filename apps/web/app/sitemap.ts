@@ -20,13 +20,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
   const entries: MetadataRoute.Sitemap = [];
 
+  const priorityFor = (path: (typeof publicPaths)[number]) => {
+    if (path === "/") return 1;
+    if (path === "/routes" || path === "/fleet" || path === "/contact" || path === "/about") return 0.8;
+    if (path === "/how-it-works" || path === "/faq" || path === "/search") return 0.75;
+    return 0.55;
+  };
+
   for (const path of publicPaths) {
     for (const locale of ["en", "ar"] as const) {
       entries.push({
         url: absoluteUrl(path, locale),
         lastModified,
         changeFrequency: path === "/" ? "weekly" : "monthly",
-        priority: path === "/" ? 1 : 0.7,
+        priority: priorityFor(path),
         alternates: {
           languages: {
             en: absoluteUrl(path, "en"),

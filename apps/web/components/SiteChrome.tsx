@@ -90,17 +90,20 @@ function SiteChromeInner({
     </Link>
   );
 
+  // Journey order: corridors → vehicles → how → who → contact
   const primaryLinks = [
-    { href: `/about?lang=${locale}`, label: t(locale, "aboutNav") },
-    { href: `/fleet?lang=${locale}`, label: t(locale, "fleetNav") },
-    { href: `/routes?lang=${locale}`, label: t(locale, "routesNav") },
-    { href: `/how-it-works?lang=${locale}`, label: t(locale, "howItWorks") },
+    { href: `/routes?lang=${locale}`, path: "/routes", label: t(locale, "routesNav") },
+    { href: `/fleet?lang=${locale}`, path: "/fleet", label: t(locale, "fleetNav") },
+    { href: `/how-it-works?lang=${locale}`, path: "/how-it-works", label: t(locale, "howItWorks") },
+    { href: `/about?lang=${locale}`, path: "/about", label: t(locale, "aboutNav") },
+    { href: `/contact?lang=${locale}`, path: "/contact", label: t(locale, "contactNav") },
   ];
 
   const bookHref = `/?lang=${locale}#book`;
   const accountHref = `/login?lang=${locale}`;
   const tripsHref = `/trips?lang=${locale}`;
   const waHref = wa ? whatsappHref(wa, t(locale, "whatsappPrefill")) : null;
+  const isActive = (path: string) => pathname === path || pathname.startsWith(`${path}/`);
 
   const quietLink: CSSProperties = {
     color: "#0B1F3A",
@@ -181,25 +184,36 @@ function SiteChromeInner({
               className="hr-nav-desktop"
               style={{ display: "flex", alignItems: "center", gap: 6 }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 2, marginInlineEnd: 6 }}>
-                {primaryLinks.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    style={quietLink}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "rgba(26,95,191,0.08)";
-                      e.currentTarget.style.color = "#1A5FBF";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "transparent";
-                      e.currentTarget.style.color = "#0B1F3A";
-                    }}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
+              <nav
+                aria-label={t(locale, "navBrowse")}
+                style={{ display: "flex", alignItems: "center", gap: 2, marginInlineEnd: 6 }}
+              >
+                {primaryLinks.map((item) => {
+                  const active = isActive(item.path);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      aria-current={active ? "page" : undefined}
+                      style={{
+                        ...quietLink,
+                        background: active ? "rgba(26,95,191,0.1)" : "transparent",
+                        color: active ? "#1A5FBF" : "#0B1F3A",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "rgba(26,95,191,0.08)";
+                        e.currentTarget.style.color = "#1A5FBF";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = active ? "rgba(26,95,191,0.1)" : "transparent";
+                        e.currentTarget.style.color = active ? "#1A5FBF" : "#0B1F3A";
+                      }}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </nav>
 
               <span
                 aria-hidden="true"
@@ -301,23 +315,53 @@ function SiteChromeInner({
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {primaryLinks.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMenuOpen(false)}
-                      style={{
-                        ...quietLink,
-                        display: "block",
-                        padding: "14px 8px",
-                        fontSize: 16,
-                        borderBottom: "1px solid rgba(11,31,58,0.06)",
-                        borderRadius: 0,
-                      }}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
+                  <p
+                    style={{
+                      margin: "8px 8px 4px",
+                      fontSize: 12,
+                      fontWeight: 800,
+                      letterSpacing: "0.04em",
+                      textTransform: "uppercase",
+                      color: "#526276",
+                    }}
+                  >
+                    {t(locale, "navBrowse")}
+                  </p>
+                  {primaryLinks.map((item) => {
+                    const active = isActive(item.path);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setMenuOpen(false)}
+                        aria-current={active ? "page" : undefined}
+                        style={{
+                          ...quietLink,
+                          display: "block",
+                          padding: "14px 8px",
+                          fontSize: 16,
+                          borderBottom: "1px solid rgba(11,31,58,0.06)",
+                          borderRadius: 0,
+                          color: active ? "#1A5FBF" : "#0B1F3A",
+                          background: active ? "rgba(26,95,191,0.06)" : "transparent",
+                        }}
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                  <p
+                    style={{
+                      margin: "16px 8px 4px",
+                      fontSize: 12,
+                      fontWeight: 800,
+                      letterSpacing: "0.04em",
+                      textTransform: "uppercase",
+                      color: "#526276",
+                    }}
+                  >
+                    {t(locale, "navAccount")}
+                  </p>
                   <Link
                     href={tripsHref}
                     onClick={() => setMenuOpen(false)}
@@ -345,6 +389,20 @@ function SiteChromeInner({
                     }}
                   >
                     {t(locale, "accountNav")}
+                  </Link>
+                  <Link
+                    href={`/faq?lang=${locale}`}
+                    onClick={() => setMenuOpen(false)}
+                    style={{
+                      ...quietLink,
+                      display: "block",
+                      padding: "14px 8px",
+                      fontSize: 16,
+                      borderBottom: "1px solid rgba(11,31,58,0.06)",
+                      borderRadius: 0,
+                    }}
+                  >
+                    {t(locale, "faqNav")}
                   </Link>
 
                   <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
@@ -459,29 +517,28 @@ function SiteChromeInner({
                       width: "fit-content",
                     }}
                   >
-                    {t(locale, "footerContactUs")} · {whatsappDisplay(wa)}
+                    {t(locale, "whatsappCta")} · {whatsappDisplay(wa)}
                   </a>
                 ) : (
                   <Link href={`/contact?lang=${locale}`} style={{ ...linkStyle, color: "#1A5FBF", fontWeight: 600 }}>
-                    {t(locale, "footerContactUs")}
+                    {t(locale, "contactNav")}
                   </Link>
                 )}
               </div>
 
               <div style={{ display: "grid", gap: 8 }}>
-                <p style={colTitle}>{t(locale, "footerExplore")}</p>
-                {footerLink(`/how-it-works?lang=${locale}`, t(locale, "howItWorks"))}
-                {footerLink(`/routes?lang=${locale}`, t(locale, "tripsOfferedHeading"))}
-                {footerLink(`/fleet?lang=${locale}`, t(locale, "fleetNav"))}
+                <p style={colTitle}>{t(locale, "footerRide")}</p>
                 {footerLink(`/?lang=${locale}#book`, t(locale, "searchCta"))}
-                {footerLink(`/trips?lang=${locale}`, t(locale, "myTrips"))}
+                {footerLink(`/routes?lang=${locale}`, t(locale, "routesNav"))}
+                {footerLink(`/fleet?lang=${locale}`, t(locale, "fleetNav"))}
+                {footerLink(`/how-it-works?lang=${locale}`, t(locale, "howItWorks"))}
               </div>
 
               <div style={{ display: "grid", gap: 8 }}>
-                <p style={colTitle}>{t(locale, "footerCompany")}</p>
-                {footerLink(`/about?lang=${locale}`, t(locale, "aboutNav"))}
+                <p style={colTitle}>{t(locale, "footerHelp")}</p>
                 {footerLink(`/contact?lang=${locale}`, t(locale, "contactNav"))}
                 {footerLink(`/faq?lang=${locale}`, t(locale, "faqNav"))}
+                {footerLink(`/about?lang=${locale}`, t(locale, "aboutNav"))}
                 {footerLink(`/login?lang=${locale}`, t(locale, "accountNav"))}
                 {footerLink(`/providers/apply?lang=${locale}`, t(locale, "providerApply"))}
               </div>
