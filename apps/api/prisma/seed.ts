@@ -291,25 +291,116 @@ async function main() {
     update: {},
   });
 
-  const sedan = await prisma.vehicleCategory.upsert({
+  // Keep SEDAN / VAN codes for existing tests & quotes; display names match the public luxury fleet.
+  const haramPak = await prisma.vehicleCategory.upsert({
     where: { code: "SEDAN" },
-    update: { draftLabel: DRAFT },
+    update: {
+      draftLabel: DRAFT,
+      nameEn: "Haram Pak SUV",
+      nameAr: "حرم باك SUV",
+      passengerCap: 6,
+      luggageCap: 8,
+      active: true,
+    },
     create: {
       code: "SEDAN",
-      nameEn: "Sedan",
-      nameAr: "سيدان",
-      passengerCap: 3,
-      luggageCap: 3,
+      nameEn: "Haram Pak SUV",
+      nameAr: "حرم باك SUV",
+      passengerCap: 6,
+      luggageCap: 8,
       draftLabel: DRAFT,
     },
   });
-  const van = await prisma.vehicleCategory.upsert({
+  const staria = await prisma.vehicleCategory.upsert({
     where: { code: "VAN" },
-    update: { draftLabel: DRAFT },
+    update: {
+      draftLabel: DRAFT,
+      nameEn: "Hyundai Staria (high roof)",
+      nameAr: "هيونداي ستاريا (سقف مرتفع)",
+      passengerCap: 7,
+      luggageCap: 10,
+      active: true,
+    },
     create: {
       code: "VAN",
-      nameEn: "Van",
-      nameAr: "فان",
+      nameEn: "Hyundai Staria (high roof)",
+      nameAr: "هيونداي ستاريا (سقف مرتفع)",
+      passengerCap: 7,
+      luggageCap: 10,
+      draftLabel: DRAFT,
+    },
+  });
+  const toyota = await prisma.vehicleCategory.upsert({
+    where: { code: "TOYOTA_ALPHARD" },
+    update: {
+      draftLabel: DRAFT,
+      nameEn: "Toyota Alphard-class",
+      nameAr: "تويوتا ألفارد",
+      passengerCap: 6,
+      luggageCap: 6,
+      active: true,
+    },
+    create: {
+      code: "TOYOTA_ALPHARD",
+      nameEn: "Toyota Alphard-class",
+      nameAr: "تويوتا ألفارد",
+      passengerCap: 6,
+      luggageCap: 6,
+      draftLabel: DRAFT,
+    },
+  });
+  const gmc = await prisma.vehicleCategory.upsert({
+    where: { code: "GMC_CLASS" },
+    update: {
+      draftLabel: DRAFT,
+      nameEn: "GMC-class SUV",
+      nameAr: "فئة جي إم سي",
+      passengerCap: 7,
+      luggageCap: 8,
+      active: true,
+    },
+    create: {
+      code: "GMC_CLASS",
+      nameEn: "GMC-class SUV",
+      nameAr: "فئة جي إم سي",
+      passengerCap: 7,
+      luggageCap: 8,
+      draftLabel: DRAFT,
+    },
+  });
+  const lexus = await prisma.vehicleCategory.upsert({
+    where: { code: "LEXUS_CLASS" },
+    update: {
+      draftLabel: DRAFT,
+      nameEn: "Lexus-class SUV",
+      nameAr: "فئة لكزس",
+      passengerCap: 4,
+      luggageCap: 4,
+      active: true,
+    },
+    create: {
+      code: "LEXUS_CLASS",
+      nameEn: "Lexus-class SUV",
+      nameAr: "فئة لكزس",
+      passengerCap: 4,
+      luggageCap: 4,
+      draftLabel: DRAFT,
+    },
+  });
+  const mercedes = await prisma.vehicleCategory.upsert({
+    where: { code: "MERCEDES_V" },
+    update: {
+      draftLabel: DRAFT,
+      nameEn: "Mercedes V-Class",
+      nameAr: "مرسيدس في-كلاس",
+      passengerCap: 7,
+      luggageCap: 7,
+      active: true,
+    },
+    create: {
+      code: "MERCEDES_V",
+      nameEn: "Mercedes V-Class",
+      nameAr: "مرسيدس في-كلاس",
       passengerCap: 7,
       luggageCap: 7,
       draftLabel: DRAFT,
@@ -330,16 +421,16 @@ async function main() {
   });
 
   await ensurePricing(
-    sedan.id,
+    haramPak.id,
     "00000000-0000-4000-8000-000000000001",
-    25_000,
-    "Draft sedan base — owner approval required",
+    35_000,
+    "Draft Haram Pak base — owner approval required",
   );
   await ensurePricing(
-    van.id,
+    staria.id,
     "00000000-0000-4000-8000-000000000002",
-    45_000,
-    "Draft van base — owner approval required",
+    48_000,
+    "Draft Staria high-roof base — owner approval required",
   );
   await ensurePricing(
     coach.id,
@@ -347,29 +438,77 @@ async function main() {
     120_000,
     "Draft coach base — owner approval required",
   );
+  await ensurePricing(
+    toyota.id,
+    "00000000-0000-4000-8000-000000000004",
+    55_000,
+    "Draft Toyota Alphard-class base — owner approval required",
+  );
+  await ensurePricing(
+    gmc.id,
+    "00000000-0000-4000-8000-000000000005",
+    52_000,
+    "Draft GMC-class base — owner approval required",
+  );
+  await ensurePricing(
+    lexus.id,
+    "00000000-0000-4000-8000-000000000006",
+    60_000,
+    "Draft Lexus-class base — owner approval required",
+  );
+  await ensurePricing(
+    mercedes.id,
+    "00000000-0000-4000-8000-000000000007",
+    70_000,
+    "Draft Mercedes V-Class base — owner approval required",
+  );
 
   const vehicles = [
     {
       id: "00000000-0000-4000-8000-000000000010",
-      categoryId: sedan.id,
-      plateNumber: "SYN-001",
-      makeModel: "Synthetic Sedan",
-      passengerCap: 3,
-      luggageCap: 3,
+      categoryId: haramPak.id,
+      plateNumber: "SYN-HP1",
+      makeModel: "Haram Pak SUV (synthetic)",
+      passengerCap: 6,
+      luggageCap: 8,
     },
     {
       id: "00000000-0000-4000-8000-000000000011",
-      categoryId: sedan.id,
-      plateNumber: "SYN-002",
-      makeModel: "Synthetic Sedan B",
-      passengerCap: 3,
-      luggageCap: 3,
+      categoryId: staria.id,
+      plateNumber: "SYN-ST1",
+      makeModel: "Hyundai Staria high-roof (synthetic)",
+      passengerCap: 7,
+      luggageCap: 10,
     },
     {
       id: "00000000-0000-4000-8000-000000000012",
-      categoryId: van.id,
-      plateNumber: "SYN-V01",
-      makeModel: "Synthetic Van",
+      categoryId: toyota.id,
+      plateNumber: "SYN-TA1",
+      makeModel: "Toyota Alphard-class (synthetic)",
+      passengerCap: 6,
+      luggageCap: 6,
+    },
+    {
+      id: "00000000-0000-4000-8000-000000000013",
+      categoryId: gmc.id,
+      plateNumber: "SYN-GM1",
+      makeModel: "GMC-class SUV (synthetic)",
+      passengerCap: 7,
+      luggageCap: 8,
+    },
+    {
+      id: "00000000-0000-4000-8000-000000000014",
+      categoryId: lexus.id,
+      plateNumber: "SYN-LX1",
+      makeModel: "Lexus-class SUV (synthetic)",
+      passengerCap: 4,
+      luggageCap: 4,
+    },
+    {
+      id: "00000000-0000-4000-8000-000000000015",
+      categoryId: mercedes.id,
+      plateNumber: "SYN-MB1",
+      makeModel: "Mercedes V-Class (synthetic)",
       passengerCap: 7,
       luggageCap: 7,
     },
@@ -380,6 +519,11 @@ async function main() {
       where: { id: v.id },
       update: {
         active: true,
+        categoryId: v.categoryId,
+        plateNumber: v.plateNumber,
+        makeModel: v.makeModel,
+        passengerCap: v.passengerCap,
+        luggageCap: v.luggageCap,
         availabilityNote: "Synthetic seed inventory — not live availability",
       },
       create: {

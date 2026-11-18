@@ -9,6 +9,20 @@ export const fleetRows = [
     altAr: "سيارة حرم باك عند رصيف المطار مع عربة أمتعة",
   },
   {
+    src: "/vehicles/hyundai-staria-highroof.jpg",
+    labelKey: "fleetStaria" as const,
+    capKey: "fleetCapStaria" as const,
+    altEn: "Hyundai Staria high-roof MPV for family pilgrim transfers",
+    altAr: "هيونداي ستاريا سقف مرتفع لعائلات الحجاج والزوار",
+  },
+  {
+    src: "/vehicles/toyota-alphard-class.jpg",
+    labelKey: "fleetToyota" as const,
+    capKey: "fleetCapToyota" as const,
+    altEn: "Toyota Alphard-class luxury MPV",
+    altAr: "تويوتا ألفارد فاخرة",
+  },
+  {
     src: "/vehicles/gmc-class-suv.jpg",
     labelKey: "fleetGmc" as const,
     capKey: "fleetCapGmc" as const,
@@ -21,6 +35,13 @@ export const fleetRows = [
     capKey: "fleetCapLexus" as const,
     altEn: "Lexus-class SUV at a hotel porte-cochere",
     altAr: "سيارة فئة لكزس أمام مدخل فندق",
+  },
+  {
+    src: "/vehicles/mercedes-v-class.jpg",
+    labelKey: "fleetMercedes" as const,
+    capKey: "fleetCapMercedes" as const,
+    altEn: "Mercedes-Benz V-Class luxury people carrier",
+    altAr: "مرسيدس في-كلاس فاخرة",
   },
 ] as const;
 

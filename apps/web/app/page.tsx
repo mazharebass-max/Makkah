@@ -6,6 +6,7 @@ import { JsonLd } from "../components/JsonLd";
 import { SiteChrome } from "../components/SiteChrome";
 import { fetchRoutes } from "../lib/api";
 import { t, type Locale } from "../lib/i18n";
+import { fleetRows } from "../lib/public-content";
 import {
   buildPageMetadata,
   faqJsonLd,
@@ -24,29 +25,7 @@ export async function generateMetadata({
   return buildPageMetadata({ key: "home", locale, pathname: "/" });
 }
 
-const fleetRows = [
-  {
-    src: "/vehicles/haram-pack-suv.jpg",
-    labelKey: "fleetHaramPack" as const,
-    capKey: "fleetCapHaramPack" as const,
-    altEn: "Haram Pak SUV at an airport arrival curb with luggage trolley",
-    altAr: "سيارة حرم باك عند رصيف المطار مع عربة أمتعة",
-  },
-  {
-    src: "/vehicles/gmc-class-suv.jpg",
-    labelKey: "fleetGmc" as const,
-    capKey: "fleetCapGmc" as const,
-    altEn: "GMC-class SUV on a desert highway corridor",
-    altAr: "سيارة فئة جي إم سي على طريق صحراوي",
-  },
-  {
-    src: "/vehicles/lexus-class-suv.jpg",
-    labelKey: "fleetLexus" as const,
-    capKey: "fleetCapLexus" as const,
-    altEn: "Lexus-class SUV at a hotel porte-cochere",
-    altAr: "سيارة فئة لكزس أمام مدخل فندق",
-  },
-] as const;
+const fleetAccents = ["#1A5FBF", "#F0771F", "#D62828", "#1A5FBF", "#F0771F", "#D62828"] as const;
 
 export default async function HomePage({
   searchParams,
@@ -201,7 +180,7 @@ export default async function HomePage({
           style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 16 }}
         >
           {fleetRows.map((row, i) => {
-            const accent = (["#1A5FBF", "#F0771F", "#D62828"] as const)[i] ?? "#1A5FBF";
+            const accent = fleetAccents[i % fleetAccents.length] ?? "#1A5FBF";
             return (
               <figure key={row.src} style={{ margin: 0, display: "grid", gap: 8 }}>
                 <div
@@ -228,6 +207,11 @@ export default async function HomePage({
             );
           })}
         </div>
+        <p style={{ margin: 0 }}>
+          <Link href={`/fleet?lang=${locale}`} style={{ color: "#1A5FBF", fontWeight: 600 }}>
+            {t(locale, "fleetNav")}
+          </Link>
+        </p>
       </section>
 
       {/* 4. Help — one place */}
@@ -273,7 +257,10 @@ export default async function HomePage({
           margin-inline: calc(-1 * clamp(16px, 4vw, 48px));
           margin-top: -28px;
         }
-        @media (max-width: 800px) {
+        @media (max-width: 960px) {
+          .hr-fleet-row { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        }
+        @media (max-width: 560px) {
           .hr-fleet-row { grid-template-columns: 1fr !important; }
         }
       `}</style>
