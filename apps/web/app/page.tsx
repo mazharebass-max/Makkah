@@ -6,6 +6,7 @@ import { BookingWidget } from "../components/BookingWidget";
 import { JsonLd } from "../components/JsonLd";
 import { SiteChrome } from "../components/SiteChrome";
 import { fetchPickupPoints, fetchRoutes } from "../lib/api";
+import { corridorVisual, placeHighlights } from "../lib/public-content";
 import { t, type Locale } from "../lib/i18n";
 import {
   buildPageMetadata,
@@ -329,6 +330,52 @@ export default async function HomePage({
         <BookingWidget locale={locale} routes={routes} />
       </section>
 
+      {/* Haram Pack + Madinah / Makkah place stills */}
+      <section
+        id="places"
+        aria-labelledby="places-heading"
+        style={{ marginTop: 64, display: "grid", gap: 16 }}
+      >
+        <h2 id="places-heading" style={{ margin: 0, fontSize: 28 }}>
+          {t(locale, "placesHeading")}
+        </h2>
+        <p style={{ margin: 0, color: "#526276", maxWidth: 680 }}>{t(locale, "placesHint")}</p>
+        <div
+          className="hr-places-row"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+            gap: 16,
+          }}
+        >
+          {placeHighlights.map((p, i) => (
+            <figure
+              key={p.src}
+              style={{
+                margin: 0,
+                display: "grid",
+                gap: 8,
+                animation: `hr-rise 600ms ease ${60 + i * 60}ms both`,
+              }}
+            >
+              <div style={{ overflow: "hidden", background: "#E8EDF5", aspectRatio: "4 / 3" }}>
+                <Image
+                  src={p.src}
+                  alt={locale === "ar" ? p.altAr : p.altEn}
+                  width={800}
+                  height={600}
+                  style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              </div>
+              <figcaption style={{ display: "grid", gap: 4 }}>
+                <strong style={{ color: "#0B1F3A", fontSize: 17 }}>{t(locale, p.titleKey)}</strong>
+                <span style={{ color: "#526276", fontSize: 14, lineHeight: 1.5 }}>{t(locale, p.bodyKey)}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+
       {/* Trips offered */}
       <section
         id="trips-offered"
@@ -339,34 +386,46 @@ export default async function HomePage({
           {t(locale, "tripsOfferedHeading")}
         </h2>
         <p style={{ margin: 0, color: "#526276", maxWidth: 680 }}>{t(locale, "tripsOfferedHint")}</p>
-        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 0, maxWidth: 760 }}>
-          {routes.map((r) => (
-            <li
-              key={r.code}
-              style={{
-                padding: "20px 0",
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 16,
-                flexWrap: "wrap",
-                alignItems: "baseline",
-                borderBottom: "1px solid rgba(11,31,58,0.1)",
-              }}
-            >
-              <div style={{ display: "grid", gap: 4 }}>
-                <strong style={{ fontSize: 18, color: "#0B1F3A" }}>
-                  {locale === "ar" && r.nameAr ? r.nameAr : r.nameEn}
-                </strong>
-                <span style={{ color: "#526276", fontSize: 13 }}>{r.code}</span>
-              </div>
-              <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-                <Badge tone="warning">{r.draftLabel}</Badge>
-                <Link href={`/?lang=${locale}#book`} style={{ fontWeight: 600, fontSize: 14 }}>
-                  {t(locale, "searchCta")}
-                </Link>
-              </div>
-            </li>
-          ))}
+        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 0, maxWidth: 820 }}>
+          {routes.map((r) => {
+            const visual = corridorVisual(r.code);
+            return (
+              <li
+                key={r.code}
+                style={{
+                  padding: "18px 0",
+                  display: "grid",
+                  gridTemplateColumns: "120px minmax(0, 1fr) auto",
+                  gap: 16,
+                  alignItems: "center",
+                  borderBottom: "1px solid rgba(11,31,58,0.1)",
+                }}
+                className="hr-trip-row"
+              >
+                <div style={{ overflow: "hidden", background: "#E8EDF5", width: 120, height: 80 }}>
+                  <Image
+                    src={visual.src}
+                    alt={locale === "ar" ? visual.altAr : visual.altEn}
+                    width={240}
+                    height={160}
+                    style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                </div>
+                <div style={{ display: "grid", gap: 4 }}>
+                  <strong style={{ fontSize: 18, color: "#0B1F3A" }}>
+                    {locale === "ar" && r.nameAr ? r.nameAr : r.nameEn}
+                  </strong>
+                  <span style={{ color: "#526276", fontSize: 13 }}>{r.code}</span>
+                </div>
+                <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                  <Badge tone="warning">{r.draftLabel}</Badge>
+                  <Link href={`/?lang=${locale}#book`} style={{ fontWeight: 600, fontSize: 14 }}>
+                    {t(locale, "searchCta")}
+                  </Link>
+                </div>
+              </li>
+            );
+          })}
           {routes.length === 0 ? (
             <li style={{ color: "#526276" }}>{t(locale, "emptySearch")}</li>
           ) : null}
@@ -563,6 +622,9 @@ export default async function HomePage({
         }
         @media (max-width: 800px) {
           .hr-fleet-row { grid-template-columns: 1fr !important; }
+          .hr-places-row { grid-template-columns: 1fr !important; }
+          .hr-trip-row { grid-template-columns: 88px minmax(0, 1fr) !important; }
+          .hr-trip-row > div:last-child { grid-column: 2; }
         }
         @media (prefers-reduced-motion: reduce) {
           .hr-bleed, .hr-fleet-row figure { animation: none !important; }

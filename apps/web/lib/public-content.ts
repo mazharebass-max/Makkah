@@ -24,6 +24,65 @@ export const fleetRows = [
   },
 ] as const;
 
+/** Corridor place/vehicle stills — Haram Pack for airport legs, Madinah / Makkah place photos where the route needs them. */
+export function corridorVisual(code: string): {
+  src: string;
+  altEn: string;
+  altAr: string;
+} {
+  const c = code.toUpperCase();
+  if (c.includes("MADINAH") || c.includes("MED-") || c.endsWith("MED")) {
+    return {
+      src: "/places/madinah-nabawi.jpg",
+      altEn: "Al-Masjid an-Nabawi in Madinah — corridor context photo",
+      altAr: "المسجد النبوي في المدينة — صورة سياق للممر",
+    };
+  }
+  if (c.includes("MAKKAH") && !c.includes("JED")) {
+    return {
+      src: "/places/makkah-haram-skyline.jpg",
+      altEn: "Makkah skyline near the Haram — corridor context photo",
+      altAr: "أفق مكة قرب الحرم — صورة سياق للممر",
+    };
+  }
+  if (c.includes("JED") || c.includes("JEDDAH") || c.includes("MAKKAH")) {
+    return {
+      src: "/vehicles/haram-pack-suv.jpg",
+      altEn: "Haram Pack SUV ready for Jeddah–Makkah airport transfer",
+      altAr: "سيارة حرم باك جاهزة لنقل مطار جدة–مكة",
+    };
+  }
+  return {
+    src: "/vehicles/haram-pack-suv.jpg",
+    altEn: "Haram Pack SUV for Haramain corridor transfers",
+    altAr: "سيارة حرم باك لتنقلات ممرات الحرمين",
+  };
+}
+
+export const placeHighlights = [
+  {
+    src: "/vehicles/haram-pack-suv.jpg",
+    titleKey: "placeHaramPackTitle" as const,
+    bodyKey: "placeHaramPackBody" as const,
+    altEn: "Haram Pack SUV at an airport arrival curb",
+    altAr: "سيارة حرم باك عند رصيف المطار",
+  },
+  {
+    src: "/places/madinah-nabawi.jpg",
+    titleKey: "placeMadinahTitle" as const,
+    bodyKey: "placeMadinahBody" as const,
+    altEn: "Al-Masjid an-Nabawi in Madinah",
+    altAr: "المسجد النبوي في المدينة",
+  },
+  {
+    src: "/places/makkah-haram-skyline.jpg",
+    titleKey: "placeMakkahTitle" as const,
+    bodyKey: "placeMakkahBody" as const,
+    altEn: "Makkah skyline near the Haram",
+    altAr: "أفق مكة قرب الحرم",
+  },
+] as const;
+
 export function transferSteps(locale: Locale) {
   return [
     { title: t(locale, "transferStep1Title"), body: t(locale, "transferStep1Body") },

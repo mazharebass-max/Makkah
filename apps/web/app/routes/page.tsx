@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@haramain/ui";
 import { SiteChrome } from "../../components/SiteChrome";
 import { fetchPickupPoints, fetchRoutes } from "../../lib/api";
 import { t, type Locale } from "../../lib/i18n";
-import { corridorOps } from "../../lib/public-content";
+import { corridorOps, corridorVisual } from "../../lib/public-content";
 import { buildPageMetadata, localeFromSearchParams } from "../../lib/seo";
 
 export async function generateMetadata({
@@ -34,27 +35,38 @@ export default async function RoutesPage({
           <p style={{ margin: 0, color: "#526276", lineHeight: 1.6 }}>{t(locale, "routesHint")}</p>
         </header>
 
-        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 0, maxWidth: 720 }}>
-          {routes.map((r) => (
-            <li
-              key={r.code}
-              style={{
-                padding: "16px 0",
-                borderBottom: "1px solid rgba(11,31,58,0.08)",
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 12,
-                flexWrap: "wrap",
-                alignItems: "center",
-              }}
-            >
-              <div>
-                <strong>{locale === "ar" && r.nameAr ? r.nameAr : r.nameEn}</strong>
-                <div style={{ color: "#526276", fontSize: 13 }}>{r.code}</div>
-              </div>
-              <Badge tone="warning">{r.draftLabel}</Badge>
-            </li>
-          ))}
+        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 0, maxWidth: 820 }}>
+          {routes.map((r) => {
+            const visual = corridorVisual(r.code);
+            return (
+              <li
+                key={r.code}
+                style={{
+                  padding: "16px 0",
+                  borderBottom: "1px solid rgba(11,31,58,0.08)",
+                  display: "grid",
+                  gridTemplateColumns: "120px minmax(0, 1fr) auto",
+                  gap: 14,
+                  alignItems: "center",
+                }}
+              >
+                <div style={{ overflow: "hidden", background: "#E8EDF5", width: 120, height: 80 }}>
+                  <Image
+                    src={visual.src}
+                    alt={locale === "ar" ? visual.altAr : visual.altEn}
+                    width={240}
+                    height={160}
+                    style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                </div>
+                <div>
+                  <strong>{locale === "ar" && r.nameAr ? r.nameAr : r.nameEn}</strong>
+                  <div style={{ color: "#526276", fontSize: 13 }}>{r.code}</div>
+                </div>
+                <Badge tone="warning">{r.draftLabel}</Badge>
+              </li>
+            );
+          })}
         </ul>
 
         <section style={{ display: "grid", gap: 16 }}>
