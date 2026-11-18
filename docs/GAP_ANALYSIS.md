@@ -68,7 +68,7 @@
 | **F5** | Public completeness + FeatureFlag/SystemSetting; PickupPoint for airports; polish RTL/a11y | Responsive screenshots; flags default-off |
 | **F6+** | Mobile EAS readiness, worker jobs (expiry), staging hardening deltas — only after F1–F5 | Owner decisions still block live ops |
 
-**Priority now:** **F1** (highest customer-facing breakage + missing journey pages).
+**Priority now:** **F2** (OTP verify + MFA scaffold) after F1 merge `a1306d6`.
 
 ---
 

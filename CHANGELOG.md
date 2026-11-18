@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.10.0 — 2026-11-18
+
+### Added (Fresh F2 — auth OTP + MFA scaffold)
+
+- `POST /api/v1/auth/otp/request` stores hashed `OtpChallenge` and queues sandbox email OTP
+- `POST /api/v1/auth/otp/verify` verifies code and marks email identity verified
+- `debugCode` returned only in development/test — stripped for staging/production responses
+- Admin TOTP MFA scaffold: enroll / confirm / login step-up verify (staff roles only)
+- Prisma migration for `OtpChallenge` + `User.mfaTotpSecret` / `mfaEnabledAt`
+- Ops security checklist marks admin MFA as `IMPLEMENTED_SCAFFOLD` (not production hardening)
+
+### Explicit non-claims
+
+- Sandbox OTP delivery only; MFA scaffold does not claim production go-live or regulatory clearance
+- `productionGoLive` / `regulatoryClearance` / `liveOps` remain false
+
 ## 0.9.0 — 2026-11-18
 
 ### Added (Fresh F1 — customer web journey + SEO)

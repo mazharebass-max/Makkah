@@ -34,11 +34,13 @@ const envSchema = z.object({
     .string()
     .default("false")
     .transform((v) => v === "true"),
-  AUTH_RATE_LIMIT: z.coerce.number().default(30),
+  AUTH_RATE_LIMIT: z.coerce.number().optional(),
   AUTH_RATE_WINDOW_SEC: z.coerce.number().default(60),
 });
 
-export type Env = z.infer<typeof envSchema>;
+export type Env = z.infer<typeof envSchema> & {
+  AUTH_RATE_LIMIT: number;
+};
 
 let cached: Env | null = null;
 
@@ -48,6 +50,16 @@ export function loadEnv(): Env {
   if (!parsed.success) {
     throw new Error(`Invalid environment: ${parsed.error.message}`);
   }
-  cached = parsed.data;
+  const data = parsed.data;
+  // Tests share one IP across many suites — allow a generous window so OTP/MFA coverage does not trip CI.
+  const authLimit =
+    data.AUTH_RATE_LIMIT ??
+    (data.NODE_ENV === "test" ? 500 : 30);
+  cached = { ...data, AUTH_RATE_LIMIT: authLimit };
   return cached;
+}
+
+/** Test helper — clear cached env after mutating process.env. */
+export function resetEnvCache() {
+  cached = null;
 }

@@ -222,7 +222,11 @@ export class OpsService {
         { id: "rate-limit", title: "Auth/OTP rate limits", status: "IMPLEMENTED_BASELINE" },
         { id: "webhook-hmac", title: "Payment webhook HMAC", status: "IMPLEMENTED_BASELINE" },
         { id: "secrets", title: "Secrets manager (non-local)", status: "OWNER_REQUIRED" },
-        { id: "admin-mfa", title: "Admin MFA", status: "OPEN" },
+        {
+          id: "admin-mfa",
+          title: "Admin MFA (TOTP enroll/verify scaffold)",
+          status: "IMPLEMENTED_SCAFFOLD",
+        },
         { id: "waf", title: "CDN/WAF", status: "OWNER_REQUIRED" },
         { id: "pen-test", title: "External penetration test", status: "OPEN" },
         { id: "dep-scan", title: "Dependency scanning in CI", status: "IMPLEMENTED_BASELINE" },
