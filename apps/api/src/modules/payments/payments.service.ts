@@ -9,11 +9,14 @@ import {
 import {
   BookingStatus,
   ChargeStatus,
+  CommissionStatus,
   InvoiceStatus,
   LedgerEntryType,
+  PayableStatus,
   PaymentIntentStatus,
   Prisma,
   RefundStatus,
+  SettlementStatus,
 } from "@prisma/client";
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { RoleCode } from "@haramain/contracts";
@@ -23,6 +26,9 @@ import { OwnershipService } from "../ownership/ownership.service";
 import type { RequestUser } from "../auth/auth.types";
 import { assertTransition } from "../bookings/booking-state.machine";
 import { NotificationsService } from "../notifications/notifications.service";
+
+/** DRAFT platform commission — OWNER APPROVAL REQUIRED (basis points). */
+export const DRAFT_COMMISSION_RATE_BPS = 1500;
 
 @Injectable()
 export class PaymentsService {
@@ -295,6 +301,33 @@ export class PaymentsService {
           amountHalalas: amount,
           currency: intent.currency,
           note: "Sandbox capture — not a live gateway settlement",
+        },
+      });
+
+      const commissionAmount = Math.floor((amount * DRAFT_COMMISSION_RATE_BPS) / 10_000);
+      await tx.commission.upsert({
+        where: { bookingId: intent.bookingId },
+        create: {
+          bookingId: intent.bookingId,
+          chargeAmountHalalas: amount,
+          rateBps: DRAFT_COMMISSION_RATE_BPS,
+          amountHalalas: commissionAmount,
+          currency: intent.currency,
+          status: CommissionStatus.ACCRUED,
+          draftLabel: "DRAFT — OWNER APPROVAL REQUIRED",
+          note: "Sandbox platform commission accrual — not a live payout split",
+          mode: "sandbox",
+        },
+        update: {},
+      });
+      await tx.ledgerEntry.create({
+        data: {
+          bookingId: intent.bookingId,
+          paymentIntentId: intent.id,
+          type: LedgerEntryType.COMMISSION,
+          amountHalalas: commissionAmount,
+          currency: intent.currency,
+          note: "Sandbox commission accrual — DRAFT rate, not live settlement",
         },
       });
 
@@ -635,30 +668,46 @@ export class PaymentsService {
   }
 
   async reconciliation() {
-    const [charges, refunds, intents, invoices] = await Promise.all([
-      this.prisma.ledgerEntry.aggregate({
-        where: { type: LedgerEntryType.CHARGE },
-        _sum: { amountHalalas: true },
-        _count: true,
-      }),
-      this.prisma.ledgerEntry.aggregate({
-        where: { type: LedgerEntryType.REFUND },
-        _sum: { amountHalalas: true },
-        _count: true,
-      }),
-      this.prisma.paymentIntent.groupBy({
-        by: ["status"],
-        _count: true,
-        _sum: { amountHalalas: true },
-      }),
-      this.prisma.invoice.count({ where: { status: InvoiceStatus.ISSUED } }),
-    ]);
+    const [charges, refunds, commissions, payables, settlements, intents, invoices] =
+      await Promise.all([
+        this.prisma.ledgerEntry.aggregate({
+          where: { type: LedgerEntryType.CHARGE },
+          _sum: { amountHalalas: true },
+          _count: true,
+        }),
+        this.prisma.ledgerEntry.aggregate({
+          where: { type: LedgerEntryType.REFUND },
+          _sum: { amountHalalas: true },
+          _count: true,
+        }),
+        this.prisma.commission.aggregate({
+          where: { status: CommissionStatus.ACCRUED },
+          _sum: { amountHalalas: true },
+          _count: true,
+        }),
+        this.prisma.providerPayable.aggregate({
+          where: { status: { not: PayableStatus.VOID } },
+          _sum: { amountHalalas: true },
+          _count: true,
+        }),
+        this.prisma.settlement.aggregate({
+          _sum: { totalHalalas: true },
+          _count: true,
+        }),
+        this.prisma.paymentIntent.groupBy({
+          by: ["status"],
+          _count: true,
+          _sum: { amountHalalas: true },
+        }),
+        this.prisma.invoice.count({ where: { status: InvoiceStatus.ISSUED } }),
+      ]);
 
     const capturedHalalas = charges._sum.amountHalalas ?? 0;
     const refundedHalalas = Math.abs(refunds._sum.amountHalalas ?? 0);
     return {
       mode: "sandbox" as const,
-      message: "Ledger reconciliation from sandbox events only — no live gateway claims",
+      message:
+        "Ledger reconciliation from sandbox events only — no live gateway or bank payout claims",
       currency: "SAR",
       totals: {
         capturedHalalas,
@@ -667,6 +716,12 @@ export class PaymentsService {
         chargeEntries: charges._count,
         refundEntries: refunds._count,
         issuedInvoices: invoices,
+        commissionHalalas: commissions._sum.amountHalalas ?? 0,
+        commissionCount: commissions._count,
+        payableHalalas: payables._sum.amountHalalas ?? 0,
+        payableCount: payables._count,
+        settlementHalalas: settlements._sum.totalHalalas ?? 0,
+        settlementCount: settlements._count,
       },
       intentsByStatus: intents.map((i) => ({
         status: i.status,
@@ -674,6 +729,334 @@ export class PaymentsService {
         amountHalalas: i._sum.amountHalalas ?? 0,
       })),
       liveGateway: false,
+      livePayout: false,
+    };
+  }
+
+  async listCommissions() {
+    const rows = await this.prisma.commission.findMany({
+      take: 50,
+      orderBy: { createdAt: "desc" },
+      include: { booking: { select: { reference: true, status: true } } },
+    });
+    return {
+      mode: "sandbox" as const,
+      livePayout: false,
+      draftRateBps: DRAFT_COMMISSION_RATE_BPS,
+      message: "Sandbox commission accruals — DRAFT rate, not live splits",
+      data: rows.map((c) => ({
+        id: c.id,
+        bookingId: c.bookingId,
+        bookingReference: c.booking.reference,
+        bookingStatus: c.booking.status,
+        chargeAmountHalalas: c.chargeAmountHalalas,
+        rateBps: c.rateBps,
+        amountHalalas: c.amountHalalas,
+        currency: c.currency,
+        status: c.status,
+        draftLabel: c.draftLabel,
+        mode: c.mode,
+        createdAt: c.createdAt.toISOString(),
+      })),
+    };
+  }
+
+  async listPayables() {
+    const rows = await this.prisma.providerPayable.findMany({
+      take: 50,
+      orderBy: { createdAt: "desc" },
+      include: {
+        booking: { select: { reference: true } },
+        provider: { select: { id: true, tradeName: true, legalName: true } },
+      },
+    });
+    return {
+      mode: "sandbox" as const,
+      livePayout: false,
+      message: "Sandbox provider payables — accrual only, not bank payouts",
+      data: rows.map((p) => ({
+        id: p.id,
+        providerId: p.providerId,
+        providerName: p.provider.tradeName ?? p.provider.legalName,
+        bookingId: p.bookingId,
+        bookingReference: p.booking.reference,
+        settlementId: p.settlementId,
+        amountHalalas: p.amountHalalas,
+        currency: p.currency,
+        status: p.status,
+        draftLabel: p.draftLabel,
+        mode: p.mode,
+        createdAt: p.createdAt.toISOString(),
+      })),
+    };
+  }
+
+  async listSettlements() {
+    const rows = await this.prisma.settlement.findMany({
+      take: 50,
+      orderBy: { createdAt: "desc" },
+      include: {
+        provider: { select: { id: true, tradeName: true, legalName: true } },
+        _count: { select: { payables: true } },
+      },
+    });
+    return {
+      mode: "sandbox" as const,
+      livePayout: false,
+      message: "Sandbox settlement statements only — never a live bank payout claim",
+      data: rows.map((s) => ({
+        id: s.id,
+        statementNumber: s.statementNumber,
+        providerId: s.providerId,
+        providerName: s.provider.tradeName ?? s.provider.legalName,
+        totalHalalas: s.totalHalalas,
+        currency: s.currency,
+        status: s.status,
+        draftLabel: s.draftLabel,
+        payableCount: s._count.payables,
+        mode: s.mode,
+        livePayout: s.livePayout,
+        issuedAt: s.issuedAt?.toISOString() ?? null,
+        createdAt: s.createdAt.toISOString(),
+      })),
+    };
+  }
+
+  async getSettlement(id: string) {
+    const settlement = await this.prisma.settlement.findUnique({
+      where: { id },
+      include: {
+        provider: { select: { id: true, tradeName: true, legalName: true } },
+        payables: {
+          include: { booking: { select: { reference: true } } },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    });
+    if (!settlement) {
+      throw new NotFoundException({ code: "NOT_FOUND", message: "Settlement not found" });
+    }
+    return {
+      mode: "sandbox" as const,
+      livePayout: false,
+      message: "Sandbox settlement statement — not a live payout",
+      settlement: {
+        id: settlement.id,
+        statementNumber: settlement.statementNumber,
+        providerId: settlement.providerId,
+        providerName: settlement.provider.tradeName ?? settlement.provider.legalName,
+        totalHalalas: settlement.totalHalalas,
+        currency: settlement.currency,
+        status: settlement.status,
+        draftLabel: settlement.draftLabel,
+        mode: settlement.mode,
+        livePayout: settlement.livePayout,
+        issuedAt: settlement.issuedAt?.toISOString() ?? null,
+        periodStart: settlement.periodStart?.toISOString() ?? null,
+        periodEnd: settlement.periodEnd?.toISOString() ?? null,
+        payables: settlement.payables.map((p) => ({
+          id: p.id,
+          bookingId: p.bookingId,
+          bookingReference: p.booking.reference,
+          amountHalalas: p.amountHalalas,
+          status: p.status,
+        })),
+      },
+    };
+  }
+
+  /**
+   * Accrue OPEN payables for third-party assigned bookings that already have an ACCRUED commission,
+   * then issue a sandbox settlement statement. Never claims a live bank payout.
+   */
+  async generateSettlement(user: RequestUser, input: { providerId: string }) {
+    const env = loadEnv();
+    if (env.ALLOW_LIVE_PAYMENTS || !env.GO_LIVE_LOCKED) {
+      throw new BadRequestException({
+        code: "SETTLEMENT_LOCKED",
+        message:
+          "Settlement generation is sandbox-only while go-live remains locked — no live payout path",
+      });
+    }
+
+    const provider = await this.prisma.provider.findUnique({ where: { id: input.providerId } });
+    if (!provider) {
+      throw new NotFoundException({ code: "NOT_FOUND", message: "Provider not found" });
+    }
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      const candidates = await tx.commission.findMany({
+        where: {
+          status: CommissionStatus.ACCRUED,
+          booking: {
+            providerPayables: { none: {} },
+            assignment: { providerId: input.providerId },
+            paymentIntents: { some: { status: PaymentIntentStatus.SUCCEEDED } },
+          },
+        },
+        include: { booking: true },
+      });
+
+      for (const commission of candidates) {
+        const payableAmount = commission.chargeAmountHalalas - commission.amountHalalas;
+        await tx.providerPayable.create({
+          data: {
+            providerId: input.providerId,
+            bookingId: commission.bookingId,
+            amountHalalas: Math.max(0, payableAmount),
+            currency: commission.currency,
+            status: PayableStatus.OPEN,
+            draftLabel: "DRAFT — OWNER APPROVAL REQUIRED",
+            note: "Sandbox provider payable accrual — not a live bank transfer",
+            mode: "sandbox",
+          },
+        });
+      }
+
+      const openPayables = await tx.providerPayable.findMany({
+        where: { providerId: input.providerId, status: PayableStatus.OPEN, settlementId: null },
+      });
+      if (openPayables.length === 0) {
+        throw new BadRequestException({
+          code: "NO_OPEN_PAYABLES",
+          message:
+            "No open sandbox payables for provider — assign a third-party provider to paid bookings first",
+        });
+      }
+
+      const totalHalalas = openPayables.reduce((sum, p) => sum + p.amountHalalas, 0);
+      const reg = (provider.registrationNo ?? "PROV").replace(/[^A-Z0-9]/gi, "").slice(0, 8) || "PROV";
+      const statementNumber = `STL-SBX-${reg}-${Date.now().toString(36).toUpperCase()}`;
+      const settlement = await tx.settlement.create({
+        data: {
+          providerId: input.providerId,
+          statementNumber,
+          currency: "SAR",
+          totalHalalas,
+          status: SettlementStatus.STATEMENT_ISSUED,
+          draftLabel: "DRAFT — OWNER APPROVAL REQUIRED — sandbox statement only",
+          periodStart: openPayables.reduce(
+            (min, p) => (p.createdAt < min ? p.createdAt : min),
+            openPayables[0]!.createdAt,
+          ),
+          periodEnd: new Date(),
+          issuedAt: new Date(),
+          mode: "sandbox",
+          livePayout: false,
+        },
+      });
+
+      await tx.providerPayable.updateMany({
+        where: { id: { in: openPayables.map((p) => p.id) } },
+        data: {
+          settlementId: settlement.id,
+          status: PayableStatus.INCLUDED_IN_SETTLEMENT,
+        },
+      });
+
+      await tx.auditEvent.create({
+        data: {
+          actorId: user.id,
+          action: "finance.settlement.generate",
+          resource: "settlement",
+          resourceId: settlement.id,
+          metadata: {
+            mode: "sandbox",
+            livePayout: false,
+            providerId: input.providerId,
+            payableCount: openPayables.length,
+            totalHalalas,
+          },
+        },
+      });
+
+      return { settlement, payableCount: openPayables.length };
+    });
+
+    return {
+      ok: true,
+      mode: "sandbox" as const,
+      livePayout: false,
+      message:
+        "Sandbox settlement statement issued — not a live bank payout; no funds were transferred",
+      settlement: {
+        id: result.settlement.id,
+        statementNumber: result.settlement.statementNumber,
+        providerId: result.settlement.providerId,
+        totalHalalas: result.settlement.totalHalalas,
+        status: result.settlement.status,
+        draftLabel: result.settlement.draftLabel,
+        payableCount: result.payableCount,
+        livePayout: false,
+      },
+    };
+  }
+
+  /**
+   * Mark a sandbox settlement as paid in the ledger sense only — never claims a live bank payout.
+   */
+  async markSettlementSandboxPaid(user: RequestUser, settlementId: string) {
+    const env = loadEnv();
+    if (env.ALLOW_LIVE_PAYMENTS || !env.GO_LIVE_LOCKED) {
+      throw new BadRequestException({
+        code: "SETTLEMENT_LOCKED",
+        message: "Sandbox paid marker disabled when live payment flags are unlocked",
+      });
+    }
+
+    const settlement = await this.prisma.settlement.findUnique({ where: { id: settlementId } });
+    if (!settlement) {
+      throw new NotFoundException({ code: "NOT_FOUND", message: "Settlement not found" });
+    }
+    if (settlement.livePayout) {
+      throw new BadRequestException({
+        code: "LIVE_PAYOUT_FORBIDDEN",
+        message: "Live payout claims are not allowed",
+      });
+    }
+    if (settlement.status === SettlementStatus.MARKED_SANDBOX_PAID) {
+      return {
+        ok: true,
+        mode: "sandbox" as const,
+        livePayout: false,
+        duplicate: true,
+        message: "Already marked sandbox-paid — still not a live bank payout",
+        settlementId: settlement.id,
+      };
+    }
+    if (settlement.status !== SettlementStatus.STATEMENT_ISSUED) {
+      throw new BadRequestException({
+        code: "INVALID_STATUS",
+        message: `Only STATEMENT_ISSUED settlements can be marked sandbox-paid (got ${settlement.status})`,
+      });
+    }
+
+    const updated = await this.prisma.settlement.update({
+      where: { id: settlementId },
+      data: { status: SettlementStatus.MARKED_SANDBOX_PAID, livePayout: false },
+    });
+    await this.prisma.auditEvent.create({
+      data: {
+        actorId: user.id,
+        action: "finance.settlement.mark_sandbox_paid",
+        resource: "settlement",
+        resourceId: settlementId,
+        metadata: { mode: "sandbox", livePayout: false },
+      },
+    });
+
+    return {
+      ok: true,
+      mode: "sandbox" as const,
+      livePayout: false,
+      message:
+        "Marked sandbox-paid for bookkeeping only — not a live bank payout and no funds were transferred",
+      settlement: {
+        id: updated.id,
+        statementNumber: updated.statementNumber,
+        status: updated.status,
+        livePayout: updated.livePayout,
+      },
     };
   }
 

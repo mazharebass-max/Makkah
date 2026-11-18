@@ -51,10 +51,11 @@ export function loadEnv(): Env {
     throw new Error(`Invalid environment: ${parsed.error.message}`);
   }
   const data = parsed.data;
-  // Tests share one IP across many suites — allow a generous window so OTP/MFA coverage does not trip CI.
+  // Tests share one IP across many suites — ignore tight .env limits so OTP/MFA coverage does not trip CI.
   const authLimit =
-    data.AUTH_RATE_LIMIT ??
-    (data.NODE_ENV === "test" ? 500 : 30);
+    data.NODE_ENV === "test"
+      ? Math.max(data.AUTH_RATE_LIMIT ?? 500, 500)
+      : (data.AUTH_RATE_LIMIT ?? 30);
   cached = { ...data, AUTH_RATE_LIMIT: authLimit };
   return cached;
 }
