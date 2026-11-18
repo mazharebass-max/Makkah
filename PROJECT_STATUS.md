@@ -1,7 +1,7 @@
 # Project Status — Haramain Ride
 
 **Updated:** 2026-11-18  
-**Current milestone:** Fresh rebuild **F5** (FeatureFlag / SystemSetting / PickupPoint + public polish).  
+**Current milestone:** Fresh rebuild **F1–F5 complete**. Next work is owner/go-live or optional F6+.  
 Go-live **blocked** — compliance gate unsigned. Always `productionGoLive: false`, `regulatoryClearance: false`, `liveOps: false`.
 
 ## Merges
@@ -12,6 +12,7 @@ Go-live **blocked** — compliance gate unsigned. Always `productionGoLive: fals
 | #12 F2 OTP + MFA scaffold | `713b27ae0492ef5782a5702b240a9a27a3584799` |
 | #13 F3 driver EXCLUDE + DriverShift | `e669a1001cc65fc458138962012594854009db86` |
 | #14 F4 sandbox Commission / Settlement | `5864e85fe36fe7ac518f774c77a9b479ecb146f0` |
+| #15 F5 FeatureFlag / PickupPoint / polish | `abf4824ba03d1ae79865214dd53bd42a9f06f3fa` |
 
 ## Fresh rebuild plan
 
@@ -21,15 +22,12 @@ Go-live **blocked** — compliance gate unsigned. Always `productionGoLive: fals
 | **F2** | Merged (#12) | Email OTP verify, gate `debugCode`, admin TOTP scaffold |
 | **F3** | Merged (#13) | Driver EXCLUDE + DriverShift + trip list clarity |
 | **F4** | Merged (#14) | Commission/ProviderPayable/Settlement sandbox statements |
-| **F5** | In progress | FeatureFlag/SystemSetting + PickupPoint + public polish |
+| **F5** | Merged (#15) | FeatureFlag/SystemSetting + PickupPoint + public polish |
 | Go-live | **Blocked** | Owner written sign-offs (`docs/COMPLIANCE_GATE.md`) |
 
-## F5 changes (this branch)
+## Stop criteria
 
-- Prisma `FeatureFlag`, `SystemSetting`, `PickupPoint` (+ airport terminal seeds)
-- Public `GET /feature-flags` (default off) and `GET /pickup-points`
-- Admin settings APIs; refuse enabling live_* flags while go-live locked
-- Home page pickup-points section + FAQ/nav i18n polish (SEO preserved)
+Fresh rebuild engineering milestones F1–F5 are done. No critical engineering blockers remain in the gap analysis. Remaining work is owner/regulatory/live-ops or optional F6+ (mobile EAS, worker jobs, staging deltas) — do not start unless requested.
 
 ## Run
 

@@ -1,6 +1,6 @@
 # Gap analysis — Haramain Ride vs production PRD
 
-**Updated:** 2026-11-18 (post F4 merge `5864e85`; F5 in progress)  
+**Updated:** 2026-11-18 (F5 merged `abf4824` — fresh rebuild F1–F5 complete)  
 **Stance:** Prefer improving the existing monorepo. Sandbox adapters only. Never invent live availability, gateway capture, regulatory approval, or verified licences. `productionGoLive` / `regulatoryClearance` / `liveOps` stay **false**.
 
 ## Present (high level)
@@ -20,7 +20,7 @@
 
 **Non-claims (do not invent):** live fleet availability, live payment capture, live bank payouts, verified transport licences, regulatory clearance, production go-live
 
-**Critical engineering blockers for fresh rebuild F1–F5:** none remaining after F5 — remaining gaps are owner/regulatory/live-ops or later F6+ scope.
+**Critical engineering blockers for fresh rebuild F1–F5:** **none** — remaining gaps are owner/regulatory/live-ops or later F6+ scope.
 
 ---
 
@@ -32,10 +32,10 @@
 | **F2** | Auth OTP verify + MFA scaffold | Merged (#12) |
 | **F3** | Driver EXCLUDE + DriverShift | Merged (#13) |
 | **F4** | Commission/ProviderPayable/Settlement sandbox | Merged (#14) |
-| **F5** | FeatureFlag/SystemSetting + PickupPoint + public polish | This branch |
+| **F5** | FeatureFlag/SystemSetting + PickupPoint + public polish | Merged (#15) `abf4824` |
 | **F6+** | Mobile EAS, worker jobs, staging deltas | Owner decisions still block live ops |
 
-**Priority now:** Complete F5, then stop unless critical engineering blockers remain.
+**Priority now:** **Stop** — F1–F5 complete. Do not start F6+ unless asked. Go-live remains blocked on `docs/COMPLIANCE_GATE.md`.
 
 ---
 
