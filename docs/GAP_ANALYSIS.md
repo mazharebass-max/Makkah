@@ -1,59 +1,26 @@
-# Gap Analysis — Haramain Ride vs Production PRD
+# Gap analysis — Haramain Ride vs production PRD
 
-**Date:** 2026-11-18  
-**Repo:** `github.com/mazharebass-max/Makkah` (`main` @ `d618843`)  
-**Authoritative PRD:** `docs/HARAMAIN_RIDE_PRODUCTION_PRD.md`  
+**Updated:** 2026-11-18 (post F4 merge `5864e85`; F5 in progress)  
 **Stance:** Prefer improving the existing monorepo. Sandbox adapters only. Never invent live availability, gateway capture, regulatory approval, or verified licences. `productionGoLive` / `regulatoryClearance` / `liveOps` stay **false**.
 
-> Prior store gap analysis (2026-11-17) assumed an empty greenfield repo. That is **stale**. `main` already contains M0–M8 merges. This document replaces that inventory with an honest diff against current code.
+## Present (high level)
 
----
+- Nest API + Prisma/Postgres, Next web/admin, Expo mobile shells, worker outbox drain
+- Auth/RBAC, quotes/bookings/dispatch, sandbox payments + ledger, OTP verify + MFA scaffold
+- Driver GiST EXCLUDE + DriverShift (F3)
+- Sandbox Commission / ProviderPayable / Settlement (F4) — no live payouts
+- FeatureFlag / SystemSetting / PickupPoint (F5) — flags default off
+- Public SEO (metadata EN/AR, robots/sitemap, JSON-LD)
 
-## Snapshot
+## Remaining gaps (non-critical for F1–F5 exit)
 
-| Layer | Reality |
-|---|---|
-| Monorepo | **Exists** — pnpm + Turborepo, Nest API, Next web/admin, Expo shells, BullMQ worker |
-| Domain API | **Solid sandbox** — quote → booking → dispatch → payments ledger → notifications → ops gate |
-| Customer web | **Weak** — Home/Search/Checkout/Login only; checkout payment body mismatches API |
-| Admin | **Usable thin console** — dispatch, compliance, finance, support, ops (no MFA) |
-| Mobile | **API-wired shells** — Expo Router source + CI shims; not store-ready binaries |
-| Go-live | **Correctly locked false** — compliance gate unsigned |
+**Schema:** ProviderContract, VehicleDocument, VehicleMaintenance, RouteStop, BookingPassenger, Trip, TripStatusEvent, Payout, Promotion, customer Review  
 
----
+**Product:** phone OTP; live PSP; ZATCA path; live provider payouts; store-ready mobile / EAS; fuller WCAG/E2E suite; staging hosting proof  
 
-## EXISTS (solid)
+**Non-claims (do not invent):** live fleet availability, live payment capture, live bank payouts, verified transport licences, regulatory clearance, production go-live
 
-- Identity/RBAC: User, roles, permissions, sessions, JWT + refresh, ownership helpers
-- Catalog + draft pricing/quote/holds (`AvailabilityHold`); seeds labeled **DRAFT — OWNER APPROVAL REQUIRED**
-- Booking state machine + concurrency-safe dispatch (advisory lock + vehicle GiST `EXCLUDE`)
-- Provider apply + compliance review with isolation; no auto-approve; no fabricated licences
-- Sandbox payments: intents, HMAC webhooks, charges/refunds, `LedgerEntry`, draft invoices
-- Outbox notifications + worker drain (sandbox email/SMS); support tickets; analytics ingest
-- Ops readiness / compliance gate / security checklist APIs always report go-live **false**
-- Integration tests: RBAC, quote, dispatch, compliance, payments, notifications, ops lock, mobile smoke
-
-## WEAK (partial / sandbox / incomplete)
-
-- **Web checkout bug:** sends `{ amountHalalas }` to `POST /payments/checkout`; API requires `{ bookingId }` — payment step fails validation
-- Public site incomplete vs PRD pages (legal, fleet, confirmation, my trips, provider registration, etc.)
-- OTP: email request only; returns `debugCode`; **no verify endpoint**; no phone OTP; no admin MFA
-- Mobile: functional UI source against API, but no Expo runtime deps / EAS binaries in CI packages
-- Worker: outbox drain only (no booking expiry, document expiry, settlement jobs)
-- Admin: per-page seed logins hardcoded in UI; thin booking list; no shared session/MFA
-- Finance: sandbox recon only — no Commission / Settlement / Payout entities
-- Tax: `TAX_PLACEHOLDER` 15% — not a ZATCA determination
-- Trip domain approximated by Booking statuses (no separate Trip entity)
-- Driver overlap: app-level query only (vehicle EXCLUDE exists; driver EXCLUDE missing)
-- Contracts package covers auth/quote schemas — not full OpenAPI surface
-
-## MISSING
-
-**Schema:** ProviderContract, VehicleDocument, VehicleMaintenance, DriverShift, PickupPoint, RouteStop, BookingPassenger, Trip, TripStatusEvent, Commission, ProviderPayable, Settlement, Payout, Promotion, customer Review, FeatureFlag, SystemSetting  
-
-**Product:** full public/legal marketing pages; phone OTP + MFA; live PSP; ZATCA path; provider payouts; feature flags; store-ready mobile; WCAG/E2E suite; staging hosting proof  
-
-**Non-claims (do not invent):** live fleet availability, live payment capture, verified transport licences, regulatory clearance, production go-live
+**Critical engineering blockers for fresh rebuild F1–F5:** none remaining after F5 — remaining gaps are owner/regulatory/live-ops or later F6+ scope.
 
 ---
 
@@ -61,14 +28,14 @@
 
 | Milestone | Focus | Exit gate |
 |---|---|---|
-| **F1** | Customer web journey — fix checkout→`bookingId`, sandbox complete (ledger-aware), confirmation, my trips/trip detail, legal pages, provider registration; public SEO (metadata EN/AR, robots/sitemap, JSON-LD, noindex private flows) | Typecheck + API tests; screenshots; booking→sandbox pay→trips works; SEO routes present |
-| **F2** | Auth completion — OTP verify (email), strip `debugCode` outside test/dev, admin MFA scaffolding (TOTP enroll/verify gated) | Auth tests; no debug OTP in non-dev |
-| **F3** | Trip/ops fidelity — driver EXCLUDE constraint, DriverShift skeleton, clearer trip APIs/UI | Concurrent driver-overlap test passes |
-| **F4** | Finance skeleton — Commission/ProviderPayable/Settlement models + sandbox statements; keep go-live lock | Finance tests; still `productionGoLive: false` |
-| **F5** | Public completeness + FeatureFlag/SystemSetting; PickupPoint for airports; polish RTL/a11y | Responsive screenshots; flags default-off |
-| **F6+** | Mobile EAS readiness, worker jobs (expiry), staging hardening deltas — only after F1–F5 | Owner decisions still block live ops |
+| **F1** | Customer web journey + public SEO | Merged (#11) |
+| **F2** | Auth OTP verify + MFA scaffold | Merged (#12) |
+| **F3** | Driver EXCLUDE + DriverShift | Merged (#13) |
+| **F4** | Commission/ProviderPayable/Settlement sandbox | Merged (#14) |
+| **F5** | FeatureFlag/SystemSetting + PickupPoint + public polish | This branch |
+| **F6+** | Mobile EAS, worker jobs, staging deltas | Owner decisions still block live ops |
 
-**Priority now:** **F3** (driver EXCLUDE + DriverShift) after F2 merge `713b27a`.
+**Priority now:** Complete F5, then stop unless critical engineering blockers remain.
 
 ---
 

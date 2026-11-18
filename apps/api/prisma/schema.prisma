@@ -340,8 +340,57 @@ model ServiceZone {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
 
-  routesFrom Route[] @relation("RouteFrom")
-  routesTo   Route[] @relation("RouteTo")
+  routesFrom  Route[]       @relation("RouteFrom")
+  routesTo    Route[]       @relation("RouteTo")
+  pickupPoints PickupPoint[]
+}
+
+enum PickupPointKind {
+  AIRPORT_TERMINAL
+  HOTEL_ZONE
+  CITY
+  OTHER
+}
+
+/// Draft pickup / meeting points (e.g. airport terminals) — not live ops claims.
+model PickupPoint {
+  id         String          @id @default(uuid()) @db.Uuid
+  zoneId     String          @db.Uuid
+  code       String          @unique
+  nameEn     String
+  nameAr     String?
+  kind       PickupPointKind @default(OTHER)
+  active     Boolean         @default(true)
+  draftLabel String          @default("DRAFT — OWNER APPROVAL REQUIRED")
+  note       String?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  zone ServiceZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  @@index([zoneId, active])
+  @@index([kind])
+}
+
+/// Product feature toggles — default OFF; never flip go-live via flags alone.
+model FeatureFlag {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  enabled     Boolean  @default(false)
+  description String?
+  draftLabel  String   @default("DRAFT — OWNER APPROVAL REQUIRED")
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
+
+/// Key/value system settings (JSON) — operational scaffolding, not go-live.
+model SystemSetting {
+  id         String   @id @default(uuid()) @db.Uuid
+  key        String   @unique
+  valueJson  Json
+  draftLabel String   @default("DRAFT — OWNER APPROVAL REQUIRED")
+  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now())
 }
 
 model Route {

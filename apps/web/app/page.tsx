@@ -3,7 +3,7 @@ import { Badge } from "@haramain/ui";
 import { BookingWidget } from "../components/BookingWidget";
 import { JsonLd } from "../components/JsonLd";
 import { SiteChrome } from "../components/SiteChrome";
-import { fetchRoutes } from "../lib/api";
+import { fetchPickupPoints, fetchRoutes } from "../lib/api";
 import { t, type Locale } from "../lib/i18n";
 import {
   buildPageMetadata,
@@ -28,7 +28,7 @@ export default async function HomePage({
   searchParams?: { lang?: string };
 }) {
   const locale: Locale = localeFromSearchParams(searchParams);
-  const routes = await fetchRoutes();
+  const [routes, pickupPoints] = await Promise.all([fetchRoutes(), fetchPickupPoints()]);
 
   const faqs =
     locale === "ar"
@@ -116,7 +116,7 @@ export default async function HomePage({
         </h2>
         <p style={{ margin: 0, color: "#526276" }}>{t(locale, "routesHint")}</p>
         <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 12 }}>
-          {routes.map((r) => (
+          {routes.map((r, idx) => (
             <li
               key={r.code}
               style={{
@@ -129,6 +129,7 @@ export default async function HomePage({
                 gap: 12,
                 flexWrap: "wrap",
                 alignItems: "center",
+                animation: `hr-fade 520ms ease ${80 + idx * 40}ms both`,
               }}
             >
               <div>
@@ -138,6 +139,46 @@ export default async function HomePage({
               <Badge tone="warning">{r.draftLabel}</Badge>
             </li>
           ))}
+        </ul>
+      </section>
+
+      <section
+        id="pickup-points"
+        aria-labelledby="pickup-heading"
+        style={{ marginTop: 64, display: "grid", gap: 16 }}
+      >
+        <h2 id="pickup-heading" style={{ margin: 0, fontSize: 28 }}>
+          {t(locale, "pickupPoints")}
+        </h2>
+        <p style={{ margin: 0, color: "#526276" }}>{t(locale, "pickupHint")}</p>
+        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 12 }}>
+          {pickupPoints.map((p) => (
+            <li
+              key={p.code}
+              style={{
+                background: "#fff",
+                borderRadius: 16,
+                padding: "16px 18px",
+                border: "1px solid rgba(11,31,58,0.06)",
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 12,
+                flexWrap: "wrap",
+                alignItems: "center",
+              }}
+            >
+              <div>
+                <strong>{locale === "ar" && p.nameAr ? p.nameAr : p.nameEn}</strong>
+                <div style={{ color: "#526276", fontSize: 13 }}>
+                  {p.code} · {p.zone.code} · {p.kind}
+                </div>
+              </div>
+              <Badge tone="warning">{p.draftLabel}</Badge>
+            </li>
+          ))}
+          {pickupPoints.length === 0 ? (
+            <li style={{ color: "#526276" }}>{t(locale, "emptySearch")}</li>
+          ) : null}
         </ul>
       </section>
 
@@ -156,7 +197,7 @@ export default async function HomePage({
 
       <section aria-labelledby="faq-heading" style={{ marginTop: 64, display: "grid", gap: 16, maxWidth: 720 }}>
         <h2 id="faq-heading" style={{ margin: 0 }}>
-          FAQ
+          {t(locale, "faqHeading")}
         </h2>
         <dl style={{ margin: 0, display: "grid", gap: 16 }}>
           {faqs.map((f) => (

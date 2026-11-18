@@ -3,6 +3,7 @@ import {
   DocumentReviewState,
   FleetOwnership,
   NotificationChannel,
+  PickupPointKind,
   ProviderStatus,
 } from "@prisma/client";
 import * as argon2 from "argon2";
@@ -186,6 +187,109 @@ async function main() {
       create: { ...r, draftLabel: DRAFT },
     });
   }
+
+  const pickupPoints: {
+    code: string;
+    zoneId: string;
+    nameEn: string;
+    nameAr: string;
+    kind: PickupPointKind;
+    note: string;
+  }[] = [
+    {
+      code: "JED-T1",
+      zoneId: jed.id,
+      nameEn: "Jeddah Airport Terminal 1 (draft)",
+      nameAr: "مطار جدة — الصالة 1 (مسودة)",
+      kind: PickupPointKind.AIRPORT_TERMINAL,
+      note: "Synthetic meeting point — not a live ops claim",
+    },
+    {
+      code: "JED-T2",
+      zoneId: jed.id,
+      nameEn: "Jeddah Airport Terminal 2 (draft)",
+      nameAr: "مطار جدة — الصالة 2 (مسودة)",
+      kind: PickupPointKind.AIRPORT_TERMINAL,
+      note: "Synthetic meeting point — not a live ops claim",
+    },
+    {
+      code: "MED-T1",
+      zoneId: med.id,
+      nameEn: "Madinah Airport arrivals (draft)",
+      nameAr: "مطار المدينة — الوصول (مسودة)",
+      kind: PickupPointKind.AIRPORT_TERMINAL,
+      note: "Synthetic meeting point — not a live ops claim",
+    },
+    {
+      code: "MAK-HOTEL-CORE",
+      zoneId: makkah.id,
+      nameEn: "Makkah hotel core (draft zone)",
+      nameAr: "نواة فنادق مكة (مسودة)",
+      kind: PickupPointKind.HOTEL_ZONE,
+      note: "Zone placeholder — owner must approve real meeting points",
+    },
+  ];
+
+  for (const p of pickupPoints) {
+    await prisma.pickupPoint.upsert({
+      where: { code: p.code },
+      update: {
+        nameEn: p.nameEn,
+        nameAr: p.nameAr,
+        kind: p.kind,
+        note: p.note,
+        draftLabel: DRAFT,
+        active: true,
+        zoneId: p.zoneId,
+      },
+      create: { ...p, draftLabel: DRAFT, active: true },
+    });
+  }
+
+  const featureFlags = [
+    {
+      key: "allow_live_payments",
+      description: "Advisory only — env ALLOW_LIVE_PAYMENTS still gates capture",
+    },
+    {
+      key: "allow_live_providers",
+      description: "Advisory only — never auto-approve licences",
+    },
+    {
+      key: "public_promotions",
+      description: "Show promotional surfaces (default off)",
+    },
+    {
+      key: "experimental_ui",
+      description: "Experimental customer UI experiments (default off)",
+    },
+  ];
+  for (const f of featureFlags) {
+    await prisma.featureFlag.upsert({
+      where: { key: f.key },
+      create: { ...f, enabled: false, draftLabel: DRAFT },
+      update: { description: f.description, draftLabel: DRAFT },
+    });
+  }
+
+  await prisma.systemSetting.upsert({
+    where: { key: "support_contact" },
+    create: {
+      key: "support_contact",
+      valueJson: { email: "support@haramain.local", mode: "sandbox" },
+      draftLabel: DRAFT,
+    },
+    update: {},
+  });
+  await prisma.systemSetting.upsert({
+    where: { key: "default_locale" },
+    create: {
+      key: "default_locale",
+      valueJson: { locale: "en", alternate: "ar" },
+      draftLabel: DRAFT,
+    },
+    update: {},
+  });
 
   const sedan = await prisma.vehicleCategory.upsert({
     where: { code: "SEDAN" },

@@ -15,6 +15,7 @@ import { NotificationsModule } from "./modules/notifications/notifications.modul
 import { SupportModule } from "./modules/support/support.module";
 import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { OpsModule } from "./modules/ops/ops.module";
+import { SettingsModule } from "./modules/settings/settings.module";
 import { SecurityHeadersMiddleware } from "./common/security-headers.middleware";
 import { CommonModule } from "./common/common.module";
 
@@ -34,6 +35,7 @@ import { CommonModule } from "./common/common.module";
     SupportModule,
     AnalyticsModule,
     OpsModule,
+    SettingsModule,
     AdminModule,
     SandboxModule,
   ],

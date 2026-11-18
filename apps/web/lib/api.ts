@@ -19,6 +19,27 @@ export async function fetchRoutes(): Promise<RouteRow[]> {
   }
 }
 
+export type PickupPointRow = {
+  code: string;
+  nameEn: string;
+  nameAr?: string | null;
+  kind: string;
+  draftLabel: string;
+  zone: { code: string; nameEn: string; nameAr?: string | null };
+};
+
+export async function fetchPickupPoints(zoneCode?: string): Promise<PickupPointRow[]> {
+  try {
+    const q = zoneCode ? `?zoneCode=${encodeURIComponent(zoneCode)}` : "";
+    const res = await fetch(`${API}/pickup-points${q}`, { next: { revalidate: 30 } });
+    if (!res.ok) return [];
+    const json = (await res.json()) as { data: PickupPointRow[] };
+    return json.data;
+  } catch {
+    return [];
+  }
+}
+
 export function defaultScheduleIso() {
   const d = new Date(Date.now() + 48 * 3600_000);
   d.setMinutes(0, 0, 0);

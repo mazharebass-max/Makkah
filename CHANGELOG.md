@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.13.0 — 2026-11-18
+
+### Added (Fresh F5 — FeatureFlag / SystemSetting / PickupPoint)
+
+- Prisma `FeatureFlag`, `SystemSetting`, `PickupPoint` with draft labels
+- Seed airport terminal meeting points (JED/MED) and feature flags default **off**
+- Public APIs: `GET /feature-flags`, `GET /pickup-points`
+- Admin settings APIs; refuse enabling `live_*` flags while go-live locked
+- Customer home: pickup points section, FAQ heading i18n, nav link (SEO routes unchanged)
+
+### Explicit non-claims
+
+- Flags do not unlock production go-live; `productionGoLive` / `regulatoryClearance` / `liveOps` remain false
+- Pickup points are draft catalog rows — not live licensed operations
+
 ## 0.12.0 — 2026-11-18
 
 ### Added (Fresh F4 — sandbox Commission / ProviderPayable / Settlement)
