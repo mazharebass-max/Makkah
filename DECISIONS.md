@@ -118,6 +118,11 @@
 **Decision:** Accrue DRAFT commission at 1500 bps on sandbox capture; create ProviderPayable when a third-party `BookingAssignment.providerId` exists; issue Settlement statements with `livePayout: false`. `MARKED_SANDBOX_PAID` is bookkeeping only. No `Payout` entity and no bank transfer path until owner sign-off.  
 **Consequence:** Finance officers can reconcile sandbox statements without inventing live payouts; go-live lock unchanged.
 
+## D-024 — Feature flags default off; env remains go-live authority (2026-11-18)
+
+**Context:** PRD lists FeatureFlag / SystemSetting / PickupPoint for product completeness.  
+**Decision:** Persist FeatureFlag rows defaulting to `enabled: false`. Enabling `allow_live_payments` / `allow_live_providers` is refused while `GO_LIVE_LOCKED` (or live env flags off). Env vars remain the hard go-live gate. PickupPoint seeds are draft airport/hotel meeting points only.  
+**Consequence:** Operators can preview toggles without inventing production clearance; public SEO surfaces stay honest.
 ## Open owner decisions (from PRD §19)
 
 - Legal entity / TGA / tourism authorizations
