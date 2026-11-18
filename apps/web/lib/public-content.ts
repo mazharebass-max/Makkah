@@ -1,0 +1,115 @@
+import { t, type Locale } from "./i18n";
+
+export const fleetRows = [
+  {
+    src: "/vehicles/haram-pack-suv.jpg",
+    labelKey: "fleetHaramPack" as const,
+    capKey: "fleetCapHaramPack" as const,
+    altEn: "Haram Pack SUV at an airport arrival curb with luggage trolley",
+    altAr: "سيارة حرم باك عند رصيف المطار مع عربة أمتعة",
+  },
+  {
+    src: "/vehicles/gmc-class-suv.jpg",
+    labelKey: "fleetGmc" as const,
+    capKey: "fleetCapGmc" as const,
+    altEn: "GMC-class SUV on a desert highway corridor",
+    altAr: "سيارة فئة جي إم سي على طريق صحراوي",
+  },
+  {
+    src: "/vehicles/lexus-class-suv.jpg",
+    labelKey: "fleetLexus" as const,
+    capKey: "fleetCapLexus" as const,
+    altEn: "Lexus-class SUV at a hotel porte-cochere",
+    altAr: "سيارة فئة لكزس أمام مدخل فندق",
+  },
+] as const;
+
+export function transferSteps(locale: Locale) {
+  return [
+    { title: t(locale, "transferStep1Title"), body: t(locale, "transferStep1Body") },
+    { title: t(locale, "transferStep2Title"), body: t(locale, "transferStep2Body") },
+    { title: t(locale, "transferStep3Title"), body: t(locale, "transferStep3Body") },
+    { title: t(locale, "transferStep4Title"), body: t(locale, "transferStep4Body") },
+  ];
+}
+
+export function corridorOps(locale: Locale) {
+  return [
+    {
+      codes: ["JED-MAKKAH", "JEDDAH-MAKKAH"],
+      titleEn: "JED Airport ↔ Makkah hotels",
+      titleAr: "مطار جدة ↔ فنادق مكة",
+      pickup: t(locale, "corridorJedMakkahPickup"),
+      dropoff: t(locale, "corridorJedMakkahDropoff"),
+      duration: t(locale, "corridorJedMakkahDuration"),
+      note: t(locale, "corridorJedMakkahNote"),
+    },
+    {
+      codes: ["MAKKAH-MADINAH"],
+      titleEn: "Makkah ↔ Madinah",
+      titleAr: "مكة ↔ المدينة",
+      pickup: t(locale, "corridorMakkahMadinahPickup"),
+      dropoff: t(locale, "corridorMakkahMadinahDropoff"),
+      duration: t(locale, "corridorMakkahMadinahDuration"),
+      note: t(locale, "corridorMakkahMadinahNote"),
+    },
+    {
+      codes: ["MED-MADINAH"],
+      titleEn: "MED Airport ↔ Madinah hotels",
+      titleAr: "مطار المدينة ↔ فنادق المدينة",
+      pickup: t(locale, "corridorMedMadinahPickup"),
+      dropoff: t(locale, "corridorMedMadinahDropoff"),
+      duration: t(locale, "corridorMedMadinahDuration"),
+      note: t(locale, "corridorMedMadinahNote"),
+    },
+  ];
+}
+
+export function publicFaqs(locale: Locale): Array<{ q: string; a: string }> {
+  if (locale === "ar") {
+    return [
+      {
+        q: "هل المنصة تعمل بترخيص حي الآن؟",
+        a: "لا. هذه منصة تجريبية. الإطلاق الحي يتطلب موافقات الامتثال والمالك المكتوبة.",
+      },
+      {
+        q: "هل يتم اعتماد مزودي الطرف الثالث تلقائياً؟",
+        a: "لا. الطلبات تبدأ بحالة APPLIED ويراجعها مسؤول امتثال مع المستندات.",
+      },
+      {
+        q: "هل الدفع حي؟",
+        a: "التطوير يستخدم محول دفع تجريبي فقط ولا يدّعي تحصيل بوابة حية.",
+      },
+      {
+        q: "كيف أتواصل للحجز؟",
+        a: "استخدم واتساب من صفحة التواصل أو ابدأ بحث ممر من الموقع. الردود خلال النهار بتوقيت آسيا/الرياض (مسودة).",
+      },
+      {
+        q: "هل الأسعار نهائية؟",
+        a: "لا. أسعار الكتالوج مسودة وتتطلب موافقة المالك قبل أي تحصيل حي.",
+      },
+    ];
+  }
+  return [
+    {
+      q: "Is Haramain Ride live-licensed today?",
+      a: "No. This is a pilot platform. Live operations require written compliance and owner sign-offs.",
+    },
+    {
+      q: "Are third-party providers auto-approved?",
+      a: "No. Applications start as APPLIED and a compliance officer reviews documents.",
+    },
+    {
+      q: "Is payment live?",
+      a: "Development uses a sandbox payment adapter only and never claims a live gateway capture.",
+    },
+    {
+      q: "How do I contact you to book?",
+      a: "Use WhatsApp from the Contact page or start a corridor search on the site. Pilot replies aim for Asia/Riyadh daytime (draft hours).",
+    },
+    {
+      q: "Are fares final?",
+      a: "No. Catalog fares are DRAFT and require owner approval before any live capture.",
+    },
+  ];
+}

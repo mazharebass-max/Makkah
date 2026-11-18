@@ -96,6 +96,20 @@ export const messages = {
     contactMacro1: "Airport pickup meeting points (draft seeds)",
     contactMacro2: "Vehicle class seats and luggage",
     contactMacro3: "Sandbox booking vs live licensed operations",
+    aboutNav: "About",
+    aboutTitle: "About Haramain Ride",
+    aboutBody:
+      "Haramain Ride is a premium pilgrim and visitor ground-transport platform for Jeddah, Makkah and Madinah. We combine an owned Haram Pack fleet with third-party partners only after human compliance review.",
+    aboutMissionTitle: "Mission",
+    aboutMissionBody:
+      "Deliver calm, credible private transfers — clear vehicle classes, honest draft labeling, and no invented licences or live payment claims before go-live sign-off.",
+    aboutModelTitle: "Operating model",
+    aboutModelBody:
+      "Owned fleet first. Verified partners when approved. Sandbox payments and seed inventory on this pilot. Live ops stay locked until the compliance gate is signed.",
+    aboutCta: "Contact us on WhatsApp",
+    faqNav: "FAQ",
+    fleetNav: "Fleet",
+    routesNav: "Routes",
     routes: "Launch corridors",
     routesHint: "Fares and activation require owner approval. Synthetic seed data only.",
     pickupPoints: "Airport meeting points",
@@ -251,6 +265,20 @@ export const messages = {
     contactMacro1: "نقاط التقاء المطار (بذور مسودة)",
     contactMacro2: "سعة المقاعد والأمتعة حسب فئة المركبة",
     contactMacro3: "الحجز التجريبي مقابل العمليات المرخّصة الحية",
+    aboutNav: "عنّا",
+    aboutTitle: "عن حرمين رايد",
+    aboutBody:
+      "حرمين رايد منصة نقل أرضي راقية لضيوف الرحمن والزوار بين جدة ومكة والمدينة. نجمع أسطول حرم باك المملوك مع شركاء طرف ثالث بعد التحقق البشري فقط.",
+    aboutMissionTitle: "المهمة",
+    aboutMissionBody:
+      "تقديم تنقلات خاصة هادئة وموثوقة — فئات واضحة، وسم مسودة صادق، بلا تراخيص مختلقة أو مطالبات دفع حية قبل اعتماد الإطلاق.",
+    aboutModelTitle: "نموذج التشغيل",
+    aboutModelBody:
+      "الأسطول المملوك أولاً. الشركاء بعد الاعتماد. دفع تجريبي ومخزون بذور في هذه التجربة. العمليات الحية مقفلة حتى توقيع بوابة الامتثال.",
+    aboutCta: "تواصل عبر واتساب",
+    faqNav: "الأسئلة",
+    fleetNav: "الأسطول",
+    routesNav: "الممرات",
     routes: "ممرات الإطلاق",
     routesHint: "الأسعار والتفعيل يتطلبان موافقة المالك. بيانات تجريبية فقط.",
     pickupPoints: "نقاط الالتقاء في المطار",

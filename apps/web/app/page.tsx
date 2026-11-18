@@ -214,7 +214,7 @@ export default async function HomePage({
               {t(locale, "searchCta")}
             </Link>
             <Link
-              href={`/?lang=${locale}#how-it-works`}
+              href={`/how-it-works?lang=${locale}`}
               style={{
                 color: "#174A8B",
                 fontWeight: 600,

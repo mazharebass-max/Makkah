@@ -59,10 +59,11 @@ export function SiteChrome({
         }
         nav={
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
-            <Link href={`/?lang=${locale}#how-it-works`}>{t(locale, "howItWorks")}</Link>
-            <Link href={`/?lang=${locale}#routes`}>{t(locale, "routes")}</Link>
-            <Link href={`/?lang=${locale}#corridor-ops`}>{t(locale, "corridorOpsHeading")}</Link>
-            <Link href={`/?lang=${locale}#pickup-points`}>{t(locale, "pickupPoints")}</Link>
+            <Link href={`/how-it-works?lang=${locale}`}>{t(locale, "howItWorks")}</Link>
+            <Link href={`/routes?lang=${locale}`}>{t(locale, "routesNav")}</Link>
+            <Link href={`/fleet?lang=${locale}`}>{t(locale, "fleetNav")}</Link>
+            <Link href={`/about?lang=${locale}`}>{t(locale, "aboutNav")}</Link>
+            <Link href={`/faq?lang=${locale}`}>{t(locale, "faqNav")}</Link>
             <Link href={`/search?lang=${locale}`}>{t(locale, "searchCta")}</Link>
             <Link href={`/contact?lang=${locale}`}>{t(locale, "contactNav")}</Link>
             <Link href={`/providers/apply?lang=${locale}`}>{t(locale, "providerApply")}</Link>

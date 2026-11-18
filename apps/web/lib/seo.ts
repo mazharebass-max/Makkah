@@ -10,6 +10,11 @@ export type SeoPageKey =
   | "home"
   | "search"
   | "contact"
+  | "howItWorks"
+  | "fleet"
+  | "routes"
+  | "about"
+  | "faq"
   | "legalTerms"
   | "legalPrivacy"
   | "legalCancellation"
@@ -53,6 +58,66 @@ const copy: Record<
       title: "تواصل ومتابعة — حرمين رايد",
       description:
         "تواصل واتساب لأسئلة ممرات حرمين رايد. تظهر روابط الحسابات عند نشر المالك لصفحات حقيقية. منصة تجريبية — ليست عمليات مرخّصة مباشرة.",
+    },
+  },
+  howItWorks: {
+    en: {
+      title: "How it works — Haramain Ride",
+      description:
+        "Pilot transfer steps: search a corridor, compare vehicle class, sandbox checkout, then trip status. Not live licensed dispatch.",
+    },
+    ar: {
+      title: "كيف يعمل — حرمين رايد",
+      description:
+        "خطوات النقل التجريبية: ابحث عن ممر، قارن فئة المركبة، ادفع تجريبياً، ثم تابع حالة الرحلة. ليست توزيعاً مرخّصاً حياً.",
+    },
+  },
+  fleet: {
+    en: {
+      title: "Vehicle fleet — Haramain Ride",
+      description:
+        "Haram Pack, GMC-class and Lexus-class SUV options with seats and luggage. Draft catalog — owner fare approval required.",
+    },
+    ar: {
+      title: "أسطول المركبات — حرمين رايد",
+      description:
+        "خيارات حرم باك وفئة جي إم سي ولكزس مع المقاعد والأمتعة. كتالوج مسودة — موافقة المالك على الأجرة مطلوبة.",
+    },
+  },
+  routes: {
+    en: {
+      title: "Launch corridors — Haramain Ride",
+      description:
+        "Jeddah, Makkah and Madinah launch corridors with draft operations notes. Synthetic seed data — not live schedule guarantees.",
+    },
+    ar: {
+      title: "ممرات الإطلاق — حرمين رايد",
+      description:
+        "ممرات جدة ومكة والمدينة مع ملاحظات تشغيل مسودة. بيانات بذور — ليست ضمانات جدول حي.",
+    },
+  },
+  about: {
+    en: {
+      title: "About — Haramain Ride",
+      description:
+        "Premium pilgrim and visitor ground transport for Jeddah, Makkah and Madinah. Owned fleet plus verified partners after human review. Pilot only.",
+    },
+    ar: {
+      title: "عنّا — حرمين رايد",
+      description:
+        "نقل أرضي راقٍ لضيوف الرحمن والزوار بين جدة ومكة والمدينة. أسطول مملوك وشركاء بعد التحقق البشري. تجريبي فقط.",
+    },
+  },
+  faq: {
+    en: {
+      title: "FAQ — Haramain Ride",
+      description:
+        "Answers about licensing, providers, sandbox payments, contact, and draft fares on the Haramain Ride pilot.",
+    },
+    ar: {
+      title: "الأسئلة الشائعة — حرمين رايد",
+      description:
+        "إجابات عن الترخيص والمزودين والدفع التجريبي والتواصل والأجور المسودة في تجربة حرمين رايد.",
     },
   },
   legalTerms: {
