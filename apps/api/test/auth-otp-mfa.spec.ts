@@ -60,6 +60,46 @@ describe("F2 auth OTP + MFA scaffold", () => {
     ).toBe(true);
   });
 
+  it("register leaves email unverified until OTP verify", async () => {
+    const email = `signup-${Date.now()}@haramain.local`;
+    const password = "SignupTest!234";
+    const reg = await request(app.getHttpServer())
+      .post("/api/v1/auth/register")
+      .send({ email, password, displayName: "Signup Pilot", locale: "en" });
+    expect(reg.status).toBe(201);
+    expect(reg.body.emailVerified).toBe(false);
+    expect(reg.body.emailVerificationRequired).toBe(true);
+    expect(reg.body.accessToken).toBeTruthy();
+
+    const before = await prisma.userIdentity.findFirst({
+      where: { provider: "email", subject: email },
+    });
+    expect(before?.verifiedAt).toBeNull();
+
+    const otpReq = await request(app.getHttpServer())
+      .post("/api/v1/auth/otp/request")
+      .send({ email });
+    expect(otpReq.status).toBe(201);
+    expect(otpReq.body.debugCode).toMatch(/^\d{6}$/);
+
+    const verify = await request(app.getHttpServer())
+      .post("/api/v1/auth/otp/verify")
+      .send({ email, code: otpReq.body.debugCode });
+    expect(verify.status).toBe(201);
+    expect(verify.body.verified).toBe(true);
+
+    const after = await prisma.userIdentity.findFirst({
+      where: { provider: "email", subject: email },
+    });
+    expect(after?.verifiedAt).toBeTruthy();
+
+    const me = await request(app.getHttpServer())
+      .get("/api/v1/auth/me")
+      .set("Authorization", `Bearer ${reg.body.accessToken}`);
+    expect(me.status).toBe(200);
+    expect(me.body.emailVerified).toBe(true);
+  });
+
   it("requests and verifies email OTP; debugCode present only in test/dev", async () => {
     const email = "customer@haramain.local";
     const reqRes = await request(app.getHttpServer())

@@ -67,6 +67,12 @@ export default function LoginPage() {
         ) : null}
         {message ? <p style={{ color: "#087F6D", margin: 0 }}>{message}</p> : null}
         <Button type="submit">{t(locale, "signIn")}</Button>
+        <p style={{ margin: 0, fontSize: 14 }}>
+          {t(locale, "signupNeedAccount")}{" "}
+          <Link href={`/signup?lang=${locale}`} style={{ color: "#174A8B", fontWeight: 600 }}>
+            {t(locale, "signUp")}
+          </Link>
+        </p>
         <Link href={`/trips?lang=${locale}`} style={{ fontSize: 14 }}>
           {t(locale, "myTrips")}
         </Link>
