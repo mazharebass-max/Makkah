@@ -515,6 +515,33 @@ export function SiteChrome({
       >
         {children}
       </PublicShell>
+      {wa ? (
+        <a
+          href={whatsappHref(wa, t(locale, "whatsappPrefill"))}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`${t(locale, "whatsappCta")} ${whatsappDisplay(wa)}`}
+          className="hr-wa-fab"
+          style={{
+            position: "fixed",
+            insetInlineEnd: 18,
+            bottom: 18,
+            zIndex: 70,
+            width: 56,
+            height: 56,
+            borderRadius: 999,
+            background: "#25D366",
+            color: "#fff",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 12px 28px rgba(7,94,84,0.35)",
+            textDecoration: "none",
+          }}
+        >
+          <WhatsAppIcon size={28} />
+        </a>
+      ) : null}
     </div>
   );
 }

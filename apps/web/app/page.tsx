@@ -90,17 +90,21 @@ export default async function HomePage({
           },
         ];
 
-  const highlights = [
-    t(locale, "highlight1"),
-    t(locale, "highlight2"),
-    t(locale, "highlight3"),
-    t(locale, "highlight4"),
+  const trustPoints = [
+    { title: t(locale, "trustPriceTitle"), body: t(locale, "trustPriceBody"), accent: "#F0771F" },
+    { title: t(locale, "trustFleetTitle"), body: t(locale, "trustFleetBody"), accent: "#1A5FBF" },
+    { title: t(locale, "trustDriverTitle"), body: t(locale, "trustDriverBody"), accent: "#0B1F3A" },
+    { title: t(locale, "trustSecureTitle"), body: t(locale, "trustSecureBody"), accent: "#D62828" },
+    { title: t(locale, "trustFastTitle"), body: t(locale, "trustFastBody"), accent: "#25D366" },
   ];
+
   const easySteps = [
     { title: t(locale, "easyStep1Title"), body: t(locale, "easyStep1Body") },
     { title: t(locale, "easyStep2Title"), body: t(locale, "easyStep2Body") },
     { title: t(locale, "easyStep3Title"), body: t(locale, "easyStep3Body") },
   ];
+
+  const waHref = wa ? whatsappHref(wa, t(locale, "whatsappPrefill")) : null;
 
   return (
     <SiteChrome locale={locale}>
@@ -108,13 +112,13 @@ export default async function HomePage({
       <JsonLd data={serviceJsonLd()} />
       <JsonLd data={faqJsonLd(locale)} />
 
-      {/* Full-bleed corridor hero — service-site feel, not a dashboard */}
+      {/* Full-bleed hero — service-site energy, our brand */}
       <section
         aria-labelledby="hero-heading"
         className="hr-bleed"
         style={{
           position: "relative",
-          minHeight: "min(78vh, 720px)",
+          minHeight: "min(72vh, 680px)",
           display: "grid",
           alignItems: "end",
           overflow: "hidden",
@@ -136,16 +140,16 @@ export default async function HomePage({
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(180deg, rgba(11,31,58,0.35) 0%, rgba(11,31,58,0.55) 42%, rgba(11,31,58,0.88) 100%)",
+              "linear-gradient(180deg, rgba(11,31,58,0.28) 0%, rgba(11,31,58,0.5) 40%, rgba(11,31,58,0.9) 100%)",
           }}
         />
         <div
           style={{
             position: "relative",
             zIndex: 1,
-            padding: "48px clamp(16px, 4vw, 48px) 40px",
+            padding: "48px clamp(16px, 4vw, 48px) 36px",
             display: "grid",
-            gap: 16,
+            gap: 14,
             maxWidth: 720,
           }}
         >
@@ -185,161 +189,197 @@ export default async function HomePage({
           >
             {t(locale, "heroBody")}
           </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, alignItems: "center", marginTop: 4 }}>
-            <Link
-              href={`/?lang=${locale}#book`}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                minHeight: 46,
-                padding: "11px 20px",
-                borderRadius: 14,
-                background: "#F0771F",
-                color: "#fff",
-                fontWeight: 700,
-                fontSize: 15,
-                textDecoration: "none",
-                boxShadow: "0 10px 28px rgba(240,119,31,0.35)",
-              }}
-            >
-              {t(locale, "searchCta")}
-            </Link>
-            {wa ? (
-              <a
-                href={whatsappHref(wa, t(locale, "whatsappPrefill"))}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                  minHeight: 42,
-                  padding: "8px 14px",
-                  borderRadius: 999,
-                  border: "1px solid rgba(37,211,102,0.65)",
-                  background: "rgba(240,255,246,0.12)",
-                  color: "#E8FFF0",
-                  fontWeight: 600,
-                  fontSize: 14,
-                  textDecoration: "none",
-                }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                  <path
-                    fill="#25D366"
-                    d="M12.04 2c-5.46 0-9.91 4.43-9.91 9.9 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.9-4.44 9.9-9.9S17.5 2 12.04 2zm5.85 14.12c-.24.68-1.4 1.25-1.94 1.33-.5.07-1.13.1-1.82-.11-.42-.13-.96-.31-1.66-.61-2.92-1.26-4.82-4.2-4.97-4.39-.14-.19-1.2-1.6-1.2-3.05 0-1.45.76-2.16 1.03-2.45.27-.29.59-.36.79-.36h.57c.18 0 .42-.07.66.5.24.58.82 2 .89 2.14.07.14.12.31.02.5-.1.19-.14.31-.28.48-.14.17-.3.37-.42.5-.14.14-.28.29-.12.56.16.28.71 1.17 1.53 1.89 1.05.93 1.94 1.22 2.21 1.36.28.14.44.12.6-.07.16-.19.7-.81.89-1.09.19-.28.37-.23.63-.14.26.09 1.65.78 1.93.92.28.14.47.21.54.33.07.12.07.7-.17 1.38z"
-                  />
-                </svg>
-                {t(locale, "whatsappCta")}
-                <span style={{ opacity: 0.85, fontWeight: 500 }}>{whatsappDisplay(wa)}</span>
-              </a>
-            ) : null}
-            <Link
-              href={`/how-it-works?lang=${locale}`}
-              style={{
-                color: "rgba(255,255,255,0.9)",
-                fontWeight: 600,
-                fontSize: 15,
-                textUnderlineOffset: 4,
-              }}
-            >
-              {t(locale, "howItWorks")}
-            </Link>
-          </div>
-          <p style={{ margin: "4px 0 0", color: "rgba(255,255,255,0.62)", fontSize: 13 }}>
+          <p style={{ margin: "2px 0 0", color: "rgba(255,255,255,0.62)", fontSize: 13 }}>
             {t(locale, "pilot")}
           </p>
         </div>
       </section>
 
-      {/* Services strip — calm bullets, not icon cards */}
+      {/* Quick action strip — inspired by service sites, our palette (not yellow clone) */}
       <section
-        aria-labelledby="services-heading"
-        style={{ marginTop: 56, display: "grid", gap: 14, maxWidth: 720 }}
-      >
-        <h2 id="services-heading" style={{ margin: 0, fontSize: 28 }}>
-          {t(locale, "servicesHeading")}
-        </h2>
-        <p style={{ margin: 0, color: "#526276", lineHeight: 1.55 }}>{t(locale, "servicesHint")}</p>
-        <ul style={{ margin: 0, paddingInlineStart: 20, color: "#526276", lineHeight: 1.75 }}>
-          {highlights.map((h) => (
-            <li key={h}>{h}</li>
-          ))}
-        </ul>
-      </section>
-
-      {/* Easy booking steps */}
-      <section
-        id="easy-book"
-        aria-labelledby="easy-heading"
-        style={{ marginTop: 56, display: "grid", gap: 18, maxWidth: 720 }}
-      >
-        <h2 id="easy-heading" style={{ margin: 0, fontSize: 28 }}>
-          {t(locale, "easyBookHeading")}
-        </h2>
-        <p style={{ margin: 0, color: "#526276" }}>{t(locale, "easyBookHint")}</p>
-        <ol
-          style={{
-            margin: 0,
-            padding: 0,
-            listStyle: "none",
-            display: "grid",
-            gap: 20,
-            counterReset: "easy",
-          }}
-        >
-          {easySteps.map((s, i) => {
-            const accent = (["#1A5FBF", "#F0771F", "#D62828"] as const)[i] ?? "#1A5FBF";
-            return (
-              <li
-                key={s.title}
-                style={{
-                  display: "grid",
-                  gap: 6,
-                  paddingBottom: 16,
-                  paddingInlineStart: 14,
-                  borderBottom: "1px solid rgba(11,31,58,0.08)",
-                  borderInlineStart: `4px solid ${accent}`,
-                }}
-              >
-                <strong style={{ color: "#0B1F3A", fontSize: 18 }}>{s.title}</strong>
-                <span style={{ color: "#526276", lineHeight: 1.55 }}>{s.body}</span>
-              </li>
-            );
-          })}
-        </ol>
-      </section>
-
-      {/* Book form — product interaction below the story */}
-      <section
-        id="book"
-        aria-labelledby="book-heading"
+        aria-label={t(locale, "searchCta")}
+        className="hr-bleed hr-quick-bar"
         style={{
-          marginTop: 56,
           display: "grid",
-          gap: 14,
-          maxWidth: 520,
-          animation: "hr-rise 640ms ease 40ms both",
+          gridTemplateColumns: waHref ? "repeat(3, minmax(0, 1fr))" : "repeat(2, minmax(0, 1fr))",
+          gap: 10,
+          padding: "12px clamp(16px, 4vw, 48px)",
+          background: "#0B1F3A",
         }}
       >
-        <h2 id="book-heading" style={{ margin: 0, fontSize: 28 }}>
-          {t(locale, "bookHeading")}
-        </h2>
-        <p style={{ margin: 0, color: "#526276", fontSize: 15 }}>{t(locale, "bookHint")}</p>
-        <BookingWidget locale={locale} routes={routes} />
+        <Link
+          href={`/?lang=${locale}#book`}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            minHeight: 52,
+            borderRadius: 12,
+            background: "#F0771F",
+            color: "#fff",
+            fontWeight: 800,
+            fontSize: 15,
+            textDecoration: "none",
+          }}
+        >
+          {t(locale, "quickBook")}
+        </Link>
+        {waHref ? (
+          <a
+            href={waHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              minHeight: 52,
+              borderRadius: 12,
+              background: "#25D366",
+              color: "#063B2D",
+              fontWeight: 800,
+              fontSize: 15,
+              textDecoration: "none",
+            }}
+          >
+            {t(locale, "quickWhatsApp")}
+          </a>
+        ) : null}
+        <Link
+          href={`/?lang=${locale}#fleet`}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            minHeight: 52,
+            borderRadius: 12,
+            background: "#1A5FBF",
+            color: "#fff",
+            fontWeight: 800,
+            fontSize: 15,
+            textDecoration: "none",
+          }}
+        >
+          {t(locale, "quickFleet")}
+        </Link>
       </section>
 
-      {/* Haram Pak + Madinah / Makkah place stills */}
+      {/* Why choose — trust strip */}
+      <section
+        aria-labelledby="why-heading"
+        style={{ marginTop: 48, display: "grid", gap: 18 }}
+      >
+        <div style={{ display: "grid", gap: 8, maxWidth: 720 }}>
+          <h2 id="why-heading" style={{ margin: 0, fontSize: 28 }}>
+            {t(locale, "whyChooseHeading")}
+          </h2>
+          <p style={{ margin: 0, color: "#526276", lineHeight: 1.55 }}>{t(locale, "whyChooseHint")}</p>
+        </div>
+        <div
+          className="hr-trust-row"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
+            gap: 14,
+          }}
+        >
+          {trustPoints.map((item) => (
+            <div
+              key={item.title}
+              style={{
+                display: "grid",
+                gap: 8,
+                padding: "16px 14px",
+                borderTop: `3px solid ${item.accent}`,
+                background: "rgba(255,255,255,0.72)",
+              }}
+            >
+              <strong style={{ color: "#0B1F3A", fontSize: 15, lineHeight: 1.3 }}>{item.title}</strong>
+              <span style={{ color: "#526276", fontSize: 13, lineHeight: 1.45 }}>{item.body}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Fleet showcase — early like the reference */}
+      <section
+        id="fleet"
+        aria-labelledby="fleet-heading"
+        style={{ marginTop: 64, display: "grid", gap: 18 }}
+      >
+        <div style={{ display: "grid", gap: 8, maxWidth: 720 }}>
+          <h2 id="fleet-heading" style={{ margin: 0, fontSize: 28 }}>
+            {t(locale, "fleetShowcaseHeading")}
+          </h2>
+          <p style={{ margin: 0, color: "#526276" }}>{t(locale, "fleetHint")}</p>
+        </div>
+        <div
+          className="hr-fleet-row"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+            gap: 20,
+          }}
+        >
+          {fleetRows.map((row, i) => {
+            const accent = (["#1A5FBF", "#F0771F", "#D62828"] as const)[i] ?? "#1A5FBF";
+            return (
+              <figure
+                key={row.src}
+                style={{
+                  margin: 0,
+                  display: "grid",
+                  gap: 10,
+                  animation: `hr-rise 620ms ease ${80 + i * 70}ms both`,
+                }}
+              >
+                <div
+                  style={{
+                    overflow: "hidden",
+                    background: "#E8EDF5",
+                    aspectRatio: "16 / 10",
+                    borderBottom: `4px solid ${accent}`,
+                  }}
+                >
+                  <Image
+                    src={row.src}
+                    alt={locale === "ar" ? row.altAr : row.altEn}
+                    width={640}
+                    height={400}
+                    style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                </div>
+                <figcaption style={{ display: "grid", gap: 4 }}>
+                  <strong style={{ color: "#0B1F3A", fontSize: 17 }}>{t(locale, row.labelKey)}</strong>
+                  <span style={{ color: "#526276", fontSize: 14 }}>{t(locale, row.capKey)}</span>
+                  <span style={{ color: accent, fontSize: 12, fontWeight: 700 }}>
+                    {t(locale, "fleetFareDraft")}
+                  </span>
+                </figcaption>
+              </figure>
+            );
+          })}
+        </div>
+        <Link href={`/fleet?lang=${locale}`} style={{ fontWeight: 600, width: "fit-content" }}>
+          {t(locale, "fleetNav")}
+        </Link>
+      </section>
+
+      {/* Destinations — city-tour energy without cloning */}
       <section
         id="places"
-        aria-labelledby="places-heading"
+        aria-labelledby="destinations-heading"
         style={{ marginTop: 64, display: "grid", gap: 16 }}
       >
-        <h2 id="places-heading" style={{ margin: 0, fontSize: 28 }}>
-          {t(locale, "placesHeading")}
-        </h2>
-        <p style={{ margin: 0, color: "#526276", maxWidth: 680 }}>{t(locale, "placesHint")}</p>
+        <div style={{ display: "grid", gap: 8, maxWidth: 720 }}>
+          <h2 id="destinations-heading" style={{ margin: 0, fontSize: 28 }}>
+            {t(locale, "destinationsHeading")}
+          </h2>
+          <p style={{ margin: 0, color: "#526276" }}>{t(locale, "destinationsHint")}</p>
+        </div>
         <div
           className="hr-places-row"
           style={{
@@ -435,69 +475,66 @@ export default async function HomePage({
         </Link>
       </section>
 
-      {/* Cars available — photo row, human catalog feel */}
+      {/* Easy booking + book form */}
       <section
-        id="fleet"
-        aria-labelledby="fleet-heading"
-        style={{ marginTop: 64, display: "grid", gap: 18 }}
+        id="easy-book"
+        aria-labelledby="easy-heading"
+        style={{ marginTop: 64, display: "grid", gap: 18, maxWidth: 720 }}
       >
-        <h2 id="fleet-heading" style={{ margin: 0, fontSize: 28 }}>
-          {t(locale, "carsAvailableHeading")}
+        <h2 id="easy-heading" style={{ margin: 0, fontSize: 28 }}>
+          {t(locale, "easyBookHeading")}
         </h2>
-        <p style={{ margin: 0, color: "#526276", maxWidth: 680 }}>{t(locale, "fleetHint")}</p>
-        <div
-          className="hr-fleet-row"
+        <p style={{ margin: 0, color: "#526276" }}>{t(locale, "easyBookHint")}</p>
+        <ol
           style={{
+            margin: 0,
+            padding: 0,
+            listStyle: "none",
             display: "grid",
-            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
             gap: 20,
           }}
         >
-          {fleetRows.map((row, i) => {
+          {easySteps.map((s, i) => {
             const accent = (["#1A5FBF", "#F0771F", "#D62828"] as const)[i] ?? "#1A5FBF";
             return (
-              <figure
-                key={row.src}
+              <li
+                key={s.title}
                 style={{
-                  margin: 0,
                   display: "grid",
-                  gap: 10,
-                  animation: `hr-rise 620ms ease ${80 + i * 70}ms both`,
+                  gap: 6,
+                  paddingBottom: 16,
+                  paddingInlineStart: 14,
+                  borderBottom: "1px solid rgba(11,31,58,0.08)",
+                  borderInlineStart: `4px solid ${accent}`,
                 }}
               >
-                <div
-                  style={{
-                    overflow: "hidden",
-                    background: "#E8EDF5",
-                    aspectRatio: "16 / 10",
-                    borderBottom: `4px solid ${accent}`,
-                  }}
-                >
-                  <Image
-                    src={row.src}
-                    alt={locale === "ar" ? row.altAr : row.altEn}
-                    width={640}
-                    height={400}
-                    style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                </div>
-                <figcaption style={{ display: "grid", gap: 4 }}>
-                  <strong style={{ color: "#0B1F3A", fontSize: 17 }}>{t(locale, row.labelKey)}</strong>
-                  <span style={{ color: "#526276", fontSize: 14 }}>{t(locale, row.capKey)}</span>
-                  <span style={{ color: accent, fontSize: 12, fontWeight: 700 }}>
-                    {t(locale, "fleetFareDraft")}
-                  </span>
-                </figcaption>
-              </figure>
+                <strong style={{ color: "#0B1F3A", fontSize: 18 }}>{s.title}</strong>
+                <span style={{ color: "#526276", lineHeight: 1.55 }}>{s.body}</span>
+              </li>
             );
           })}
-        </div>
-        <Link href={`/fleet?lang=${locale}`} style={{ fontWeight: 600, width: "fit-content" }}>
-          {t(locale, "fleetNav")}
-        </Link>
+        </ol>
       </section>
 
-      {/* Meeting points — light, not ops-console dense */}
+      <section
+        id="book"
+        aria-labelledby="book-heading"
+        style={{
+          marginTop: 48,
+          display: "grid",
+          gap: 14,
+          maxWidth: 520,
+          animation: "hr-rise 640ms ease 40ms both",
+        }}
+      >
+        <h2 id="book-heading" style={{ margin: 0, fontSize: 28 }}>
+          {t(locale, "bookHeading")}
+        </h2>
+        <p style={{ margin: 0, color: "#526276", fontSize: 15 }}>{t(locale, "bookHint")}</p>
+        <BookingWidget locale={locale} routes={routes} />
+      </section>
+
+      {/* Meeting points */}
       <section
         id="pickup-points"
         aria-labelledby="pickup-heading"
@@ -523,7 +560,6 @@ export default async function HomePage({
         </ul>
       </section>
 
-      {/* Passenger note */}
       <section
         aria-labelledby="quote-heading"
         style={{ marginTop: 64, display: "grid", gap: 12, maxWidth: 640 }}
@@ -570,37 +606,57 @@ export default async function HomePage({
         </Link>
       </section>
 
-      {/* Soft contact close */}
+      {/* Strong contact close */}
       <section
         aria-labelledby="home-contact-heading"
+        className="hr-contact-band"
         style={{
           marginTop: 64,
-          padding: "28px 0 8px",
-          borderTop: "1px solid rgba(11,31,58,0.1)",
+          padding: "32px clamp(16px, 3vw, 28px)",
+          borderRadius: 18,
+          background: "linear-gradient(135deg, #0B1F3A 0%, #1A5FBF 100%)",
+          color: "#fff",
           display: "grid",
-          gap: 12,
-          maxWidth: 640,
+          gap: 14,
         }}
       >
-        <h2 id="home-contact-heading" style={{ margin: 0, fontSize: 28 }}>
+        <h2 id="home-contact-heading" style={{ margin: 0, fontSize: 28, color: "#fff" }}>
           {t(locale, "contactHeading")}
         </h2>
-        <p style={{ margin: 0, color: "#526276", lineHeight: 1.55 }}>{t(locale, "homeContactBody")}</p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "center" }}>
-          {wa ? (
+        <p style={{ margin: 0, color: "rgba(255,255,255,0.85)", lineHeight: 1.55, maxWidth: 560 }}>
+          {t(locale, "homeContactBody")}
+        </p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+          {waHref ? (
             <a
-              href={whatsappHref(wa, t(locale, "whatsappPrefill"))}
+              href={waHref}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ fontWeight: 700, fontSize: 16 }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                minHeight: 46,
+                padding: "0 16px",
+                borderRadius: 12,
+                background: "#25D366",
+                color: "#063B2D",
+                fontWeight: 800,
+                textDecoration: "none",
+              }}
             >
-              WhatsApp · {whatsappDisplay(wa)}
+              WhatsApp · {whatsappDisplay(wa!)}
             </a>
           ) : null}
-          <Link href={`/contact?lang=${locale}`} style={{ fontWeight: 600 }}>
+          <Link
+            href={`/contact?lang=${locale}`}
+            style={{ color: "#fff", fontWeight: 700, textUnderlineOffset: 4 }}
+          >
             {t(locale, "contactNav")}
           </Link>
-          <Link href={`/login?lang=${locale}&mode=signup`} style={{ fontWeight: 600 }}>
+          <Link
+            href={`/login?lang=${locale}&mode=signup`}
+            style={{ color: "rgba(255,255,255,0.9)", fontWeight: 600, textUnderlineOffset: 4 }}
+          >
             {t(locale, "signUp")}
           </Link>
         </div>
@@ -610,6 +666,11 @@ export default async function HomePage({
         .hr-bleed {
           width: calc(100% + 2 * clamp(16px, 4vw, 48px));
           margin-inline: calc(-1 * clamp(16px, 4vw, 48px));
+        }
+        .hr-bleed.hr-quick-bar {
+          margin-top: 0;
+        }
+        section.hr-bleed:first-of-type {
           margin-top: -28px;
         }
         @keyframes hr-fade {
@@ -620,11 +681,18 @@ export default async function HomePage({
           from { opacity: 0; transform: translateY(12px); }
           to { opacity: 1; transform: none; }
         }
+        @media (max-width: 960px) {
+          .hr-trust-row { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+        }
         @media (max-width: 800px) {
           .hr-fleet-row { grid-template-columns: 1fr !important; }
           .hr-places-row { grid-template-columns: 1fr !important; }
           .hr-trip-row { grid-template-columns: 88px minmax(0, 1fr) !important; }
           .hr-trip-row > div:last-child { grid-column: 2; }
+          .hr-quick-bar { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 520px) {
+          .hr-trust-row { grid-template-columns: 1fr !important; }
         }
         @media (prefers-reduced-motion: reduce) {
           .hr-bleed, .hr-fleet-row figure { animation: none !important; }
