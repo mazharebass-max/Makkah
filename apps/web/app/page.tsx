@@ -252,6 +252,9 @@ export default async function HomePage({
               WhatsApp · {whatsappDisplay(wa!)}
             </a>
           ) : null}
+          <Link href={`/about?lang=${locale}`} style={{ fontWeight: 600 }}>
+            {t(locale, "aboutNav")}
+          </Link>
           <Link href={`/how-it-works?lang=${locale}`} style={{ fontWeight: 600 }}>
             {t(locale, "howItWorks")}
           </Link>

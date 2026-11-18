@@ -91,6 +91,7 @@ function SiteChromeInner({
   );
 
   const primaryLinks = [
+    { href: `/about?lang=${locale}`, label: t(locale, "aboutNav") },
     { href: `/fleet?lang=${locale}`, label: t(locale, "fleetNav") },
     { href: `/routes?lang=${locale}`, label: t(locale, "routesNav") },
     { href: `/how-it-works?lang=${locale}`, label: t(locale, "howItWorks") },

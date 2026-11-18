@@ -145,17 +145,23 @@ export const messages = {
     contactMacro1: "Airport pickup meeting points (draft seeds)",
     contactMacro2: "Vehicle class seats and luggage",
     contactMacro3: "Sandbox booking vs live licensed operations",
-    aboutNav: "About",
-    aboutTitle: "About Haramain Ride",
+    aboutNav: "About us",
+    aboutTitle: "About us",
     aboutBody:
-      "Haramain Ride is a premium pilgrim and visitor ground-transport platform for Jeddah, Makkah and Madinah. We combine an owned Haram Pak fleet with third-party partners only after human compliance review.",
-    aboutMissionTitle: "Mission",
+      "Haramain Ride is a premium ground-transport platform for pilgrims and visitors between Jeddah, Makkah and Madinah.",
+    aboutWhoTitle: "Who we serve",
+    aboutWhoBody:
+      "Families and groups travelling for Umrah or visits who need a calm private SUV between the airport and hotel corridors.",
+    aboutWhereTitle: "Where we operate",
+    aboutWhereBody:
+      "Launch corridors on this pilot: Jeddah Airport ↔ Makkah hotels, Makkah ↔ Madinah, and Madinah Airport ↔ Madinah hotels.",
+    aboutMissionTitle: "How we work",
     aboutMissionBody:
-      "Deliver calm, credible private transfers — clear vehicle classes, honest draft labeling, and no invented licences or live payment claims before go-live sign-off.",
-    aboutModelTitle: "Operating model",
+      "Clear vehicle classes (Haram Pak, GMC-class, Lexus-class), WhatsApp for questions, and honest draft labeling — no invented licences.",
+    aboutModelTitle: "This pilot",
     aboutModelBody:
-      "Owned fleet first. Verified partners when approved. Sandbox payments and seed inventory on this pilot. Live ops stay locked until the compliance gate is signed.",
-    aboutCta: "Contact us on WhatsApp",
+      "Owned fleet first. Partners only after compliance review. Sandbox payments only. Live licensed operations start after owner sign-off.",
+    aboutCta: "Message us on WhatsApp",
     faqNav: "FAQ",
     fleetNav: "Fleet",
     routesNav: "Routes",
@@ -405,17 +411,23 @@ export const messages = {
     contactMacro1: "نقاط التقاء المطار (بذور مسودة)",
     contactMacro2: "سعة المقاعد والأمتعة حسب فئة المركبة",
     contactMacro3: "الحجز التجريبي مقابل العمليات المرخّصة الحية",
-    aboutNav: "عنّا",
-    aboutTitle: "عن حرمين رايد",
+    aboutNav: "من نحن",
+    aboutTitle: "من نحن",
     aboutBody:
-      "حرمين رايد منصة نقل أرضي راقية لضيوف الرحمن والزوار بين جدة ومكة والمدينة. نجمع أسطول حرم باك المملوك مع شركاء طرف ثالث بعد التحقق البشري فقط.",
-    aboutMissionTitle: "المهمة",
+      "حرمين رايد منصة نقل أرضي راقية لضيوف الرحمن والزوار بين جدة ومكة والمدينة.",
+    aboutWhoTitle: "لمن نقدّم الخدمة",
+    aboutWhoBody:
+      "العائلات والمجموعات في العمرة أو الزيارة ممن يحتاجون سيارة خاصة هادئة بين المطار وممرات الفنادق.",
+    aboutWhereTitle: "أين نعمل",
+    aboutWhereBody:
+      "ممرات الإطلاق في هذه التجربة: مطار جدة ↔ فنادق مكة، مكة ↔ المدينة، ومطار المدينة ↔ فنادق المدينة.",
+    aboutMissionTitle: "كيف نعمل",
     aboutMissionBody:
-      "تقديم تنقلات خاصة هادئة وموثوقة — فئات واضحة، وسم مسودة صادق، بلا تراخيص مختلقة أو مطالبات دفع حية قبل اعتماد الإطلاق.",
-    aboutModelTitle: "نموذج التشغيل",
+      "فئات مركبات واضحة (حرم باك، فئة جي إم سي، فئة لكزس)، واتساب للأسئلة، وسم مسودة صادق — بلا تراخيص مختلقة.",
+    aboutModelTitle: "هذا التجريب",
     aboutModelBody:
-      "الأسطول المملوك أولاً. الشركاء بعد الاعتماد. دفع تجريبي ومخزون بذور في هذه التجربة. العمليات الحية مقفلة حتى توقيع بوابة الامتثال.",
-    aboutCta: "تواصل عبر واتساب",
+      "الأسطول المملوك أولاً. الشركاء بعد مراجعة الامتثال فقط. دفع تجريبي فقط. العمليات المرخّصة الحية بعد اعتماد المالك.",
+    aboutCta: "راسلنا على واتساب",
     faqNav: "الأسئلة",
     fleetNav: "الأسطول",
     routesNav: "الممرات",
