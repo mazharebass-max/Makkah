@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import { Badge } from "@haramain/ui";
 import { BookingWidget } from "../components/BookingWidget";
 import { JsonLd } from "../components/JsonLd";
@@ -21,6 +23,27 @@ export async function generateMetadata({
   const locale = localeFromSearchParams(searchParams);
   return buildPageMetadata({ key: "home", locale, pathname: "/" });
 }
+
+const fleetShots = [
+  {
+    src: "/vehicles/haram-pack-suv.jpg",
+    labelKey: "fleetHaramPack" as const,
+    altEn: "Haram Pack class premium black SUV (placeholder fleet photo)",
+    altAr: "سيارة حرم باك سوداء فاخرة (صورة مؤقتة للأسطول)",
+  },
+  {
+    src: "/vehicles/gmc-class-suv.jpg",
+    labelKey: "fleetGmc" as const,
+    altEn: "GMC-class charcoal SUV (placeholder fleet photo)",
+    altAr: "سيارة فئة جي إم سي رصاصية (صورة مؤقتة للأسطول)",
+  },
+  {
+    src: "/vehicles/lexus-class-suv.jpg",
+    labelKey: "fleetLexus" as const,
+    altEn: "Lexus-class pearl white SUV (placeholder fleet photo)",
+    altAr: "سيارة فئة لكزس بيضاء لؤلؤية (صورة مؤقتة للأسطول)",
+  },
+] as const;
 
 export default async function HomePage({
   searchParams,
@@ -61,6 +84,12 @@ export default async function HomePage({
           },
         ];
 
+  const notes = [
+    { title: t(locale, "note1Title"), body: t(locale, "note1Body") },
+    { title: t(locale, "note2Title"), body: t(locale, "note2Body") },
+    { title: t(locale, "note3Title"), body: t(locale, "note3Body") },
+  ];
+
   return (
     <SiteChrome locale={locale}>
       <JsonLd data={organizationJsonLd()} />
@@ -72,42 +101,203 @@ export default async function HomePage({
         style={{
           display: "grid",
           gap: 28,
-          gridTemplateColumns: "minmax(0, 1.1fr) minmax(280px, 0.9fr)",
-          alignItems: "start",
-          minHeight: "70vh",
+          background: "#F6F3EC",
+          marginInline: -8,
+          padding: "8px 8px 0",
+          animation: "hr-fade 480ms ease both",
         }}
-        className="hr-hero-grid"
       >
-        <div style={{ display: "grid", gap: 18, animation: "hr-fade 480ms ease both" }}>
+        <div style={{ display: "grid", gap: 16, maxWidth: 640 }}>
           <Badge tone="warning">{t(locale, "pilot")}</Badge>
+          <p
+            style={{
+              margin: 0,
+              fontSize: "clamp(2.4rem, 6.5vw, 3.6rem)",
+              fontWeight: 800,
+              letterSpacing: "-0.04em",
+              lineHeight: 1.02,
+              color: "#0B1F3A",
+            }}
+          >
+            {t(locale, "heroTitle")}
+          </p>
           <h1
             id="hero-heading"
             style={{
               margin: 0,
-              fontSize: "clamp(2.6rem, 7vw, 4rem)",
-              letterSpacing: "-0.04em",
-              lineHeight: 1.02,
+              fontSize: "clamp(1.35rem, 3.2vw, 1.85rem)",
+              fontWeight: 600,
+              letterSpacing: "-0.02em",
+              lineHeight: 1.25,
+              color: "#0B1F3A",
             }}
           >
-            {t(locale, "heroTitle")}
+            {t(locale, "heroHeadline")}
           </h1>
-          <p style={{ margin: 0, fontSize: 18, color: "#526276", maxWidth: 540 }}>
+          <p style={{ margin: 0, fontSize: 18, color: "#526276", maxWidth: 540, lineHeight: 1.55 }}>
             {t(locale, "heroBody")}
           </p>
-          {/* Decorative atmosphere panel — not a photographic asset; keep aria-hidden */}
-          <div
-            aria-hidden
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "center" }}>
+            <Link
+              href={`/?lang=${locale}#book`}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: 44,
+                padding: "10px 18px",
+                borderRadius: 16,
+                background: "#174A8B",
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: 15,
+                textDecoration: "none",
+                boxShadow: "0 8px 24px rgba(23, 74, 139, 0.22)",
+              }}
+            >
+              {t(locale, "searchCta")}
+            </Link>
+            <Link
+              href={`/?lang=${locale}#notes`}
+              style={{
+                color: "#174A8B",
+                fontWeight: 600,
+                fontSize: 15,
+                textUnderlineOffset: 4,
+              }}
+            >
+              {t(locale, "howItWorks")}
+            </Link>
+          </div>
+        </div>
+
+        <figure
+          style={{
+            margin: 0,
+            borderRadius: 0,
+            overflow: "hidden",
+            background: "#E8E2D6",
+            animation: "hr-rise 640ms ease 80ms both",
+          }}
+        >
+          <Image
+            src="/vehicles/haram-pack-suv.jpg"
+            alt={locale === "ar" ? fleetShots[0].altAr : fleetShots[0].altEn}
+            width={1280}
+            height={720}
+            priority
             style={{
-              marginTop: 8,
-              minHeight: 220,
-              borderRadius: 20,
-              background:
-                "linear-gradient(135deg, rgba(11,31,58,0.92), rgba(23,74,139,0.75)), radial-gradient(circle at 20% 20%, rgba(198,161,91,0.35), transparent 45%)",
-              boxShadow: "0 20px 60px rgba(11,31,58,0.18)",
+              display: "block",
+              width: "100%",
+              height: "auto",
+              objectFit: "cover",
+              maxHeight: 420,
             }}
           />
-        </div>
+          <figcaption style={{ padding: "10px 4px 0", color: "#526276", fontSize: 13 }}>
+            {t(locale, "fleetHaramPack")} · {t(locale, "fleetHint")}
+          </figcaption>
+        </figure>
+      </section>
+
+      <section
+        id="book"
+        aria-labelledby="book-heading"
+        style={{ marginTop: 56, display: "grid", gap: 16, maxWidth: 560 }}
+      >
+        <h2 id="book-heading" style={{ margin: 0, fontSize: 28 }}>
+          {t(locale, "bookHeading")}
+        </h2>
+        <p style={{ margin: 0, color: "#526276" }}>{t(locale, "bookHint")}</p>
         <BookingWidget locale={locale} routes={routes} />
+      </section>
+
+      <section
+        id="fleet"
+        aria-labelledby="fleet-heading"
+        style={{ marginTop: 64, display: "grid", gap: 16 }}
+      >
+        <h2 id="fleet-heading" style={{ margin: 0, fontSize: 28 }}>
+          {t(locale, "fleetHeading")}
+        </h2>
+        <p style={{ margin: 0, color: "#526276", maxWidth: 640 }}>{t(locale, "fleetHint")}</p>
+        <ul
+          style={{
+            listStyle: "none",
+            padding: 0,
+            margin: 0,
+            display: "grid",
+            gap: 16,
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          }}
+        >
+          {fleetShots.map((shot, idx) => (
+            <li
+              key={shot.src}
+              style={{
+                display: "grid",
+                gap: 8,
+                animation: `hr-fade 520ms ease ${100 + idx * 60}ms both`,
+              }}
+            >
+              <Image
+                src={shot.src}
+                alt={locale === "ar" ? shot.altAr : shot.altEn}
+                width={640}
+                height={360}
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  display: "block",
+                  objectFit: "cover",
+                  background: "#E8E2D6",
+                }}
+              />
+              <span style={{ fontWeight: 600, color: "#0B1F3A" }}>{t(locale, shot.labelKey)}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section
+        aria-labelledby="quote-heading"
+        style={{ marginTop: 64, display: "grid", gap: 12, maxWidth: 640 }}
+      >
+        <h2 id="quote-heading" className="hr-visually-hidden">
+          {locale === "ar" ? "ملاحظة تجريبية" : "Pilot note"}
+        </h2>
+        <blockquote
+          style={{
+            margin: 0,
+            padding: 0,
+            border: "none",
+            fontSize: 22,
+            lineHeight: 1.45,
+            color: "#0B1F3A",
+            letterSpacing: "-0.02em",
+            fontWeight: 600,
+          }}
+        >
+          “{t(locale, "quoteBody")}”
+        </blockquote>
+        <p style={{ margin: 0, color: "#526276", fontSize: 14 }}>{t(locale, "quoteAttr")}</p>
+        <p style={{ margin: 0, color: "#087F6D", fontSize: 13 }}>{t(locale, "quoteCaveat")}</p>
+      </section>
+
+      <section id="notes" aria-labelledby="notes-heading" style={{ marginTop: 64, display: "grid", gap: 16 }}>
+        <h2 id="notes-heading" style={{ margin: 0, fontSize: 28 }}>
+          {t(locale, "notesHeading")}
+        </h2>
+        <ol style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 18, maxWidth: 640 }}>
+          {notes.map((n, i) => (
+            <li key={n.title} style={{ display: "grid", gap: 4 }}>
+              <strong style={{ color: "#0B1F3A" }}>
+                {i + 1}. {n.title}
+              </strong>
+              <span style={{ color: "#526276", lineHeight: 1.55 }}>{n.body}</span>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <section id="routes" aria-labelledby="routes-heading" style={{ marginTop: 64, display: "grid", gap: 16 }}>
@@ -116,20 +306,18 @@ export default async function HomePage({
         </h2>
         <p style={{ margin: 0, color: "#526276" }}>{t(locale, "routesHint")}</p>
         <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 12 }}>
-          {routes.map((r, idx) => (
+          {routes.map((r) => (
             <li
               key={r.code}
               style={{
                 background: "#fff",
-                borderRadius: 16,
                 padding: "16px 18px",
-                boxShadow: "0 12px 40px rgba(11,31,58,0.06)",
                 display: "flex",
                 justifyContent: "space-between",
                 gap: 12,
                 flexWrap: "wrap",
                 alignItems: "center",
-                animation: `hr-fade 520ms ease ${80 + idx * 40}ms both`,
+                borderBottom: "1px solid rgba(11,31,58,0.08)",
               }}
             >
               <div>
@@ -156,10 +344,8 @@ export default async function HomePage({
             <li
               key={p.code}
               style={{
-                background: "#fff",
-                borderRadius: 16,
-                padding: "16px 18px",
-                border: "1px solid rgba(11,31,58,0.06)",
+                padding: "16px 0",
+                borderBottom: "1px solid rgba(11,31,58,0.08)",
                 display: "flex",
                 justifyContent: "space-between",
                 gap: 12,
@@ -182,19 +368,6 @@ export default async function HomePage({
         </ul>
       </section>
 
-      <section aria-labelledby="steps-heading" style={{ marginTop: 64, display: "grid", gap: 12, maxWidth: 640 }}>
-        <h2 id="steps-heading" style={{ margin: 0 }}>
-          {t(locale, "steps")}
-        </h2>
-        <ol style={{ margin: 0, paddingInlineStart: 20, color: "#526276", lineHeight: 1.7 }}>
-          <li>{t(locale, "step1")}</li>
-          <li>{t(locale, "step2")}</li>
-          <li>{t(locale, "step3")}</li>
-        </ol>
-        <h3 style={{ marginBottom: 0 }}>{t(locale, "safety")}</h3>
-        <p style={{ marginTop: 0, color: "#526276" }}>{t(locale, "safetyBody")}</p>
-      </section>
-
       <section aria-labelledby="faq-heading" style={{ marginTop: 64, display: "grid", gap: 16, maxWidth: 720 }}>
         <h2 id="faq-heading" style={{ margin: 0 }}>
           {t(locale, "faqHeading")}
@@ -211,11 +384,26 @@ export default async function HomePage({
 
       <style>{`
         @keyframes hr-fade {
-          from { opacity: 0; transform: translateY(10px); }
+          from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: none; }
         }
-        @media (max-width: 860px) {
-          .hr-hero-grid { grid-template-columns: 1fr !important; }
+        @keyframes hr-rise {
+          from { opacity: 0; transform: translateY(14px); }
+          to { opacity: 1; transform: none; }
+        }
+        .hr-visually-hidden {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          * { animation: none !important; }
         }
       `}</style>
     </SiteChrome>
