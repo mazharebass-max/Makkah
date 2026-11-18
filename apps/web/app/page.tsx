@@ -31,7 +31,7 @@ const fleetRows = [
     src: "/vehicles/haram-pack-suv.jpg",
     labelKey: "fleetHaramPack" as const,
     capKey: "fleetCapHaramPack" as const,
-    altEn: "Haram Pack SUV at an airport arrival curb with luggage trolley",
+    altEn: "Haram Pak SUV at an airport arrival curb with luggage trolley",
     altAr: "سيارة حرم باك عند رصيف المطار مع عربة أمتعة",
   },
   {
@@ -330,7 +330,7 @@ export default async function HomePage({
         <BookingWidget locale={locale} routes={routes} />
       </section>
 
-      {/* Haram Pack + Madinah / Makkah place stills */}
+      {/* Haram Pak + Madinah / Makkah place stills */}
       <section
         id="places"
         aria-labelledby="places-heading"

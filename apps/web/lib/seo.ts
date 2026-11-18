@@ -76,7 +76,7 @@ const copy: Record<
     en: {
       title: "Vehicle fleet — Haramain Ride",
       description:
-        "Haram Pack, GMC-class and Lexus-class SUV options with seats and luggage. Draft catalog — owner fare approval required.",
+        "Haram Pak, GMC-class and Lexus-class SUV options with seats and luggage. Draft catalog — owner fare approval required.",
     },
     ar: {
       title: "أسطول المركبات — حرمين رايد",

@@ -4,7 +4,7 @@ Contextual transfer photos for the public homepage (airport curb / highway / hot
 
 | File | Intended class | Scene |
 |---|---|---|
-| `haram-pack-suv.jpg` | Haram Pack SUV | Airport arrival curb — used in hero + Jeddah corridors |
+| `haram-pack-suv.jpg` | Haram Pak SUV | Airport arrival curb — used in hero + Jeddah corridors |
 | `gmc-class-suv.jpg` | GMC-class SUV | Desert highway corridor |
 | `lexus-class-suv.jpg` | Lexus-class SUV | Hotel porte-cochere |
 

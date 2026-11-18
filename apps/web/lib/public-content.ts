@@ -5,7 +5,7 @@ export const fleetRows = [
     src: "/vehicles/haram-pack-suv.jpg",
     labelKey: "fleetHaramPack" as const,
     capKey: "fleetCapHaramPack" as const,
-    altEn: "Haram Pack SUV at an airport arrival curb with luggage trolley",
+    altEn: "Haram Pak SUV at an airport arrival curb with luggage trolley",
     altAr: "سيارة حرم باك عند رصيف المطار مع عربة أمتعة",
   },
   {
@@ -24,7 +24,7 @@ export const fleetRows = [
   },
 ] as const;
 
-/** Corridor place/vehicle stills — Haram Pack for airport legs, Madinah / Makkah place photos where the route needs them. */
+/** Corridor place/vehicle stills — Haram Pak for airport legs, Madinah / Makkah place photos where the route needs them. */
 export function corridorVisual(code: string): {
   src: string;
   altEn: string;
@@ -48,13 +48,13 @@ export function corridorVisual(code: string): {
   if (c.includes("JED") || c.includes("JEDDAH") || c.includes("MAKKAH")) {
     return {
       src: "/vehicles/haram-pack-suv.jpg",
-      altEn: "Haram Pack SUV ready for Jeddah–Makkah airport transfer",
+      altEn: "Haram Pak SUV ready for Jeddah–Makkah airport transfer",
       altAr: "سيارة حرم باك جاهزة لنقل مطار جدة–مكة",
     };
   }
   return {
     src: "/vehicles/haram-pack-suv.jpg",
-    altEn: "Haram Pack SUV for Haramain corridor transfers",
+    altEn: "Haram Pak SUV for Haramain corridor transfers",
     altAr: "سيارة حرم باك لتنقلات ممرات الحرمين",
   };
 }
@@ -64,7 +64,7 @@ export const placeHighlights = [
     src: "/vehicles/haram-pack-suv.jpg",
     titleKey: "placeHaramPackTitle" as const,
     bodyKey: "placeHaramPackBody" as const,
-    altEn: "Haram Pack SUV at an airport arrival curb",
+    altEn: "Haram Pak SUV at an airport arrival curb",
     altAr: "سيارة حرم باك عند رصيف المطار",
   },
   {
