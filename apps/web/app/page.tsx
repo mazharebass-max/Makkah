@@ -94,7 +94,48 @@ export default async function HomePage({
     t(locale, "highlight2"),
     t(locale, "highlight3"),
   ];
-  const included = [t(locale, "included1"), t(locale, "included2"), t(locale, "included3")];
+  const included = [
+    t(locale, "included1"),
+    t(locale, "included2"),
+    t(locale, "included3"),
+    t(locale, "included4"),
+    t(locale, "included5"),
+  ];
+  const transferSteps = [
+    { title: t(locale, "transferStep1Title"), body: t(locale, "transferStep1Body") },
+    { title: t(locale, "transferStep2Title"), body: t(locale, "transferStep2Body") },
+    { title: t(locale, "transferStep3Title"), body: t(locale, "transferStep3Body") },
+    { title: t(locale, "transferStep4Title"), body: t(locale, "transferStep4Body") },
+  ];
+  const corridorOps = [
+    {
+      codes: ["JED-MAKKAH", "JEDDAH-MAKKAH"],
+      titleEn: "JED Airport ↔ Makkah hotels",
+      titleAr: "مطار جدة ↔ فنادق مكة",
+      pickup: t(locale, "corridorJedMakkahPickup"),
+      dropoff: t(locale, "corridorJedMakkahDropoff"),
+      duration: t(locale, "corridorJedMakkahDuration"),
+      note: t(locale, "corridorJedMakkahNote"),
+    },
+    {
+      codes: ["MAKKAH-MADINAH"],
+      titleEn: "Makkah ↔ Madinah",
+      titleAr: "مكة ↔ المدينة",
+      pickup: t(locale, "corridorMakkahMadinahPickup"),
+      dropoff: t(locale, "corridorMakkahMadinahDropoff"),
+      duration: t(locale, "corridorMakkahMadinahDuration"),
+      note: t(locale, "corridorMakkahMadinahNote"),
+    },
+    {
+      codes: ["MED-MADINAH"],
+      titleEn: "MED Airport ↔ Madinah hotels",
+      titleAr: "مطار المدينة ↔ فنادق المدينة",
+      pickup: t(locale, "corridorMedMadinahPickup"),
+      dropoff: t(locale, "corridorMedMadinahDropoff"),
+      duration: t(locale, "corridorMedMadinahDuration"),
+      note: t(locale, "corridorMedMadinahNote"),
+    },
+  ];
   const notes = [
     { title: t(locale, "note1Title"), body: t(locale, "note1Body") },
     { title: t(locale, "note2Title"), body: t(locale, "note2Body") },
@@ -188,7 +229,7 @@ export default async function HomePage({
               </a>
             ) : (
               <Link
-                href={`/?lang=${locale}#notes`}
+                href={`/?lang=${locale}#how-it-works`}
                 style={{
                   color: "#174A8B",
                   fontWeight: 600,
@@ -310,6 +351,25 @@ export default async function HomePage({
       </section>
 
       <section
+        id="how-it-works"
+        aria-labelledby="how-heading"
+        style={{ marginTop: 56, display: "grid", gap: 16, maxWidth: 720 }}
+      >
+        <h2 id="how-heading" style={{ margin: 0, fontSize: 28 }}>
+          {t(locale, "howItWorksHeading")}
+        </h2>
+        <p style={{ margin: 0, color: "#526276" }}>{t(locale, "howItWorksHint")}</p>
+        <ol style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 16 }}>
+          {transferSteps.map((s) => (
+            <li key={s.title} style={{ display: "grid", gap: 4 }}>
+              <strong style={{ color: "#0B1F3A" }}>{s.title}</strong>
+              <span style={{ color: "#526276", lineHeight: 1.55 }}>{s.body}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section
         aria-labelledby="included-heading"
         style={{ marginTop: 56, display: "grid", gap: 12, maxWidth: 680 }}
       >
@@ -320,6 +380,59 @@ export default async function HomePage({
           {included.map((item) => (
             <li key={item}>{item}</li>
           ))}
+        </ul>
+      </section>
+
+      <section
+        id="corridor-ops"
+        aria-labelledby="corridor-ops-heading"
+        style={{ marginTop: 56, display: "grid", gap: 16 }}
+      >
+        <h2 id="corridor-ops-heading" style={{ margin: 0, fontSize: 28 }}>
+          {t(locale, "corridorOpsHeading")}
+        </h2>
+        <p style={{ margin: 0, color: "#526276", maxWidth: 720 }}>{t(locale, "corridorOpsHint")}</p>
+        <Badge tone="warning">{t(locale, "draft")}</Badge>
+        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 20 }}>
+          {corridorOps.map((c) => {
+            const live = routes.find((r) => c.codes.includes(r.code));
+            const title =
+              locale === "ar"
+                ? live?.nameAr || c.titleAr
+                : live?.nameEn || c.titleEn;
+            return (
+              <li
+                key={c.codes.join("-")}
+                style={{
+                  paddingBottom: 16,
+                  borderBottom: "1px solid rgba(11,31,58,0.08)",
+                  display: "grid",
+                  gap: 8,
+                  maxWidth: 720,
+                }}
+              >
+                <strong style={{ color: "#0B1F3A", fontSize: 18 }}>{title}</strong>
+                <div style={{ color: "#526276", fontSize: 14, lineHeight: 1.6 }}>
+                  <div>
+                    <span style={{ fontWeight: 600, color: "#0B1F3A" }}>{t(locale, "corridorOpsPickup")}: </span>
+                    {c.pickup}
+                  </div>
+                  <div>
+                    <span style={{ fontWeight: 600, color: "#0B1F3A" }}>{t(locale, "corridorOpsDropoff")}: </span>
+                    {c.dropoff}
+                  </div>
+                  <div>
+                    <span style={{ fontWeight: 600, color: "#0B1F3A" }}>{t(locale, "corridorOpsDuration")}: </span>
+                    {c.duration}
+                  </div>
+                  <div>
+                    <span style={{ fontWeight: 600, color: "#0B1F3A" }}>{t(locale, "corridorOpsNote")}: </span>
+                    {c.note}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </section>
 

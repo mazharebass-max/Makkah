@@ -59,7 +59,9 @@ export function SiteChrome({
         }
         nav={
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
+            <Link href={`/?lang=${locale}#how-it-works`}>{t(locale, "howItWorks")}</Link>
             <Link href={`/?lang=${locale}#routes`}>{t(locale, "routes")}</Link>
+            <Link href={`/?lang=${locale}#corridor-ops`}>{t(locale, "corridorOpsHeading")}</Link>
             <Link href={`/?lang=${locale}#pickup-points`}>{t(locale, "pickupPoints")}</Link>
             <Link href={`/search?lang=${locale}`}>{t(locale, "searchCta")}</Link>
             <Link href={`/providers/apply?lang=${locale}`}>{t(locale, "providerApply")}</Link>
