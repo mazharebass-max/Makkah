@@ -62,6 +62,11 @@ class WebhookDto {
   amountHalalas?: number;
 }
 
+class GenerateSettlementDto {
+  @IsUUID()
+  providerId!: string;
+}
+
 @Controller()
 export class PaymentsController {
   constructor(@Inject(PaymentsService) private readonly payments: PaymentsService) {}
@@ -127,5 +132,47 @@ export class PaymentsController {
   @Get("admin/finance/invoices")
   invoices() {
     return this.payments.listInvoices();
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(RoleCode.FINANCE_OFFICER, RoleCode.SUPER_ADMIN)
+  @Get("admin/finance/commissions")
+  commissions() {
+    return this.payments.listCommissions();
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(RoleCode.FINANCE_OFFICER, RoleCode.SUPER_ADMIN)
+  @Get("admin/finance/payables")
+  payables() {
+    return this.payments.listPayables();
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(RoleCode.FINANCE_OFFICER, RoleCode.SUPER_ADMIN)
+  @Get("admin/finance/settlements")
+  settlements() {
+    return this.payments.listSettlements();
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(RoleCode.FINANCE_OFFICER, RoleCode.SUPER_ADMIN)
+  @Get("admin/finance/settlements/:id")
+  settlement(@Param("id") id: string) {
+    return this.payments.getSettlement(id);
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(RoleCode.FINANCE_OFFICER, RoleCode.SUPER_ADMIN)
+  @Post("admin/finance/settlements/generate")
+  generateSettlement(@Req() req: AuthedRequest, @Body() body: GenerateSettlementDto) {
+    return this.payments.generateSettlement(req.user!, body);
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(RoleCode.FINANCE_OFFICER, RoleCode.SUPER_ADMIN)
+  @Post("admin/finance/settlements/:id/mark-sandbox-paid")
+  markSandboxPaid(@Req() req: AuthedRequest, @Param("id") id: string) {
+    return this.payments.markSettlementSandboxPaid(req.user!, id);
   }
 }

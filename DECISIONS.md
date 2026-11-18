@@ -112,6 +112,12 @@
 **Decision:** Add `POST /payments/sandbox/complete` that ownership-checks the customer, finds the sandbox intent, and runs the same `handleWebhook(payment.succeeded)` path. Disabled if `ALLOW_LIVE_PAYMENTS` or go-live is unlocked.  
 **Consequence:** Web confirmation can show a paid sandbox booking with invoice/ledger consistency; never a live capture claim.
 
+## D-023 — Sandbox commission & settlement statements (2026-11-18)
+
+**Context:** PRD requires Commission / ProviderPayable / Settlement before live ops; owner has not approved rates or payout rails.  
+**Decision:** Accrue DRAFT commission at 1500 bps on sandbox capture; create ProviderPayable when a third-party `BookingAssignment.providerId` exists; issue Settlement statements with `livePayout: false`. `MARKED_SANDBOX_PAID` is bookkeeping only. No `Payout` entity and no bank transfer path until owner sign-off.  
+**Consequence:** Finance officers can reconcile sandbox statements without inventing live payouts; go-live lock unchanged.
+
 ## Open owner decisions (from PRD §19)
 
 - Legal entity / TGA / tourism authorizations
@@ -121,3 +127,4 @@
 - SMS/WhatsApp, maps, hosting, domain
 - Launch languages (recommend AR + EN)
 - Brand assets and policy pages
+- Commission rate / settlement calendar / payout rails

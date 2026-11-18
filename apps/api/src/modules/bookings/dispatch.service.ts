@@ -84,8 +84,10 @@ export class DispatchService {
             vehicleId = free.id;
           }
 
-          const vehicleRows = await tx.$queryRaw<{ id: string; active: boolean }[]>`
-            SELECT id, active FROM "Vehicle" WHERE id = ${vehicleId}::uuid FOR UPDATE
+          const vehicleRows = await tx.$queryRaw<
+            { id: string; active: boolean; providerId: string | null }[]
+          >`
+            SELECT id, active, "providerId" FROM "Vehicle" WHERE id = ${vehicleId}::uuid FOR UPDATE
           `;
           const vehicle = vehicleRows[0];
           if (!vehicle?.active) {
@@ -94,6 +96,7 @@ export class DispatchService {
               message: "Vehicle not available",
             });
           }
+          const assignmentProviderId = vehicle.providerId;
 
           const overlap = await tx.bookingAssignment.findFirst({
             where: {
@@ -189,6 +192,7 @@ export class DispatchService {
               bookingId: booking.id,
               vehicleId,
               driverId: input.driverId ?? null,
+              providerId: assignmentProviderId,
               startsAt,
               endsAt,
               reason: input.reason ?? "dispatch.assign",
@@ -196,6 +200,7 @@ export class DispatchService {
             update: {
               vehicleId,
               driverId: input.driverId ?? null,
+              providerId: assignmentProviderId,
               startsAt,
               endsAt,
               reason: input.reason ?? "dispatch.reassign",

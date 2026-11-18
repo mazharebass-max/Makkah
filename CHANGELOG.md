@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.12.0 — 2026-11-18
+
+### Added (Fresh F4 — sandbox Commission / ProviderPayable / Settlement)
+
+- Prisma models `Commission`, `ProviderPayable`, `Settlement` with draft labels and `mode: sandbox`
+- Ledger entry type `COMMISSION`; draft platform rate `1500` bps accrued on sandbox capture
+- Admin finance APIs: commissions, payables, settlements list/detail, generate statement, mark-sandbox-paid
+- Dispatch copies `vehicle.providerId` onto `BookingAssignment` for third-party payable accrual
+- Admin finance UI surfaces commission + settlement sandbox totals
+- Integration tests for commission accrual + settlement statement (no live payout)
+
+### Explicit non-claims
+
+- Settlement statements and `MARKED_SANDBOX_PAID` are bookkeeping only — never a live bank payout
+- `livePayout` / `liveGateway` remain false; go-live lock unchanged
+
 ## 0.11.0 — 2026-11-18
 
 ### Added (Fresh F3 — driver EXCLUDE + DriverShift)

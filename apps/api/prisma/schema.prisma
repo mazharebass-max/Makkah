@@ -226,6 +226,8 @@ model Provider {
   vehicles        Vehicle[]
   roleAssignments RoleAssignment[]
   assignments     BookingAssignment[]
+  payables        ProviderPayable[]
+  settlements     Settlement[]
 }
 
 model ProviderDocument {
@@ -461,6 +463,8 @@ model Booking {
   ledgerEntries    LedgerEntry[]
   locationSamples  LocationSample[]
   locationConsents LocationConsent[]
+  commissions      Commission[]
+  providerPayables ProviderPayable[]
 }
 
 /// Precise location retained only for active trip with explicit consent (PDPL minimize).
@@ -519,6 +523,25 @@ enum LedgerEntryType {
   CHARGE
   REFUND
   ADJUSTMENT
+  COMMISSION
+}
+
+enum CommissionStatus {
+  ACCRUED
+  VOID
+}
+
+enum PayableStatus {
+  OPEN
+  INCLUDED_IN_SETTLEMENT
+  VOID
+}
+
+enum SettlementStatus {
+  DRAFT
+  STATEMENT_ISSUED
+  /// Sandbox-only marker — never a live bank payout claim
+  MARKED_SANDBOX_PAID
 }
 
 enum InvoiceStatus {
@@ -607,6 +630,74 @@ model LedgerEntry {
 
   @@index([bookingId, createdAt])
   @@index([type, createdAt])
+}
+
+/// Platform commission snapshot — rate is DRAFT until owner/tax adviser approval.
+model Commission {
+  id                 String           @id @default(uuid()) @db.Uuid
+  bookingId          String           @db.Uuid
+  chargeAmountHalalas Int
+  rateBps            Int
+  amountHalalas      Int
+  currency           String           @default("SAR")
+  status             CommissionStatus @default(ACCRUED)
+  draftLabel         String           @default("DRAFT — OWNER APPROVAL REQUIRED")
+  note               String?
+  mode               String           @default("sandbox")
+  createdAt          DateTime         @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingId])
+  @@index([status, createdAt])
+}
+
+/// Amount owed to a third-party provider for a booking (sandbox accrual).
+model ProviderPayable {
+  id            String        @id @default(uuid()) @db.Uuid
+  providerId    String        @db.Uuid
+  bookingId     String        @db.Uuid
+  settlementId  String?       @db.Uuid
+  amountHalalas Int
+  currency      String        @default("SAR")
+  status        PayableStatus @default(OPEN)
+  draftLabel    String        @default("DRAFT — OWNER APPROVAL REQUIRED")
+  note          String?
+  mode          String        @default("sandbox")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  provider   Provider    @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  booking    Booking     @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  settlement Settlement? @relation(fields: [settlementId], references: [id])
+
+  @@unique([bookingId])
+  @@index([providerId, status])
+  @@index([settlementId])
+}
+
+/// Sandbox settlement statement — never claims a live bank payout.
+model Settlement {
+  id              String           @id @default(uuid()) @db.Uuid
+  providerId      String           @db.Uuid
+  statementNumber String           @unique
+  currency        String           @default("SAR")
+  totalHalalas    Int
+  status          SettlementStatus @default(DRAFT)
+  draftLabel      String           @default("DRAFT — OWNER APPROVAL REQUIRED — sandbox statement only")
+  periodStart     DateTime?
+  periodEnd       DateTime?
+  issuedAt        DateTime?
+  mode            String           @default("sandbox")
+  livePayout      Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  provider Provider          @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  payables ProviderPayable[]
+
+  @@index([providerId, createdAt])
+  @@index([status])
 }
 
 model Invoice {
