@@ -463,6 +463,8 @@ async function main() {
     "Draft Mercedes V-Class base — owner approval required",
   );
 
+  // Keep two SEDAN (Haram Pak) units so overlap / parallel booking tests can hold two quotes.
+  // VEHICLE_A/B in driver-overlap.spec.ts are …010 / …011.
   const vehicles = [
     {
       id: "00000000-0000-4000-8000-000000000010",
@@ -474,6 +476,14 @@ async function main() {
     },
     {
       id: "00000000-0000-4000-8000-000000000011",
+      categoryId: haramPak.id,
+      plateNumber: "SYN-HP2",
+      makeModel: "Haram Pak SUV B (synthetic)",
+      passengerCap: 6,
+      luggageCap: 8,
+    },
+    {
+      id: "00000000-0000-4000-8000-000000000012",
       categoryId: staria.id,
       plateNumber: "SYN-ST1",
       makeModel: "Hyundai Staria high-roof (synthetic)",
@@ -481,7 +491,7 @@ async function main() {
       luggageCap: 10,
     },
     {
-      id: "00000000-0000-4000-8000-000000000012",
+      id: "00000000-0000-4000-8000-000000000013",
       categoryId: toyota.id,
       plateNumber: "SYN-TA1",
       makeModel: "Toyota Alphard-class (synthetic)",
@@ -489,7 +499,7 @@ async function main() {
       luggageCap: 6,
     },
     {
-      id: "00000000-0000-4000-8000-000000000013",
+      id: "00000000-0000-4000-8000-000000000014",
       categoryId: gmc.id,
       plateNumber: "SYN-GM1",
       makeModel: "GMC-class SUV (synthetic)",
@@ -497,7 +507,7 @@ async function main() {
       luggageCap: 8,
     },
     {
-      id: "00000000-0000-4000-8000-000000000014",
+      id: "00000000-0000-4000-8000-000000000015",
       categoryId: lexus.id,
       plateNumber: "SYN-LX1",
       makeModel: "Lexus-class SUV (synthetic)",
@@ -505,7 +515,7 @@ async function main() {
       luggageCap: 4,
     },
     {
-      id: "00000000-0000-4000-8000-000000000015",
+      id: "00000000-0000-4000-8000-000000000016",
       categoryId: mercedes.id,
       plateNumber: "SYN-MB1",
       makeModel: "Mercedes V-Class (synthetic)",
