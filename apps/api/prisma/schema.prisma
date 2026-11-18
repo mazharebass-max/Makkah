@@ -273,6 +273,24 @@ model Driver {
   provider    Provider?         @relation(fields: [providerId], references: [id])
   documents   DriverDocument[]
   assignments BookingAssignment[]
+  shifts      DriverShift[]
+}
+
+/** Planned on-duty window for a driver — skeleton for ops fidelity (F3). */
+model DriverShift {
+  id        String   @id @default(uuid()) @db.Uuid
+  driverId  String   @db.Uuid
+  startsAt  DateTime
+  endsAt    DateTime
+  note      String?
+  /// Synthetic / draft until owner publishes real rosters
+  draftLabel String  @default("DRAFT — OWNER APPROVAL REQUIRED")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  driver Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@index([driverId, startsAt, endsAt])
 }
 
 model DriverDocument {

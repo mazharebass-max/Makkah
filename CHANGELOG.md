@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.11.0 — 2026-11-18
+
+### Added (Fresh F3 — driver EXCLUDE + DriverShift)
+
+- Postgres GiST exclusion `booking_assignment_driver_no_overlap` (null driverId excluded)
+- `DriverShift` model + admin fleet APIs to list/create draft shifts
+- Dispatch checks active driver, shift coverage when shifts exist, and app-level overlap before DB constraint
+- Trip list exposes `tripId` alias + assignment window; seed second driver + wide draft shifts
+- Concurrent driver-overlap + off-shift tests
+
+### Explicit non-claims
+
+- Draft rosters only; `liveOps` / go-live flags remain false
+
 ## 0.10.0 — 2026-11-18
 
 ### Added (Fresh F2 — auth OTP + MFA scaffold)

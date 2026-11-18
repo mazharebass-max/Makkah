@@ -1,5 +1,15 @@
-import { Body, Controller, Get, Inject, Param, Patch, Req, UseGuards } from "@nestjs/common";
-import { IsBoolean } from "class-validator";
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
+import { IsBoolean, IsISO8601, IsOptional, IsString, IsUUID, MaxLength } from "class-validator";
 import { RoleCode } from "@haramain/contracts";
 import { AuthGuard, type AuthedRequest } from "../auth/auth.guard";
 import { Roles } from "../auth/roles.decorator";
@@ -9,6 +19,22 @@ import { FleetService } from "./fleet.service";
 class ActiveDto {
   @IsBoolean()
   active!: boolean;
+}
+
+class CreateShiftDto {
+  @IsUUID()
+  driverId!: string;
+
+  @IsISO8601()
+  startsAt!: string;
+
+  @IsISO8601()
+  endsAt!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(240)
+  note?: string;
 }
 
 @Controller("admin/fleet")
@@ -25,6 +51,16 @@ export class FleetController {
   @Get("drivers")
   drivers() {
     return this.fleet.listOwnedDrivers();
+  }
+
+  @Get("drivers/:id/shifts")
+  shifts(@Param("id") id: string) {
+    return this.fleet.listDriverShifts(id);
+  }
+
+  @Post("driver-shifts")
+  createShift(@Req() req: AuthedRequest, @Body() body: CreateShiftDto) {
+    return this.fleet.createDriverShift(body, req.user!.id);
   }
 
   @Patch("vehicles/:id/active")

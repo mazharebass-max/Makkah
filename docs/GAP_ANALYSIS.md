@@ -68,7 +68,7 @@
 | **F5** | Public completeness + FeatureFlag/SystemSetting; PickupPoint for airports; polish RTL/a11y | Responsive screenshots; flags default-off |
 | **F6+** | Mobile EAS readiness, worker jobs (expiry), staging hardening deltas — only after F1–F5 | Owner decisions still block live ops |
 
-**Priority now:** **F2** (OTP verify + MFA scaffold) after F1 merge `a1306d6`.
+**Priority now:** **F3** (driver EXCLUDE + DriverShift) after F2 merge `713b27a`.
 
 ---
 

@@ -219,10 +219,17 @@ export class BookingsService {
     passengerCount: number;
     route?: { code: string; nameEn: string; nameAr?: string | null } | null;
     category?: { code: string; nameEn: string; nameAr?: string | null } | null;
-    assignment?: unknown;
+    assignment?: {
+      vehicleId?: string | null;
+      driverId?: string | null;
+      startsAt?: Date;
+      endsAt?: Date;
+    } | null;
   }) {
     return {
       id: b.id,
+      /** Alias clarifying Booking is the trip domain object (no separate Trip table yet). */
+      tripId: b.id,
       reference: b.reference,
       status: b.status,
       scheduledAt: b.scheduledAt.toISOString(),
@@ -237,6 +244,14 @@ export class BookingsService {
             code: b.category.code,
             nameEn: b.category.nameEn,
             nameAr: b.category.nameAr ?? null,
+          }
+        : null,
+      assignment: b.assignment
+        ? {
+            vehicleId: b.assignment.vehicleId ?? null,
+            driverId: b.assignment.driverId ?? null,
+            startsAt: b.assignment.startsAt?.toISOString() ?? null,
+            endsAt: b.assignment.endsAt?.toISOString() ?? null,
           }
         : null,
       liveAvailabilityClaim: false as const,
