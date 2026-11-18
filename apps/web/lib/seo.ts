@@ -9,6 +9,7 @@ export function siteUrl(): string {
 export type SeoPageKey =
   | "home"
   | "search"
+  | "contact"
   | "legalTerms"
   | "legalPrivacy"
   | "legalCancellation"
@@ -40,6 +41,18 @@ const copy: Record<
       title: "البحث عن مركبات — حرمين رايد",
       description:
         "قارن فئات المركبات والسعة لممرات الإطلاق. التوفر من مخزون تجريبي — لا نختلق عرضاً حياً.",
+    },
+  },
+  contact: {
+    en: {
+      title: "Contact & follow — Haramain Ride",
+      description:
+        "WhatsApp contact for Haramain Ride corridor questions. Social profile links appear when the owner publishes real pages. Pilot platform — not live licensed operations.",
+    },
+    ar: {
+      title: "تواصل ومتابعة — حرمين رايد",
+      description:
+        "تواصل واتساب لأسئلة ممرات حرمين رايد. تظهر روابط الحسابات عند نشر المالك لصفحات حقيقية. منصة تجريبية — ليست عمليات مرخّصة مباشرة.",
     },
   },
   legalTerms: {

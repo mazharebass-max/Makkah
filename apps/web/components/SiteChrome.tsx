@@ -64,6 +64,7 @@ export function SiteChrome({
             <Link href={`/?lang=${locale}#corridor-ops`}>{t(locale, "corridorOpsHeading")}</Link>
             <Link href={`/?lang=${locale}#pickup-points`}>{t(locale, "pickupPoints")}</Link>
             <Link href={`/search?lang=${locale}`}>{t(locale, "searchCta")}</Link>
+            <Link href={`/contact?lang=${locale}`}>{t(locale, "contactNav")}</Link>
             <Link href={`/providers/apply?lang=${locale}`}>{t(locale, "providerApply")}</Link>
             <Link href={`/legal/terms?lang=${locale}`}>{t(locale, "legal")}</Link>
             <Link href={`/trips?lang=${locale}`}>{t(locale, "myTrips")}</Link>
@@ -146,6 +147,7 @@ export function SiteChrome({
               <Link href={`/legal/privacy?lang=${locale}`}>{t(locale, "privacy")}</Link>
               <Link href={`/legal/cancellation?lang=${locale}`}>{t(locale, "cancelPolicy")}</Link>
               <Link href={`/providers/apply?lang=${locale}`}>{t(locale, "providerApply")}</Link>
+              <Link href={`/contact?lang=${locale}`}>{t(locale, "contactNav")}</Link>
               <Link href={`/search?lang=${locale}`}>{t(locale, "searchCta")}</Link>
             </nav>
           </footer>

@@ -4,6 +4,7 @@ import { absoluteUrl, siteUrl } from "../lib/seo";
 const publicPaths = [
   "/",
   "/search",
+  "/contact",
   "/legal/terms",
   "/legal/privacy",
   "/legal/cancellation",
