@@ -27,13 +27,41 @@ export function SiteChrome({
     <div dir={dirFor(locale)} lang={locale}>
       <PublicShell
         locale={locale}
+        brand={
+          <Link
+            href={`/?lang=${locale}`}
+            style={{ textDecoration: "none", color: "inherit" }}
+            aria-label={t(locale, "brand")}
+          >
+            <span
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 4,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 20,
+                  fontWeight: 800,
+                  letterSpacing: "-0.03em",
+                  color: "#0B1F3A",
+                  lineHeight: 1.05,
+                }}
+              >
+                {t(locale, "brand")}
+              </span>
+              <span style={{ color: "#526276", fontSize: 12 }}>{t(locale, "tagline")}</span>
+            </span>
+          </Link>
+        }
         nav={
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
             <Link href={`/?lang=${locale}#routes`}>{t(locale, "routes")}</Link>
             <Link href={`/search?lang=${locale}`}>{t(locale, "searchCta")}</Link>
-            <Link href={`/trips?lang=${locale}`}>{t(locale, "myTrips")}</Link>
             <Link href={`/providers/apply?lang=${locale}`}>{t(locale, "providerApply")}</Link>
             <Link href={`/legal/terms?lang=${locale}`}>{t(locale, "legal")}</Link>
+            <Link href={`/trips?lang=${locale}`}>{t(locale, "myTrips")}</Link>
             <Link href={`/login?lang=${locale}`}>{t(locale, "signIn")}</Link>
             <button
               type="button"
@@ -51,6 +79,28 @@ export function SiteChrome({
               {t(locale, "language")}
             </button>
           </div>
+        }
+        footer={
+          <footer
+            style={{
+              marginTop: 48,
+              paddingTop: 28,
+              borderTop: "1px solid rgba(11,31,58,0.08)",
+              display: "grid",
+              gap: 12,
+              color: "#526276",
+              fontSize: 14,
+            }}
+          >
+            <p style={{ margin: 0 }}>{t(locale, "pilot")}</p>
+            <nav aria-label={t(locale, "legal")} style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+              <Link href={`/legal/terms?lang=${locale}`}>{t(locale, "terms")}</Link>
+              <Link href={`/legal/privacy?lang=${locale}`}>{t(locale, "privacy")}</Link>
+              <Link href={`/legal/cancellation?lang=${locale}`}>{t(locale, "cancelPolicy")}</Link>
+              <Link href={`/providers/apply?lang=${locale}`}>{t(locale, "providerApply")}</Link>
+              <Link href={`/search?lang=${locale}`}>{t(locale, "searchCta")}</Link>
+            </nav>
+          </footer>
         }
       >
         {children}

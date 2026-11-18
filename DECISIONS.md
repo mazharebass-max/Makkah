@@ -91,6 +91,11 @@
 **Decision:** Ship CSP/frame/nosniff headers and Redis/memory auth rate limits in the API for M8; treat CDN/WAF, secrets manager, admin MFA, and external pen test as owner/partner follow-ups.  
 **Consequence:** CI-verifiable baseline without claiming full ASVS or production hardening complete.
 
+## D-020 — Public SEO via App Router metadata (2026-11-18)
+
+**Decision:** Use Next.js Metadata API / `generateMetadata` with EN+AR copy, `robots.ts`, `sitemap.ts`, and JSON-LD for Organization/Service/FAQ. Index public marketing/legal/search/provider-apply; `noindex` login, checkout, confirmation, and trips. Meta and structured data must not claim live licensing, ratings, or invented availability. Canonical base from `NEXT_PUBLIC_SITE_URL`.  
+**Consequence:** Search-friendly public surface without fabricating go-live claims.
+
 ## D-019 — Authenticated sandbox payment complete for web (2026-11-18)
 
 **Context:** Browser checkout cannot hold `PAYMENT_WEBHOOK_SECRET`. Legacy `POST /payments/sandbox/confirm` flipped booking status without the payments ledger.  

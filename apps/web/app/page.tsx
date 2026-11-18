@@ -1,20 +1,74 @@
+import type { Metadata } from "next";
 import { Badge } from "@haramain/ui";
 import { BookingWidget } from "../components/BookingWidget";
+import { JsonLd } from "../components/JsonLd";
 import { SiteChrome } from "../components/SiteChrome";
 import { fetchRoutes } from "../lib/api";
 import { t, type Locale } from "../lib/i18n";
+import {
+  buildPageMetadata,
+  faqJsonLd,
+  localeFromSearchParams,
+  organizationJsonLd,
+  serviceJsonLd,
+} from "../lib/seo";
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams?: { lang?: string };
+}): Promise<Metadata> {
+  const locale = localeFromSearchParams(searchParams);
+  return buildPageMetadata({ key: "home", locale, pathname: "/" });
+}
 
 export default async function HomePage({
   searchParams,
 }: {
   searchParams?: { lang?: string };
 }) {
-  const locale: Locale = searchParams?.lang === "ar" ? "ar" : "en";
+  const locale: Locale = localeFromSearchParams(searchParams);
   const routes = await fetchRoutes();
+
+  const faqs =
+    locale === "ar"
+      ? [
+          {
+            q: "هل المنصة تعمل بترخيص حي الآن؟",
+            a: "لا. هذه منصة تجريبية. الإطلاق الحي يتطلب موافقات الامتثال والمالك المكتوبة.",
+          },
+          {
+            q: "هل يتم اعتماد مزودي الطرف الثالث تلقائياً؟",
+            a: "لا. الطلبات تبدأ بحالة APPLIED ويراجعها مسؤول امتثال مع المستندات.",
+          },
+          {
+            q: "هل الدفع حي؟",
+            a: "التطوير يستخدم محول دفع تجريبي فقط ولا يدّعي تحصيل بوابة حية.",
+          },
+        ]
+      : [
+          {
+            q: "Is Haramain Ride live-licensed today?",
+            a: "No. This is a pilot platform. Live operations require written compliance and owner sign-offs.",
+          },
+          {
+            q: "Are third-party providers auto-approved?",
+            a: "No. Applications start as APPLIED and a compliance officer reviews documents.",
+          },
+          {
+            q: "Is payment live?",
+            a: "Development uses a sandbox payment adapter only and never claims a live gateway capture.",
+          },
+        ];
 
   return (
     <SiteChrome locale={locale}>
+      <JsonLd data={organizationJsonLd()} />
+      <JsonLd data={serviceJsonLd()} />
+      <JsonLd data={faqJsonLd(locale)} />
+
       <section
+        aria-labelledby="hero-heading"
         style={{
           display: "grid",
           gap: 28,
@@ -27,6 +81,7 @@ export default async function HomePage({
         <div style={{ display: "grid", gap: 18, animation: "hr-fade 480ms ease both" }}>
           <Badge tone="warning">{t(locale, "pilot")}</Badge>
           <h1
+            id="hero-heading"
             style={{
               margin: 0,
               fontSize: "clamp(2.6rem, 7vw, 4rem)",
@@ -39,6 +94,7 @@ export default async function HomePage({
           <p style={{ margin: 0, fontSize: 18, color: "#526276", maxWidth: 540 }}>
             {t(locale, "heroBody")}
           </p>
+          {/* Decorative atmosphere panel — not a photographic asset; keep aria-hidden */}
           <div
             aria-hidden
             style={{
@@ -54,8 +110,10 @@ export default async function HomePage({
         <BookingWidget locale={locale} routes={routes} />
       </section>
 
-      <section id="routes" style={{ marginTop: 64, display: "grid", gap: 16 }}>
-        <h2 style={{ margin: 0, fontSize: 28 }}>{t(locale, "routes")}</h2>
+      <section id="routes" aria-labelledby="routes-heading" style={{ marginTop: 64, display: "grid", gap: 16 }}>
+        <h2 id="routes-heading" style={{ margin: 0, fontSize: 28 }}>
+          {t(locale, "routes")}
+        </h2>
         <p style={{ margin: 0, color: "#526276" }}>{t(locale, "routesHint")}</p>
         <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 12 }}>
           {routes.map((r) => (
@@ -83,8 +141,10 @@ export default async function HomePage({
         </ul>
       </section>
 
-      <section style={{ marginTop: 64, display: "grid", gap: 12, maxWidth: 640 }}>
-        <h2 style={{ margin: 0 }}>{t(locale, "steps")}</h2>
+      <section aria-labelledby="steps-heading" style={{ marginTop: 64, display: "grid", gap: 12, maxWidth: 640 }}>
+        <h2 id="steps-heading" style={{ margin: 0 }}>
+          {t(locale, "steps")}
+        </h2>
         <ol style={{ margin: 0, paddingInlineStart: 20, color: "#526276", lineHeight: 1.7 }}>
           <li>{t(locale, "step1")}</li>
           <li>{t(locale, "step2")}</li>
@@ -92,6 +152,20 @@ export default async function HomePage({
         </ol>
         <h3 style={{ marginBottom: 0 }}>{t(locale, "safety")}</h3>
         <p style={{ marginTop: 0, color: "#526276" }}>{t(locale, "safetyBody")}</p>
+      </section>
+
+      <section aria-labelledby="faq-heading" style={{ marginTop: 64, display: "grid", gap: 16, maxWidth: 720 }}>
+        <h2 id="faq-heading" style={{ margin: 0 }}>
+          FAQ
+        </h2>
+        <dl style={{ margin: 0, display: "grid", gap: 16 }}>
+          {faqs.map((f) => (
+            <div key={f.q}>
+              <dt style={{ fontWeight: 700 }}>{f.q}</dt>
+              <dd style={{ margin: "6px 0 0", color: "#526276", lineHeight: 1.6 }}>{f.a}</dd>
+            </div>
+          ))}
+        </dl>
       </section>
 
       <style>{`

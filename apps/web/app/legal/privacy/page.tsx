@@ -1,14 +1,25 @@
+import type { Metadata } from "next";
 import { Badge } from "@haramain/ui";
 import { SiteChrome } from "../../../components/SiteChrome";
-import { t, type Locale } from "../../../lib/i18n";
+import { t } from "../../../lib/i18n";
+import { buildPageMetadata, localeFromSearchParams } from "../../../lib/seo";
 import { LegalNav } from "../LegalNav";
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams?: { lang?: string };
+}): Promise<Metadata> {
+  const locale = localeFromSearchParams(searchParams);
+  return buildPageMetadata({ key: "legalPrivacy", locale, pathname: "/legal/privacy" });
+}
 
 export default function PrivacyPage({
   searchParams,
 }: {
   searchParams?: { lang?: string };
 }) {
-  const locale: Locale = searchParams?.lang === "ar" ? "ar" : "en";
+  const locale = localeFromSearchParams(searchParams);
   return (
     <SiteChrome locale={locale}>
       <article style={{ maxWidth: 720, display: "grid", gap: 16 }}>

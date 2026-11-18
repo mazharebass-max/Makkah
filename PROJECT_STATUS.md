@@ -39,6 +39,7 @@ M0–M8 delivered a solid **sandbox modular monolith**, not a production-cleared
 - `POST /payments/sandbox/complete` — authenticated ledger-aware sandbox capture (not live)
 - Confirmation, My Trips, Trip Detail, Terms/Privacy/Cancellation, Provider Apply pages
 - Session token helper for customer trip views
+- **SEO:** per-route metadata (EN/AR), robots/sitemap, JSON-LD (Organization/Service/FAQ), landmarks/footer linking, noindex on auth/checkout/account flows
 
 ## Run
 

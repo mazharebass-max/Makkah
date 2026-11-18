@@ -27,18 +27,24 @@ export function PublicShell({
   children,
   locale = "en",
   nav,
+  brand,
+  footer,
 }: {
   children: ReactNode;
   locale?: string;
   nav?: ReactNode;
+  /** Optional brand slot (e.g. home link). Defaults to BrandMark. */
+  brand?: ReactNode;
+  footer?: ReactNode;
 }) {
   const dir = locale === "ar" || locale === "ur" ? "rtl" : "ltr";
   return (
-    <div dir={dir} style={{ minHeight: "100vh" }}>
+    <div dir={dir} style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <a className="hr-skip" href="#main">
         Skip to content
       </a>
       <header
+        role="banner"
         style={{
           display: "flex",
           alignItems: "center",
@@ -53,12 +59,15 @@ export function PublicShell({
           zIndex: 20,
         }}
       >
-        <BrandMark size="sm" />
+        {brand ?? <BrandMark size="sm" />}
         <nav aria-label="Primary">{nav}</nav>
       </header>
-      <main id="main" style={{ padding: "28px clamp(16px, 4vw, 48px) 64px" }}>
+      <main id="main" style={{ padding: "28px clamp(16px, 4vw, 48px) 64px", flex: 1 }}>
         {children}
       </main>
+      {footer ? (
+        <div style={{ padding: "0 clamp(16px, 4vw, 48px) 48px" }}>{footer}</div>
+      ) : null}
     </div>
   );
 }

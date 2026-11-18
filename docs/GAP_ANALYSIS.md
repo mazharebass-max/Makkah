@@ -61,7 +61,7 @@
 
 | Milestone | Focus | Exit gate |
 |---|---|---|
-| **F1** | Customer web journey — fix checkout→`bookingId`, sandbox complete (ledger-aware), confirmation, my trips/trip detail, legal pages, provider registration | Typecheck + API tests; screenshots; booking→sandbox pay→trips works |
+| **F1** | Customer web journey — fix checkout→`bookingId`, sandbox complete (ledger-aware), confirmation, my trips/trip detail, legal pages, provider registration; public SEO (metadata EN/AR, robots/sitemap, JSON-LD, noindex private flows) | Typecheck + API tests; screenshots; booking→sandbox pay→trips works; SEO routes present |
 | **F2** | Auth completion — OTP verify (email), strip `debugCode` outside test/dev, admin MFA scaffolding (TOTP enroll/verify gated) | Auth tests; no debug OTP in non-dev |
 | **F3** | Trip/ops fidelity — driver EXCLUDE constraint, DriverShift skeleton, clearer trip APIs/UI | Concurrent driver-overlap test passes |
 | **F4** | Finance skeleton — Commission/ProviderPayable/Settlement models + sandbox statements; keep go-live lock | Finance tests; still `productionGoLive: false` |
