@@ -16,3 +16,10 @@ export type JwtAccessPayload = {
   sid: string;
   typ: "access";
 };
+
+/** Short-lived token after password OK when admin MFA is enabled. */
+export type JwtMfaPendingPayload = {
+  sub: string;
+  email: string;
+  typ: "mfa_pending";
+};

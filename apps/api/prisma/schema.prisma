@@ -57,14 +57,17 @@ enum BookingStatus {
 }
 
 model User {
-  id           String     @id @default(uuid()) @db.Uuid
-  email        String     @unique
-  passwordHash String
-  status       UserStatus @default(ACTIVE)
-  locale       String     @default("en")
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  deletedAt    DateTime?
+  id             String     @id @default(uuid()) @db.Uuid
+  email          String     @unique
+  passwordHash   String
+  status         UserStatus @default(ACTIVE)
+  locale         String     @default("en")
+  /** Base32 TOTP secret for admin MFA scaffold — replace with KMS in production. */
+  mfaTotpSecret  String?
+  mfaEnabledAt   DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  deletedAt      DateTime?
 
   identities       UserIdentity[]
   roleAssignments  RoleAssignment[]
@@ -78,6 +81,29 @@ model User {
   supportTickets   SupportTicket[]  @relation("TicketRequester")
   supportMessages  SupportMessage[]
   analyticsEvents  AnalyticsEvent[]
+  otpChallenges    OtpChallenge[]
+}
+
+enum OtpPurpose {
+  EMAIL_VERIFY
+  LOGIN_STEP
+}
+
+model OtpChallenge {
+  id         String     @id @default(uuid()) @db.Uuid
+  email      String
+  userId     String?    @db.Uuid
+  purpose    OtpPurpose @default(EMAIL_VERIFY)
+  codeHash   String
+  attempts   Int        @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime   @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email, purpose])
+  @@index([expiresAt])
 }
 
 model UserIdentity {

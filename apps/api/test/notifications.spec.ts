@@ -45,6 +45,7 @@ describe("M7 notifications + support + analytics", () => {
     expect(res.status).toBe(201);
     expect(res.body.mode).toBe("sandbox");
     expect(res.body.liveDelivery).toBe(false);
+    // debugCode allowed in test; gated outside development/test (see auth-otp-mfa.spec)
     expect(res.body.debugCode).toMatch(/^\d{6}$/);
     expect(res.body.processed.liveDelivery).toBe(false);
 

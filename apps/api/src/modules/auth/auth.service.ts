@@ -1,16 +1,21 @@
 import {
+  BadRequestException,
   ConflictException,
+  ForbiddenException,
   Inject,
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
 import * as argon2 from "argon2";
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, randomInt, randomUUID } from "node:crypto";
 import jwt from "jsonwebtoken";
+import { OtpPurpose, Prisma } from "@prisma/client";
 import { RoleCode, type LoginInput, type RegisterInput } from "@haramain/contracts";
 import { PrismaService } from "../../prisma/prisma.service";
 import { loadEnv } from "../../config/env";
-import type { JwtAccessPayload, RequestUser } from "./auth.types";
+import type { JwtAccessPayload, JwtMfaPendingPayload, RequestUser } from "./auth.types";
+import { ADMIN_MFA_ROLES, allowOtpDebugCode, hashOtpCode, otpCodesEqual } from "./otp.util";
+import { generateTotpSecret, otpauthUrl, verifyTotp } from "./totp";
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
@@ -121,13 +126,49 @@ export class AuthService {
       throw new UnauthorizedException({ code: "INVALID_CREDENTIALS", message: "Invalid credentials" });
     }
 
-    const { session, refreshToken } = await this.issueSession(user.id, meta);
-    const requestUser = await this.toRequestUser(user.id, session.id);
+    const requestUserPreview = await this.toRequestUser(user.id);
+    const isAdminRole = requestUserPreview.roles.some((r) => ADMIN_MFA_ROLES.has(r));
+    if (user.mfaEnabledAt && user.mfaTotpSecret && isAdminRole) {
+      const env = loadEnv();
+      const mfaToken = jwt.sign(
+        { sub: user.id, email: user.email, typ: "mfa_pending" } satisfies JwtMfaPendingPayload,
+        env.JWT_ACCESS_SECRET,
+        { expiresIn: "5m" },
+      );
+      await this.prisma.auditEvent.create({
+        data: {
+          actorId: user.id,
+          action: "auth.login.mfa_required",
+          resource: "user",
+          resourceId: user.id,
+          metadata: { mfaRequired: true },
+        },
+      });
+      return {
+        mfaRequired: true as const,
+        mfaToken,
+        message: "Admin MFA required — submit TOTP via POST /auth/mfa/totp/verify",
+        liveOps: false as const,
+        user: {
+          id: requestUserPreview.id,
+          email: requestUserPreview.email,
+          roles: requestUserPreview.roles,
+          locale: requestUserPreview.locale,
+        },
+      };
+    }
+
+    return this.completeLogin(user.id, meta);
+  }
+
+  private async completeLogin(userId: string, meta?: { userAgent?: string; ip?: string }) {
+    const { session, refreshToken } = await this.issueSession(userId, meta);
+    const requestUser = await this.toRequestUser(userId, session.id);
     const accessToken = this.signAccess({ ...requestUser, sessionId: session.id });
 
     await this.prisma.auditEvent.create({
       data: {
-        actorId: user.id,
+        actorId: userId,
         action: "auth.login",
         resource: "session",
         resourceId: session.id,
@@ -136,9 +177,11 @@ export class AuthService {
     });
 
     return {
+      mfaRequired: false as const,
       accessToken,
       refreshToken,
       expiresIn: loadEnv().JWT_ACCESS_TTL,
+      liveOps: false as const,
       user: {
         id: requestUser.id,
         email: requestUser.email,
@@ -214,6 +257,256 @@ export class AuthService {
   }
 
   async me(userId: string) {
-    return this.toRequestUser(userId);
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
+    const base = await this.toRequestUser(userId);
+    return {
+      ...base,
+      mfaEnabled: Boolean(user.mfaEnabledAt),
+      emailVerified: await this.isEmailVerified(userId, user.email),
+    };
+  }
+
+  private async isEmailVerified(userId: string, email: string) {
+    const identity = await this.prisma.userIdentity.findFirst({
+      where: { userId, provider: "email", subject: email.toLowerCase() },
+    });
+    return Boolean(identity?.verifiedAt);
+  }
+
+  /**
+   * Request email OTP (sandbox delivery via outbox). Stores hashed challenge.
+   * debugCode only returned in development/test — never staging/production.
+   */
+  async requestEmailOtp(emailRaw: string) {
+    const env = loadEnv();
+    const email = emailRaw.toLowerCase();
+    const code = String(randomInt(100000, 999999));
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    await this.prisma.otpChallenge.updateMany({
+      where: { email, purpose: OtpPurpose.EMAIL_VERIFY, consumedAt: null },
+      data: { consumedAt: new Date() },
+    });
+
+    await this.prisma.otpChallenge.create({
+      data: {
+        email,
+        userId: user?.id ?? null,
+        purpose: OtpPurpose.EMAIL_VERIFY,
+        codeHash: hashOtpCode(code),
+        expiresAt: new Date(Date.now() + 10 * 60_000),
+      },
+    });
+
+    // Outbox row — drained by NotificationsService.processOutbox / worker (sandbox only)
+    await this.prisma.outboxEvent.create({
+      data: {
+        type: "notification.otp",
+        payload: {
+          userId: user?.id,
+          toEmail: email,
+          templateCode: "otp_email",
+          vars: { code },
+          dedupeKey: `otp:${email}:${code}`,
+        } as unknown as Prisma.InputJsonValue,
+      },
+    });
+
+    await this.prisma.auditEvent.create({
+      data: {
+        actorId: user?.id ?? null,
+        action: "auth.otp.request",
+        resource: "otp_challenge",
+        metadata: { email, liveDelivery: false, debugExposed: allowOtpDebugCode(env) },
+      },
+    });
+
+    return {
+      mode: "sandbox" as const,
+      message: "OTP queued to outbox — sandbox channel only, not a live delivery",
+      liveDelivery: false as const,
+      ...(allowOtpDebugCode(env) ? { debugCode: code } : {}),
+    };
+  }
+
+  /** Verify email OTP and mark email identity verified when user exists. */
+  async verifyEmailOtp(emailRaw: string, code: string) {
+    const email = emailRaw.toLowerCase();
+    const challenge = await this.prisma.otpChallenge.findFirst({
+      where: {
+        email,
+        purpose: OtpPurpose.EMAIL_VERIFY,
+        consumedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    if (!challenge) {
+      throw new UnauthorizedException({
+        code: "OTP_INVALID",
+        message: "OTP expired or not found",
+      });
+    }
+    if (challenge.attempts >= 5) {
+      throw new UnauthorizedException({
+        code: "OTP_LOCKED",
+        message: "Too many OTP attempts",
+      });
+    }
+
+    const match = otpCodesEqual(challenge.codeHash, code);
+    await this.prisma.otpChallenge.update({
+      where: { id: challenge.id },
+      data: {
+        attempts: { increment: 1 },
+        ...(match ? { consumedAt: new Date() } : {}),
+      },
+    });
+    if (!match) {
+      throw new UnauthorizedException({ code: "OTP_INVALID", message: "Invalid OTP code" });
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (user) {
+      await this.prisma.userIdentity.upsert({
+        where: { provider_subject: { provider: "email", subject: email } },
+        update: { verifiedAt: new Date(), userId: user.id },
+        create: {
+          userId: user.id,
+          provider: "email",
+          subject: email,
+          verifiedAt: new Date(),
+        },
+      });
+      await this.prisma.auditEvent.create({
+        data: {
+          actorId: user.id,
+          action: "auth.otp.verify",
+          resource: "user_identity",
+          resourceId: user.id,
+          metadata: { email },
+        },
+      });
+    }
+
+    return {
+      ok: true as const,
+      email,
+      verified: true as const,
+      userId: user?.id ?? null,
+      message: "Email OTP verified (sandbox path — not a live SMS/email claim)",
+      liveDelivery: false as const,
+    };
+  }
+
+  assertAdminMfaRole(user: RequestUser) {
+    if (!user.roles.some((r) => ADMIN_MFA_ROLES.has(r))) {
+      throw new ForbiddenException({
+        code: "MFA_ROLE_REQUIRED",
+        message: "TOTP MFA enroll/confirm is limited to admin/staff roles",
+      });
+    }
+  }
+
+  /** Begin TOTP enrollment — secret stored; MFA not active until confirm. */
+  async enrollTotp(user: RequestUser) {
+    this.assertAdminMfaRole(user);
+    const existing = await this.prisma.user.findUniqueOrThrow({ where: { id: user.id } });
+    if (existing.mfaEnabledAt) {
+      throw new ConflictException({
+        code: "MFA_ALREADY_ENABLED",
+        message: "MFA already enabled for this account",
+      });
+    }
+    const secret = generateTotpSecret();
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { mfaTotpSecret: secret, mfaEnabledAt: null },
+    });
+    await this.prisma.auditEvent.create({
+      data: {
+        actorId: user.id,
+        action: "auth.mfa.enroll",
+        resource: "user",
+        resourceId: user.id,
+        metadata: { scaffold: true, liveOps: false },
+      },
+    });
+    return {
+      mode: "scaffold" as const,
+      liveOps: false as const,
+      message:
+        "TOTP secret issued for authenticator enrollment — confirm with a code. Scaffold only; not a production MFA mandate claim.",
+      secret,
+      otpauthUrl: otpauthUrl({ secret, email: user.email }),
+    };
+  }
+
+  async confirmTotp(user: RequestUser, code: string) {
+    this.assertAdminMfaRole(user);
+    const row = await this.prisma.user.findUniqueOrThrow({ where: { id: user.id } });
+    if (!row.mfaTotpSecret) {
+      throw new BadRequestException({
+        code: "MFA_NOT_ENROLLED",
+        message: "Call enroll before confirm",
+      });
+    }
+    if (!verifyTotp(row.mfaTotpSecret, code)) {
+      throw new UnauthorizedException({ code: "MFA_INVALID", message: "Invalid TOTP code" });
+    }
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { mfaEnabledAt: new Date() },
+    });
+    await this.prisma.auditEvent.create({
+      data: {
+        actorId: user.id,
+        action: "auth.mfa.confirm",
+        resource: "user",
+        resourceId: user.id,
+        metadata: { scaffold: true },
+      },
+    });
+    return {
+      ok: true as const,
+      mfaEnabled: true as const,
+      mode: "scaffold" as const,
+      liveOps: false as const,
+      message: "Admin TOTP MFA enabled (scaffold). productionGoLive remains false.",
+    };
+  }
+
+  async verifyTotpLogin(
+    mfaToken: string,
+    code: string,
+    meta?: { userAgent?: string; ip?: string },
+  ) {
+    const env = loadEnv();
+    let payload: JwtMfaPendingPayload;
+    try {
+      payload = jwt.verify(mfaToken, env.JWT_ACCESS_SECRET) as JwtMfaPendingPayload;
+    } catch {
+      throw new UnauthorizedException({
+        code: "MFA_TOKEN_INVALID",
+        message: "MFA pending token invalid or expired",
+      });
+    }
+    if (payload.typ !== "mfa_pending") {
+      throw new UnauthorizedException({
+        code: "MFA_TOKEN_INVALID",
+        message: "MFA pending token invalid",
+      });
+    }
+    const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+    if (!user?.mfaTotpSecret || !user.mfaEnabledAt) {
+      throw new UnauthorizedException({
+        code: "MFA_NOT_ENABLED",
+        message: "MFA is not enabled for user",
+      });
+    }
+    if (!verifyTotp(user.mfaTotpSecret, code)) {
+      throw new UnauthorizedException({ code: "MFA_INVALID", message: "Invalid TOTP code" });
+    }
+    return this.completeLogin(user.id, meta);
   }
 }
