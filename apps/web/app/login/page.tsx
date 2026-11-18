@@ -17,9 +17,9 @@ function LockMark() {
     <svg width="72" height="72" viewBox="0 0 72 72" aria-hidden="true" focusable="false">
       <defs>
         <linearGradient id="hr-lock-grad" x1="12" y1="8" x2="60" y2="64" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#E8C878" />
-          <stop offset="0.55" stopColor="#C6A15B" />
-          <stop offset="1" stopColor="#A67C2E" />
+          <stop stopColor="#FFB347" />
+          <stop offset="0.45" stopColor="#F0771F" />
+          <stop offset="1" stopColor="#D62828" />
         </linearGradient>
       </defs>
       <path
@@ -202,13 +202,41 @@ export default function AuthPage() {
     fontSize: 15,
     outline: "none",
   };
+  const loginBtn: React.CSSProperties = {
+    minHeight: 42,
+    minWidth: 110,
+    padding: "8px 16px",
+    borderRadius: 4,
+    border: "2px solid #1A5FBF",
+    background: "#1A5FBF",
+    color: "#fff",
+    fontFamily: "inherit",
+    fontWeight: 700,
+    fontSize: 14,
+    cursor: busy ? "wait" : "pointer",
+    opacity: busy ? 0.7 : 1,
+  };
+  const registerBtn: React.CSSProperties = {
+    minHeight: 42,
+    minWidth: 110,
+    padding: "8px 16px",
+    borderRadius: 4,
+    border: "2px solid #F0771F",
+    background: "#F0771F",
+    color: "#fff",
+    fontFamily: "inherit",
+    fontWeight: 700,
+    fontSize: 14,
+    cursor: busy ? "wait" : "pointer",
+    opacity: busy ? 0.7 : 1,
+  };
   const outlineBtn: React.CSSProperties = {
     minHeight: 42,
     minWidth: 110,
     padding: "8px 16px",
     borderRadius: 4,
-    border: "1px solid rgba(255,255,255,0.75)",
-    background: "transparent",
+    border: "2px solid #D62828",
+    background: "#D62828",
     color: "#fff",
     fontFamily: "inherit",
     fontWeight: 700,
@@ -226,10 +254,11 @@ export default function AuthPage() {
           borderRadius: 8,
           overflow: "hidden",
           background:
-            "radial-gradient(900px 420px at 20% 10%, rgba(23,74,139,0.55), transparent 55%), linear-gradient(165deg, #0B1F3A 0%, #12345A 48%, #0B1F3A 100%)",
+            "radial-gradient(800px 380px at 15% 0%, rgba(26,95,191,0.55), transparent 55%), radial-gradient(700px 360px at 90% 80%, rgba(240,119,31,0.28), transparent 50%), linear-gradient(165deg, #0B1F3A 0%, #123A6B 45%, #1A2A44 100%)",
           boxShadow: "0 18px 50px rgba(11,31,58,0.28)",
           padding: "28px 28px 24px",
           color: "#fff",
+          borderTop: "4px solid #F0771F",
         }}
       >
         <p style={{ margin: "0 0 18px", fontSize: 13, color: "rgba(255,255,255,0.7)" }}>
@@ -261,7 +290,7 @@ export default function AuthPage() {
               />
             </label>
             {debugCode ? (
-              <p style={{ margin: 0, color: "#C6A15B", fontSize: 13 }}>
+              <p style={{ margin: 0, color: "#FFB347", fontSize: 13 }}>
                 {t(locale, "signupSandboxCode")}: <code>{debugCode}</code>
               </p>
             ) : null}
@@ -282,7 +311,7 @@ export default function AuthPage() {
                 style={{
                   border: "none",
                   background: "transparent",
-                  color: "#C6A15B",
+                  color: "#FFB347",
                   fontWeight: 600,
                   cursor: "pointer",
                   fontFamily: "inherit",
@@ -376,14 +405,14 @@ export default function AuthPage() {
             >
               <LockMark />
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <button type="submit" disabled={busy} style={outlineBtn}>
+                <button type="submit" disabled={busy} style={loginBtn}>
                   {busy ? t(locale, "signupWorking") : t(locale, "authLoginBtn")}
                 </button>
                 <button
                   type="button"
                   disabled={busy}
                   onClick={() => void onRegister()}
-                  style={outlineBtn}
+                  style={registerBtn}
                 >
                   {t(locale, "authRegisterBtn")}
                 </button>

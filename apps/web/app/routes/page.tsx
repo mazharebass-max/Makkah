@@ -129,7 +129,7 @@ export default async function RoutesPage({
         </section>
 
         <p style={{ margin: 0 }}>
-          <Link href={`/search?lang=${locale}`} style={{ color: "#174A8B", fontWeight: 600 }}>
+          <Link href={`/search?lang=${locale}`} style={{ color: "#1A5FBF", fontWeight: 600 }}>
             {t(locale, "searchCta")}
           </Link>
         </p>

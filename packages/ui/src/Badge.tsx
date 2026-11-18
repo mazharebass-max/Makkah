@@ -11,8 +11,8 @@ export function Badge({
   const map: Record<string, CSSProperties> = {
     neutral: { background: "rgba(11,31,58,0.08)", color: colors.midnight },
     success: { background: "rgba(8,127,109,0.12)", color: colors.emerald },
-    warning: { background: "rgba(198,161,91,0.2)", color: "#7a5d1d" },
-    danger: { background: "rgba(180,35,24,0.12)", color: colors.danger },
+    warning: { background: "rgba(240,119,31,0.16)", color: "#9A4A0A" },
+    danger: { background: "rgba(214,40,40,0.12)", color: colors.danger },
   };
   return (
     <span

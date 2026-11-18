@@ -1,12 +1,15 @@
 :root {
   --hr-midnight: #0b1f3a;
-  --hr-royal: #174a8b;
+  --hr-royal: #1a5fbf;
+  --hr-blue: #1a5fbf;
+  --hr-orange: #f0771f;
+  --hr-red: #d62828;
   --hr-emerald: #087f6d;
-  --hr-gold: #c6a15b;
-  --hr-sand: #f6f3ec;
+  --hr-gold: #f0771f;
+  --hr-sand: #f7f8fa;
   --hr-white: #ffffff;
   --hr-slate: #526276;
-  --hr-danger: #b42318;
+  --hr-danger: #d62828;
   --hr-radius: 16px;
   --hr-space: 8px;
   --hr-font: "Manrope", "IBM Plex Sans Arabic", system-ui, sans-serif;
@@ -29,19 +32,20 @@ body {
   font-family: var(--hr-font);
   color: var(--hr-midnight);
   background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(198, 161, 91, 0.18), transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, rgba(23, 74, 139, 0.12), transparent 50%),
-    linear-gradient(180deg, #fbfaf7 0%, var(--hr-sand) 45%, #efe8dc 100%);
+    radial-gradient(1100px 520px at 8% -8%, rgba(26, 95, 191, 0.16), transparent 55%),
+    radial-gradient(900px 480px at 100% 0%, rgba(240, 119, 31, 0.14), transparent 52%),
+    radial-gradient(700px 420px at 70% 100%, rgba(214, 40, 40, 0.08), transparent 50%),
+    linear-gradient(180deg, #ffffff 0%, var(--hr-sand) 48%, #eef1f6 100%);
 }
 
 a {
-  color: var(--hr-royal);
+  color: var(--hr-blue);
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
 
 :focus-visible {
-  outline: 3px solid rgba(23, 74, 139, 0.45);
+  outline: 3px solid rgba(26, 95, 191, 0.45);
   outline-offset: 2px;
 }
 

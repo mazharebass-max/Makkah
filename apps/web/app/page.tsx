@@ -194,12 +194,12 @@ export default async function HomePage({
                 minHeight: 46,
                 padding: "11px 20px",
                 borderRadius: 14,
-                background: "#C6A15B",
-                color: "#0B1F3A",
+                background: "#F0771F",
+                color: "#fff",
                 fontWeight: 700,
                 fontSize: 15,
                 textDecoration: "none",
-                boxShadow: "0 10px 28px rgba(0,0,0,0.28)",
+                boxShadow: "0 10px 28px rgba(240,119,31,0.35)",
               }}
             >
               {t(locale, "searchCta")}
@@ -288,20 +288,25 @@ export default async function HomePage({
             counterReset: "easy",
           }}
         >
-          {easySteps.map((s) => (
-            <li
-              key={s.title}
-              style={{
-                display: "grid",
-                gap: 6,
-                paddingBottom: 16,
-                borderBottom: "1px solid rgba(11,31,58,0.08)",
-              }}
-            >
-              <strong style={{ color: "#0B1F3A", fontSize: 18 }}>{s.title}</strong>
-              <span style={{ color: "#526276", lineHeight: 1.55 }}>{s.body}</span>
-            </li>
-          ))}
+          {easySteps.map((s, i) => {
+            const accent = (["#1A5FBF", "#F0771F", "#D62828"] as const)[i] ?? "#1A5FBF";
+            return (
+              <li
+                key={s.title}
+                style={{
+                  display: "grid",
+                  gap: 6,
+                  paddingBottom: 16,
+                  paddingInlineStart: 14,
+                  borderBottom: "1px solid rgba(11,31,58,0.08)",
+                  borderInlineStart: `4px solid ${accent}`,
+                }}
+              >
+                <strong style={{ color: "#0B1F3A", fontSize: 18 }}>{s.title}</strong>
+                <span style={{ color: "#526276", lineHeight: 1.55 }}>{s.body}</span>
+              </li>
+            );
+          })}
         </ol>
       </section>
 
@@ -389,34 +394,44 @@ export default async function HomePage({
             gap: 20,
           }}
         >
-          {fleetRows.map((row, i) => (
-            <figure
-              key={row.src}
-              style={{
-                margin: 0,
-                display: "grid",
-                gap: 10,
-                animation: `hr-rise 620ms ease ${80 + i * 70}ms both`,
-              }}
-            >
-              <div style={{ overflow: "hidden", background: "#E8E2D6", aspectRatio: "16 / 10" }}>
-                <Image
-                  src={row.src}
-                  alt={locale === "ar" ? row.altAr : row.altEn}
-                  width={640}
-                  height={400}
-                  style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              </div>
-              <figcaption style={{ display: "grid", gap: 4 }}>
-                <strong style={{ color: "#0B1F3A", fontSize: 17 }}>{t(locale, row.labelKey)}</strong>
-                <span style={{ color: "#526276", fontSize: 14 }}>{t(locale, row.capKey)}</span>
-                <span style={{ color: "#087F6D", fontSize: 12, fontWeight: 600 }}>
-                  {t(locale, "fleetFareDraft")}
-                </span>
-              </figcaption>
-            </figure>
-          ))}
+          {fleetRows.map((row, i) => {
+            const accent = (["#1A5FBF", "#F0771F", "#D62828"] as const)[i] ?? "#1A5FBF";
+            return (
+              <figure
+                key={row.src}
+                style={{
+                  margin: 0,
+                  display: "grid",
+                  gap: 10,
+                  animation: `hr-rise 620ms ease ${80 + i * 70}ms both`,
+                }}
+              >
+                <div
+                  style={{
+                    overflow: "hidden",
+                    background: "#E8EDF5",
+                    aspectRatio: "16 / 10",
+                    borderBottom: `4px solid ${accent}`,
+                  }}
+                >
+                  <Image
+                    src={row.src}
+                    alt={locale === "ar" ? row.altAr : row.altEn}
+                    width={640}
+                    height={400}
+                    style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                </div>
+                <figcaption style={{ display: "grid", gap: 4 }}>
+                  <strong style={{ color: "#0B1F3A", fontSize: 17 }}>{t(locale, row.labelKey)}</strong>
+                  <span style={{ color: "#526276", fontSize: 14 }}>{t(locale, row.capKey)}</span>
+                  <span style={{ color: accent, fontSize: 12, fontWeight: 700 }}>
+                    {t(locale, "fleetFareDraft")}
+                  </span>
+                </figcaption>
+              </figure>
+            );
+          })}
         </div>
         <Link href={`/fleet?lang=${locale}`} style={{ fontWeight: 600, width: "fit-content" }}>
           {t(locale, "fleetNav")}
@@ -472,7 +487,7 @@ export default async function HomePage({
           “{t(locale, "quoteBody")}”
         </blockquote>
         <p style={{ margin: 0, color: "#526276", fontSize: 14 }}>{t(locale, "quoteAttr")}</p>
-        <p style={{ margin: 0, color: "#087F6D", fontSize: 13 }}>{t(locale, "quoteCaveat")}</p>
+        <p style={{ margin: 0, color: "#D62828", fontSize: 13 }}>{t(locale, "quoteCaveat")}</p>
       </section>
 
       <section

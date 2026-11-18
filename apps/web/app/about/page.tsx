@@ -48,12 +48,12 @@ export default function AboutPage({
               {t(locale, "aboutCta")} · {whatsappDisplay(wa)}
             </a>
           ) : (
-            <Link href={`/contact?lang=${locale}`} style={{ color: "#174A8B", fontWeight: 600 }}>
+            <Link href={`/contact?lang=${locale}`} style={{ color: "#1A5FBF", fontWeight: 600 }}>
               {t(locale, "contactNav")}
             </Link>
           )}
           {" · "}
-          <Link href={`/how-it-works?lang=${locale}`} style={{ color: "#174A8B", fontWeight: 600 }}>
+          <Link href={`/how-it-works?lang=${locale}`} style={{ color: "#1A5FBF", fontWeight: 600 }}>
             {t(locale, "howItWorks")}
           </Link>
         </p>
