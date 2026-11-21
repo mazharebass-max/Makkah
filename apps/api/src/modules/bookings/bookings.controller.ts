@@ -64,7 +64,13 @@ class SandboxConfirmDto {
   bookingId!: string;
 }
 
-class LocationDto {
+class LocationRoleDto {
+  @IsOptional()
+  @IsString()
+  role?: "DRIVER" | "CUSTOMER";
+}
+
+class LocationDto extends LocationRoleDto {
   @IsNumber()
   @Min(-90)
   @Max(90)
@@ -108,21 +114,29 @@ export class BookingsController {
   }
 
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(RoleCode.DRIVER)
+  @Roles(RoleCode.DRIVER, RoleCode.CUSTOMER)
   @Post("bookings/:id/location/consent")
-  grantConsent(@Req() req: AuthedRequest, @Param("id") id: string) {
-    return this.bookings.grantLocationConsent(req.user!, id);
+  grantConsent(
+    @Req() req: AuthedRequest,
+    @Param("id") id: string,
+    @Body() body: LocationRoleDto,
+  ) {
+    return this.bookings.grantLocationConsent(req.user!, id, body?.role);
   }
 
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(RoleCode.DRIVER)
+  @Roles(RoleCode.DRIVER, RoleCode.CUSTOMER)
   @Post("bookings/:id/location/revoke")
-  revokeConsent(@Req() req: AuthedRequest, @Param("id") id: string) {
-    return this.bookings.revokeLocationConsent(req.user!, id);
+  revokeConsent(
+    @Req() req: AuthedRequest,
+    @Param("id") id: string,
+    @Body() body: LocationRoleDto,
+  ) {
+    return this.bookings.revokeLocationConsent(req.user!, id, body?.role);
   }
 
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(RoleCode.DRIVER)
+  @Roles(RoleCode.DRIVER, RoleCode.CUSTOMER)
   @Post("bookings/:id/location")
   postLocation(@Req() req: AuthedRequest, @Param("id") id: string, @Body() body: LocationDto) {
     return this.bookings.postLocationSample(req.user!, id, body);

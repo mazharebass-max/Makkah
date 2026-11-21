@@ -44,6 +44,11 @@ function TripDetailInner() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [locationBusy, setLocationBusy] = useState(false);
+  const [live, setLive] = useState<{
+    driver: { latitude: number; longitude: number; recordedAt: string } | null;
+    customer: { latitude: number; longitude: number; recordedAt: string } | null;
+  } | null>(null);
 
   const loadTrip = useCallback(
     async (access: string) => {
@@ -64,10 +69,83 @@ function TripDetailInner() {
     setToken(readAccessToken());
   }, []);
 
+  const loadLive = useCallback(
+    async (access: string) => {
+      const res = await fetch(`${API}/bookings/${id}/location`, {
+        headers: { Authorization: `Bearer ${access}` },
+      });
+      const body = await res.json();
+      if (!res.ok) return;
+      setLive({
+        driver: body.driver ?? body.sample ?? null,
+        customer: body.customer ?? null,
+      });
+    },
+    [id],
+  );
+
   useEffect(() => {
     if (!token || !id) return;
     void loadTrip(token);
-  }, [token, id, loadTrip]);
+    void loadLive(token);
+  }, [token, id, loadTrip, loadLive]);
+
+  async function enableAndShareLocation() {
+    if (!token || !trip) return;
+    if (!navigator.geolocation) {
+      setError(t(locale, "shareLocationUnsupported"));
+      return;
+    }
+    setLocationBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const consent = await fetch(`${API}/bookings/${trip.id}/location/consent`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ role: "CUSTOMER" }),
+      });
+      if (!consent.ok) {
+        const body = await consent.json();
+        setError(body?.message?.message ?? body?.message ?? "Consent failed");
+        setLocationBusy(false);
+        return;
+      }
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 15000,
+        });
+      });
+      const res = await fetch(`${API}/bookings/${trip.id}/location`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          role: "CUSTOMER",
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          accuracyM: pos.coords.accuracy,
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body?.message?.message ?? body?.message ?? "Share failed");
+        setLocationBusy(false);
+        return;
+      }
+      setMessage(t(locale, "shareLocationDone"));
+      await loadLive(token);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t(locale, "shareLocationUnsupported"));
+    }
+    setLocationBusy(false);
+  }
 
   async function login() {
     setError(null);
@@ -175,6 +253,42 @@ function TripDetailInner() {
                 </li>
               ))}
             </ol>
+
+            <div
+              style={{
+                borderTop: "1px solid rgba(11,31,58,0.1)",
+                paddingTop: 14,
+                display: "grid",
+                gap: 10,
+              }}
+            >
+              <strong>{t(locale, "shareLocation")}</strong>
+              <p style={{ margin: 0, color: "#526276", fontSize: 13 }}>
+                {t(locale, "shareLocationHint")}
+              </p>
+              <div style={{ display: "grid", gap: 6, fontSize: 13, color: "#526276" }}>
+                <div>
+                  {t(locale, "driverLocation")}:{" "}
+                  {live?.driver
+                    ? `${live.driver.latitude.toFixed(5)}, ${live.driver.longitude.toFixed(5)} · ${new Date(live.driver.recordedAt).toLocaleString()}`
+                    : t(locale, "noLiveLocation")}
+                </div>
+                <div>
+                  {t(locale, "myLocation")}:{" "}
+                  {live?.customer
+                    ? `${live.customer.latitude.toFixed(5)}, ${live.customer.longitude.toFixed(5)} · ${new Date(live.customer.recordedAt).toLocaleString()}`
+                    : t(locale, "noLiveLocation")}
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={locationBusy}
+                onClick={() => void enableAndShareLocation()}
+              >
+                {t(locale, "shareLocationSend")}
+              </Button>
+            </div>
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 8 }}>
               <Link href={`/support?lang=${locale}&bookingId=${trip.id}`}>

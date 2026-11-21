@@ -1,5 +1,6 @@
 export type AdminNavKey =
   | "overview"
+  | "bookings"
   | "compliance"
   | "finance"
   | "support"
@@ -11,6 +12,7 @@ export type AdminNavKey =
 export function adminNav(active: AdminNavKey) {
   const items: { href: string; label: string; key: AdminNavKey }[] = [
     { href: "/", label: "Overview", key: "overview" },
+    { href: "/bookings", label: "Bookings", key: "bookings" },
     { href: "/compliance", label: "Compliance", key: "compliance" },
     { href: "/finance", label: "Finance", key: "finance" },
     { href: "/support", label: "Support", key: "support" },

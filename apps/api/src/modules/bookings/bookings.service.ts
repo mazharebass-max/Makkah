@@ -4,13 +4,21 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { BookingStatus } from "@prisma/client";
+import { BookingStatus, LocationShareRole } from "@prisma/client";
+import { RoleCode } from "@haramain/contracts";
 import { PrismaService } from "../../prisma/prisma.service";
 import { AvailabilityService } from "./availability.service";
 import { assertTransition, canTransition } from "./booking-state.machine";
 import { OwnershipService } from "../ownership/ownership.service";
 import { NotificationsService } from "../notifications/notifications.service";
 import type { RequestUser } from "../auth/auth.types";
+
+const LIVE_LOCATION_STATUSES: BookingStatus[] = [
+  BookingStatus.ASSIGNED,
+  BookingStatus.DRIVER_EN_ROUTE,
+  BookingStatus.ARRIVED,
+  BookingStatus.IN_PROGRESS,
+];
 
 @Injectable()
 export class BookingsService {
@@ -92,12 +100,39 @@ export class BookingsService {
     };
   }
 
-  async grantLocationConsent(user: RequestUser, bookingId: string) {
+  private async resolveShareRole(
+    user: RequestUser,
+    bookingId: string,
+    requested?: LocationShareRole | string,
+  ): Promise<{ role: LocationShareRole; driverId: string | null }> {
+    await this.ownership.assertBookingAccess(user, bookingId);
+    const wantsCustomer =
+      requested === LocationShareRole.CUSTOMER || requested === "CUSTOMER";
+    const wantsDriver = requested === LocationShareRole.DRIVER || requested === "DRIVER";
+
+    const booking = await this.prisma.booking.findUnique({ where: { id: bookingId } });
+    if (!booking || booking.deletedAt) {
+      throw new NotFoundException({ code: "NOT_FOUND", message: "Booking not found" });
+    }
+
+    const isCustomerOwner = booking.customerId === user.id;
+    const preferCustomer =
+      wantsCustomer || (!wantsDriver && isCustomerOwner && !this.ownership.hasAnyRole(user, [RoleCode.DRIVER]));
+
+    if (preferCustomer) {
+      if (!isCustomerOwner) {
+        throw new BadRequestException({
+          code: "NOT_CUSTOMER",
+          message: "Only the booking customer can share customer location",
+        });
+      }
+      return { role: LocationShareRole.CUSTOMER, driverId: null };
+    }
+
     const driver = await this.prisma.driver.findUnique({ where: { userId: user.id } });
     if (!driver) {
       throw new NotFoundException({ code: "NO_DRIVER", message: "Driver profile required" });
     }
-    await this.ownership.assertBookingAccess(user, bookingId);
     const assignment = await this.prisma.bookingAssignment.findUnique({ where: { bookingId } });
     if (!assignment || assignment.driverId !== driver.id) {
       throw new BadRequestException({
@@ -105,10 +140,30 @@ export class BookingsService {
         message: "Location sharing only for your assigned trip",
       });
     }
+    return { role: LocationShareRole.DRIVER, driverId: driver.id };
+  }
+
+  async grantLocationConsent(
+    user: RequestUser,
+    bookingId: string,
+    requestedRole?: LocationShareRole | string,
+  ) {
+    const { role, driverId } = await this.resolveShareRole(user, bookingId, requestedRole);
     const consent = await this.prisma.locationConsent.upsert({
-      where: { bookingId_driverId: { bookingId, driverId: driver.id } },
-      create: { bookingId, driverId: driver.id, purpose: "active_trip_tracking" },
-      update: { revokedAt: null, grantedAt: new Date() },
+      where: {
+        bookingId_role_userId: { bookingId, role, userId: user.id },
+      },
+      create: {
+        bookingId,
+        role,
+        driverId,
+        userId: user.id,
+        purpose:
+          role === LocationShareRole.CUSTOMER
+            ? "customer_trip_location"
+            : "active_trip_tracking",
+      },
+      update: { revokedAt: null, grantedAt: new Date(), driverId },
     });
     await this.prisma.auditEvent.create({
       data: {
@@ -116,40 +171,47 @@ export class BookingsService {
         action: "location.consent.grant",
         resource: "booking",
         resourceId: bookingId,
-        metadata: { purpose: consent.purpose },
+        metadata: { purpose: consent.purpose, role },
       },
     });
     return {
       bookingId,
+      role,
       consented: true,
       purpose: consent.purpose,
       message: "Location sharing enabled for this active trip only",
+      liveTracking: false as const,
     };
   }
 
-  async revokeLocationConsent(user: RequestUser, bookingId: string) {
-    const driver = await this.prisma.driver.findUnique({ where: { userId: user.id } });
-    if (!driver) {
-      throw new NotFoundException({ code: "NO_DRIVER", message: "Driver profile required" });
-    }
+  async revokeLocationConsent(
+    user: RequestUser,
+    bookingId: string,
+    requestedRole?: LocationShareRole | string,
+  ) {
+    const { role } = await this.resolveShareRole(user, bookingId, requestedRole);
     await this.prisma.locationConsent.updateMany({
-      where: { bookingId, driverId: driver.id, revokedAt: null },
+      where: { bookingId, role, userId: user.id, revokedAt: null },
       data: { revokedAt: new Date() },
     });
-    return { bookingId, consented: false };
+    return { bookingId, role, consented: false };
   }
 
   async postLocationSample(
     user: RequestUser,
     bookingId: string,
-    input: { latitude: number; longitude: number; accuracyM?: number },
+    input: {
+      latitude: number;
+      longitude: number;
+      accuracyM?: number;
+      role?: LocationShareRole | string;
+    },
   ) {
-    const driver = await this.prisma.driver.findUnique({ where: { userId: user.id } });
-    if (!driver) {
-      throw new NotFoundException({ code: "NO_DRIVER", message: "Driver profile required" });
-    }
+    const { role, driverId } = await this.resolveShareRole(user, bookingId, input.role);
     const consent = await this.prisma.locationConsent.findUnique({
-      where: { bookingId_driverId: { bookingId, driverId: driver.id } },
+      where: {
+        bookingId_role_userId: { bookingId, role, userId: user.id },
+      },
     });
     if (!consent || consent.revokedAt) {
       throw new BadRequestException({
@@ -159,13 +221,7 @@ export class BookingsService {
     }
     const booking = await this.prisma.booking.findUnique({ where: { id: bookingId } });
     if (!booking) throw new NotFoundException({ code: "NOT_FOUND", message: "Booking not found" });
-    const active: BookingStatus[] = [
-      BookingStatus.ASSIGNED,
-      BookingStatus.DRIVER_EN_ROUTE,
-      BookingStatus.ARRIVED,
-      BookingStatus.IN_PROGRESS,
-    ];
-    if (!active.includes(booking.status)) {
+    if (!LIVE_LOCATION_STATUSES.includes(booking.status)) {
       throw new BadRequestException({
         code: "TRIP_NOT_ACTIVE",
         message: "Location samples only during active trip states",
@@ -174,7 +230,9 @@ export class BookingsService {
     const sample = await this.prisma.locationSample.create({
       data: {
         bookingId,
-        driverId: driver.id,
+        role,
+        driverId,
+        userId: user.id,
         latitude: input.latitude,
         longitude: input.longitude,
         accuracyM: input.accuracyM,
@@ -183,29 +241,69 @@ export class BookingsService {
     });
     return {
       id: sample.id,
+      role,
       recordedAt: sample.recordedAt.toISOString(),
       expiresAt: sample.expiresAt.toISOString(),
       retentionNote: "Sample expires within 24h — precise location minimized per PDPL",
+      liveTracking: false as const,
     };
   }
 
   async latestLocation(user: RequestUser, bookingId: string) {
     await this.ownership.assertBookingAccess(user, bookingId);
-    const sample = await this.prisma.locationSample.findFirst({
-      where: { bookingId, expiresAt: { gt: new Date() } },
-      orderBy: { recordedAt: "desc" },
-    });
-    if (!sample) {
-      return { bookingId, sample: null, message: "No active consented location sample" };
-    }
+    const [driverSample, customerSample] = await Promise.all([
+      this.prisma.locationSample.findFirst({
+        where: {
+          bookingId,
+          role: LocationShareRole.DRIVER,
+          expiresAt: { gt: new Date() },
+        },
+        orderBy: { recordedAt: "desc" },
+      }),
+      this.prisma.locationSample.findFirst({
+        where: {
+          bookingId,
+          role: LocationShareRole.CUSTOMER,
+          expiresAt: { gt: new Date() },
+        },
+        orderBy: { recordedAt: "desc" },
+      }),
+    ]);
+
+    const mapSample = (
+      sample: {
+        latitude: number;
+        longitude: number;
+        accuracyM: number | null;
+        recordedAt: Date;
+        role: LocationShareRole;
+        userId: string;
+      } | null,
+    ) =>
+      sample
+        ? {
+            role: sample.role,
+            latitude: sample.latitude,
+            longitude: sample.longitude,
+            accuracyM: sample.accuracyM,
+            recordedAt: sample.recordedAt.toISOString(),
+            userId: sample.userId,
+          }
+        : null;
+
+    const driver = mapSample(driverSample);
+    const customer = mapSample(customerSample);
     return {
       bookingId,
-      sample: {
-        latitude: sample.latitude,
-        longitude: sample.longitude,
-        accuracyM: sample.accuracyM,
-        recordedAt: sample.recordedAt.toISOString(),
-      },
+      /** @deprecated Prefer `driver` — kept for mobile smoke / older clients */
+      sample: driver,
+      driver,
+      customer,
+      liveTracking: false as const,
+      message:
+        driver || customer
+          ? undefined
+          : "No active consented location samples",
     };
   }
 
