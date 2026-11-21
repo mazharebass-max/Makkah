@@ -10,6 +10,7 @@ export default function robots(): MetadataRoute.Robots {
         allow: ["/", "/search", "/legal/", "/providers/"],
         disallow: [
           "/login",
+          "/signup",
           "/checkout",
           "/confirmation",
           "/trips",

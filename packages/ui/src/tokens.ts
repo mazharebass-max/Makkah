@@ -1,12 +1,16 @@
 export const colors = {
   midnight: "#0B1F3A",
-  royal: "#174A8B",
+  royal: "#1A5FBF",
+  blue: "#1A5FBF",
+  orange: "#F0771F",
+  red: "#D62828",
+  /** @deprecated prefer orange — kept for existing gold call sites */
+  gold: "#F0771F",
   emerald: "#087F6D",
-  gold: "#C6A15B",
-  sand: "#F6F3EC",
+  sand: "#F7F8FA",
   white: "#FFFFFF",
   slate: "#526276",
-  danger: "#B42318",
+  danger: "#D62828",
 } as const;
 
 export const spacing = {

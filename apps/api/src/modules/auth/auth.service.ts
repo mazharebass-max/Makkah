@@ -98,7 +98,8 @@ export class AuthService {
         email: input.email.toLowerCase(),
         passwordHash,
         locale: input.locale ?? "en",
-        identities: { create: { provider: "email", subject: input.email.toLowerCase(), verifiedAt: new Date() } },
+        // Email identity starts unverified — customer must complete EMAIL_VERIFY OTP
+        identities: { create: { provider: "email", subject: input.email.toLowerCase(), verifiedAt: null } },
         customerProfile: { create: { displayName: input.displayName ?? null } },
         roleAssignments: { create: { roleId: customerRole.id } },
       },
@@ -110,10 +111,17 @@ export class AuthService {
         action: "auth.register",
         resource: "user",
         resourceId: user.id,
+        metadata: { emailVerified: false },
       },
     });
 
-    return this.login({ email: input.email, password: input.password }, meta);
+    const session = await this.login({ email: input.email, password: input.password }, meta);
+    return {
+      ...session,
+      emailVerified: false as const,
+      emailVerificationRequired: true as const,
+      message: "Account created — verify email via POST /auth/otp/request then /auth/otp/verify (sandbox OTP)",
+    };
   }
 
   async login(input: LoginInput, meta?: { userAgent?: string; ip?: string }) {
