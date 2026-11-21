@@ -22,11 +22,20 @@ type VehicleRow = {
   category?: { code: string; nameEn?: string } | null;
 };
 
+type DriverShift = {
+  id: string;
+  startsAt: string;
+  endsAt: string;
+  note?: string | null;
+  draftLabel?: string | null;
+};
+
 type DriverRow = {
   id: string;
   displayName?: string | null;
   phoneE164?: string | null;
   active?: boolean;
+  shifts?: DriverShift[];
 };
 
 export default function AdminHome() {
@@ -56,6 +65,10 @@ function OverviewBody({
   const [error, setError] = useState<string | null>(null);
   const [vehicleId, setVehicleId] = useState("");
   const [driverId, setDriverId] = useState("");
+  const [shiftDriverId, setShiftDriverId] = useState("");
+  const [shiftStart, setShiftStart] = useState("");
+  const [shiftEnd, setShiftEnd] = useState("");
+  const [shiftNote, setShiftNote] = useState("");
 
   const refresh = useCallback(async () => {
     const [bRes, vRes, dRes] = await Promise.all([
@@ -74,6 +87,7 @@ function OverviewBody({
       const list = dRes.body.data ?? [];
       setDrivers(list);
       setDriverId((cur) => cur || list[0]?.id || "");
+      setShiftDriverId((cur) => cur || list[0]?.id || "");
     }
   }, [token]);
 
@@ -118,6 +132,34 @@ function OverviewBody({
       return;
     }
     setMessage(`Vehicle ${id.slice(0, 8)}… → ${!active ? "active" : "inactive"}`);
+    await refresh();
+  }
+
+  async function createShift() {
+    if (!shiftDriverId || !shiftStart || !shiftEnd) {
+      setMessage("Pick driver, start, and end for the shift");
+      return;
+    }
+    setMessage(null);
+    const { ok, body } = await apiJson<{ id?: string; message?: unknown }>(
+      "/admin/fleet/driver-shifts",
+      {
+        method: "POST",
+        token,
+        body: JSON.stringify({
+          driverId: shiftDriverId,
+          startsAt: new Date(shiftStart).toISOString(),
+          endsAt: new Date(shiftEnd).toISOString(),
+          ...(shiftNote.trim() ? { note: shiftNote.trim() } : {}),
+        }),
+      },
+    );
+    if (!ok) {
+      setMessage(errMessage(body, "Could not create shift"));
+      return;
+    }
+    setMessage(`Draft shift ${body.id?.slice(0, 8) ?? ""}… created`);
+    setShiftNote("");
     await refresh();
   }
 
@@ -235,17 +277,86 @@ function OverviewBody({
         </ul>
       </section>
 
-      <section style={{ background: "#fff", borderRadius: 16, padding: 20 }}>
-        <strong>Drivers</strong>
-        <ul style={{ marginTop: 12, paddingInlineStart: 18 }}>
+      <section id="drivers" style={{ background: "#fff", borderRadius: 16, padding: 20 }}>
+        <strong>Drivers & draft shifts</strong>
+        <ul style={{ listStyle: "none", padding: 0, marginTop: 12, display: "grid", gap: 12 }}>
           {drivers.length === 0 ? <li>No drivers in seed</li> : null}
           {drivers.map((d) => (
-            <li key={d.id}>
-              {d.displayName || "Driver"} · {d.phoneE164 ?? d.id.slice(0, 8)} ·{" "}
-              {d.active === false ? "inactive" : "active"}
+            <li
+              key={d.id}
+              style={{ borderTop: "1px solid rgba(11,31,58,0.08)", paddingTop: 10 }}
+            >
+              <div>
+                {d.displayName || "Driver"} · {d.phoneE164 ?? d.id.slice(0, 8)} ·{" "}
+                {d.active === false ? "inactive" : "active"}
+              </div>
+              <ul style={{ margin: "8px 0 0", paddingInlineStart: 18, color: "#526276", fontSize: 13 }}>
+                {(d.shifts ?? []).length === 0 ? <li>No shifts on roster</li> : null}
+                {(d.shifts ?? []).map((s) => (
+                  <li key={s.id}>
+                    {new Date(s.startsAt).toLocaleString()} → {new Date(s.endsAt).toLocaleString()}
+                    {s.note ? ` · ${s.note}` : ""}
+                    {s.draftLabel ? ` · ${s.draftLabel}` : ""}
+                  </li>
+                ))}
+              </ul>
             </li>
           ))}
         </ul>
+      </section>
+
+      <section id="shifts" style={{ background: "#fff", borderRadius: 16, padding: 20, display: "grid", gap: 12 }}>
+        <strong>Add draft driver shift</strong>
+        <p style={{ margin: 0, color: "#526276", fontSize: 13 }}>
+          Roster windows used for assignment checks. Draft only — not live licensed ops.
+        </p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "end" }}>
+          <label style={{ display: "grid", gap: 4, fontSize: 13 }}>
+            Driver
+            <select
+              value={shiftDriverId}
+              onChange={(e) => setShiftDriverId(e.target.value)}
+              style={{ minHeight: 40, padding: "0 10px", borderRadius: 8 }}
+            >
+              {drivers.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.displayName || d.phoneE164 || d.id.slice(0, 8)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label style={{ display: "grid", gap: 4, fontSize: 13 }}>
+            Starts
+            <input
+              type="datetime-local"
+              value={shiftStart}
+              onChange={(e) => setShiftStart(e.target.value)}
+              style={{ minHeight: 40, padding: "0 10px", borderRadius: 8 }}
+            />
+          </label>
+          <label style={{ display: "grid", gap: 4, fontSize: 13 }}>
+            Ends
+            <input
+              type="datetime-local"
+              value={shiftEnd}
+              onChange={(e) => setShiftEnd(e.target.value)}
+              style={{ minHeight: 40, padding: "0 10px", borderRadius: 8 }}
+            />
+          </label>
+          <label style={{ display: "grid", gap: 4, fontSize: 13 }}>
+            Note
+            <input
+              type="text"
+              value={shiftNote}
+              onChange={(e) => setShiftNote(e.target.value)}
+              placeholder="optional"
+              style={{ minHeight: 40, padding: "0 10px", borderRadius: 8, minWidth: 160 }}
+            />
+          </label>
+          <Button type="button" onClick={() => void createShift()}>
+            Create shift
+          </Button>
+        </div>
       </section>
       <Badge tone="warning">DRAFT — OWNER APPROVAL REQUIRED for live ops</Badge>
     </div>

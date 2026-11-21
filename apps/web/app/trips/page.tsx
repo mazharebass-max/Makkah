@@ -117,6 +117,13 @@ export default function TripsPage() {
             ))}
           </ul>
         )}
+        {token ? (
+          <p style={{ margin: 0 }}>
+            <Link href={`/support?lang=${locale}`} style={{ color: "#1A5FBF", fontWeight: 600 }}>
+              {t(locale, "tripsSupportLink")}
+            </Link>
+          </p>
+        ) : null}
         {error ? (
           <p role="alert" style={{ color: "#B42318" }}>
             {error}

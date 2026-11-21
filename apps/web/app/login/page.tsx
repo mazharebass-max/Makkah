@@ -421,9 +421,12 @@ export default function AuthPage() {
           </form>
         )}
 
-        <p style={{ margin: "20px 0 0", fontSize: 13 }}>
+        <p style={{ margin: "20px 0 0", fontSize: 13, display: "flex", gap: 12, flexWrap: "wrap" }}>
           <Link href={`/trips?lang=${locale}`} style={{ color: "rgba(255,255,255,0.75)" }}>
             {t(locale, "myTrips")}
+          </Link>
+          <Link href={`/support?lang=${locale}`} style={{ color: "rgba(255,255,255,0.75)" }}>
+            {t(locale, "supportNav")}
           </Link>
         </p>
       </div>
