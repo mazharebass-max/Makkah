@@ -29,6 +29,7 @@ async function login(app: INestApplication, email: string, password: string) {
 
 describe("M5 sandbox payments + ledger", () => {
   let app: INestApplication;
+  let prisma: PrismaService;
 
   beforeAll(async () => {
     process.env.NODE_ENV = "test";
@@ -41,7 +42,7 @@ describe("M5 sandbox payments + ledger", () => {
       new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }),
     );
     await app.init();
-    const prisma = app.get(PrismaService);
+    prisma = app.get(PrismaService);
     await prisma.availabilityHold.updateMany({
       where: { releasedAt: null },
       data: { releasedAt: new Date() },
@@ -53,15 +54,24 @@ describe("M5 sandbox payments + ledger", () => {
     await app.close();
   });
 
+  async function releaseInventoryHolds() {
+    // Shared CI DB only has two SEDAN units — clear soft holds left by earlier cases.
+    await prisma.availabilityHold.updateMany({
+      where: { releasedAt: null },
+      data: { releasedAt: new Date() },
+    });
+  }
+
   async function createPendingBooking(token: string) {
+    await releaseInventoryHolds();
     const quote = await request(app.getHttpServer()).post("/api/v1/quotes").send({
       routeCode: "JED-MAKKAH",
       categoryCode: "SEDAN",
-      scheduledAt: futureIso(180 + Math.floor(Math.random() * 40)),
+      scheduledAt: futureIso(400 + Math.floor(Math.random() * 200)),
       passengers: 2,
       luggage: 1,
     });
-    expect(quote.status).toBe(201);
+    expect(quote.status, JSON.stringify(quote.body)).toBe(201);
     const booked = await request(app.getHttpServer())
       .post("/api/v1/bookings")
       .set("Authorization", `Bearer ${token}`)
