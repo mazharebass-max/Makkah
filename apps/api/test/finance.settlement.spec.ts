@@ -8,12 +8,9 @@ import { AppModule } from "../src/app.module";
 import { loadEnv } from "../src/config/env";
 import { PrismaService } from "../src/prisma/prisma.service";
 import { DRAFT_COMMISSION_RATE_BPS } from "../src/modules/payments/payments.service";
+import { createSedanQuote, releaseOpenHolds } from "./helpers/inventory";
 
 const PROVIDER_A_ID = "00000000-0000-4000-8000-000000000020";
-
-function futureIso(hoursFromNow = 220) {
-  return new Date(Date.now() + hoursFromNow * 3600_000).toISOString();
-}
 
 function sign(body: object) {
   const raw = JSON.stringify(body);
@@ -46,10 +43,7 @@ describe("F4 sandbox commission / payable / settlement", () => {
     );
     await app.init();
     prisma = app.get(PrismaService);
-    await prisma.availabilityHold.updateMany({
-      where: { releasedAt: null },
-      data: { releasedAt: new Date() },
-    });
+    await releaseOpenHolds(prisma);
   });
 
   afterAll(async () => {
@@ -57,19 +51,7 @@ describe("F4 sandbox commission / payable / settlement", () => {
   });
 
   async function createPaidBooking(customerToken: string) {
-    // Avoid NO_INVENTORY when earlier suites left soft SEDAN holds on the shared CI DB.
-    await prisma.availabilityHold.updateMany({
-      where: { releasedAt: null },
-      data: { releasedAt: new Date() },
-    });
-    const quote = await request(app.getHttpServer()).post("/api/v1/quotes").send({
-      routeCode: "JED-MAKKAH",
-      categoryCode: "SEDAN",
-      scheduledAt: futureIso(500 + Math.floor(Math.random() * 200)),
-      passengers: 2,
-      luggage: 1,
-    });
-    expect(quote.status, JSON.stringify(quote.body)).toBe(201);
+    const quote = await createSedanQuote(app, prisma);
     const booked = await request(app.getHttpServer())
       .post("/api/v1/bookings")
       .set("Authorization", `Bearer ${customerToken}`)

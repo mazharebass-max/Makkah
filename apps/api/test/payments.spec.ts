@@ -7,10 +7,7 @@ import { createHmac } from "node:crypto";
 import { AppModule } from "../src/app.module";
 import { loadEnv } from "../src/config/env";
 import { PrismaService } from "../src/prisma/prisma.service";
-
-function futureIso(hoursFromNow = 200) {
-  return new Date(Date.now() + hoursFromNow * 3600_000).toISOString();
-}
+import { createSedanQuote } from "./helpers/inventory";
 
 function sign(body: object) {
   const raw = JSON.stringify(body);
@@ -54,24 +51,8 @@ describe("M5 sandbox payments + ledger", () => {
     await app.close();
   });
 
-  async function releaseInventoryHolds() {
-    // Shared CI DB only has two SEDAN units — clear soft holds left by earlier cases.
-    await prisma.availabilityHold.updateMany({
-      where: { releasedAt: null },
-      data: { releasedAt: new Date() },
-    });
-  }
-
   async function createPendingBooking(token: string) {
-    await releaseInventoryHolds();
-    const quote = await request(app.getHttpServer()).post("/api/v1/quotes").send({
-      routeCode: "JED-MAKKAH",
-      categoryCode: "SEDAN",
-      scheduledAt: futureIso(400 + Math.floor(Math.random() * 200)),
-      passengers: 2,
-      luggage: 1,
-    });
-    expect(quote.status, JSON.stringify(quote.body)).toBe(201);
+    const quote = await createSedanQuote(app, prisma);
     const booked = await request(app.getHttpServer())
       .post("/api/v1/bookings")
       .set("Authorization", `Bearer ${token}`)

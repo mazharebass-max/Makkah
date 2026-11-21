@@ -463,7 +463,8 @@ async function main() {
     "Draft Mercedes V-Class base — owner approval required",
   );
 
-  // Keep two SEDAN (Haram Pak) units so overlap / parallel booking tests can hold two quotes.
+  // Three SEDAN (Haram Pak) units: overlap tests need two concurrent holds; payment /
+  // settlement suites create additional quotes on the shared CI DB without colliding.
   // VEHICLE_A/B in driver-overlap.spec.ts are …010 / …011.
   const vehicles = [
     {
@@ -479,6 +480,14 @@ async function main() {
       categoryId: haramPak.id,
       plateNumber: "SYN-HP2",
       makeModel: "Haram Pak SUV B (synthetic)",
+      passengerCap: 6,
+      luggageCap: 8,
+    },
+    {
+      id: "00000000-0000-4000-8000-000000000017",
+      categoryId: haramPak.id,
+      plateNumber: "SYN-HP3",
+      makeModel: "Haram Pak SUV C (synthetic)",
       passengerCap: 6,
       luggageCap: 8,
     },
