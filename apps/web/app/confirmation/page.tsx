@@ -42,6 +42,17 @@ export default function ConfirmationPage() {
               {t(locale, "continueTrips")}
             </Button>
           </Link>
+          <Link
+            href={
+              bookingId
+                ? `/support?lang=${locale}&bookingId=${bookingId}`
+                : `/support?lang=${locale}`
+            }
+          >
+            <Button type="button" variant="secondary">
+              {t(locale, "getSupport")}
+            </Button>
+          </Link>
         </div>
       </div>
     </SiteChrome>

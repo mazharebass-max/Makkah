@@ -102,6 +102,7 @@ function SiteChromeInner({
   const bookHref = `/?lang=${locale}#book`;
   const accountHref = `/login?lang=${locale}`;
   const tripsHref = `/trips?lang=${locale}`;
+  const supportHref = `/support?lang=${locale}`;
   const waHref = wa ? whatsappHref(wa, t(locale, "whatsappPrefill")) : null;
   const isActive = (path: string) => pathname === path || pathname.startsWith(`${path}/`);
 
@@ -377,6 +378,20 @@ function SiteChromeInner({
                     {t(locale, "myTrips")}
                   </Link>
                   <Link
+                    href={supportHref}
+                    onClick={() => setMenuOpen(false)}
+                    style={{
+                      ...quietLink,
+                      display: "block",
+                      padding: "14px 8px",
+                      fontSize: 16,
+                      borderBottom: "1px solid rgba(11,31,58,0.06)",
+                      borderRadius: 0,
+                    }}
+                  >
+                    {t(locale, "supportNav")}
+                  </Link>
+                  <Link
                     href={accountHref}
                     onClick={() => setMenuOpen(false)}
                     style={{
@@ -537,6 +552,8 @@ function SiteChromeInner({
               <div style={{ display: "grid", gap: 8 }}>
                 <p style={colTitle}>{t(locale, "footerHelp")}</p>
                 {footerLink(`/contact?lang=${locale}`, t(locale, "contactNav"))}
+                {footerLink(`/support?lang=${locale}`, t(locale, "supportNav"))}
+                {footerLink(`/trips?lang=${locale}`, t(locale, "myTrips"))}
                 {footerLink(`/faq?lang=${locale}`, t(locale, "faqNav"))}
                 {footerLink(`/about?lang=${locale}`, t(locale, "aboutNav"))}
                 {footerLink(`/login?lang=${locale}`, t(locale, "accountNav"))}

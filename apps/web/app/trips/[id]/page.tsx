@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { Badge, Button, Input } from "@haramain/ui";
 import { SiteChrome } from "../../../components/SiteChrome";
@@ -23,7 +23,14 @@ type TripDetail = {
   tripTimeline?: { from: string | null; to: string; at: string; note?: string | null }[];
 };
 
-export default function TripDetailPage() {
+const NON_CANCELLABLE = new Set([
+  "CANCELLED",
+  "CANCEL_REQUESTED",
+  "COMPLETED",
+  "NO_SHOW",
+]);
+
+function TripDetailInner() {
   const params = useSearchParams();
   const routeParams = useParams<{ id: string }>();
   const locale: Locale = params.get("lang") === "ar" ? "ar" : "en";
@@ -33,17 +40,15 @@ export default function TripDetailPage() {
   const [email, setEmail] = useState("customer@haramain.local");
   const [password, setPassword] = useState("CustomerDev!234");
   const [trip, setTrip] = useState<TripDetail | null>(null);
+  const [cancelNote, setCancelNote] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
-  useEffect(() => {
-    setToken(readAccessToken());
-  }, []);
-
-  useEffect(() => {
-    if (!token || !id) return;
-    void (async () => {
+  const loadTrip = useCallback(
+    async (access: string) => {
       const res = await fetch(`${API}/bookings/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${access}` },
       });
       const body = await res.json();
       if (!res.ok) {
@@ -51,8 +56,18 @@ export default function TripDetailPage() {
         return;
       }
       setTrip(body);
-    })();
-  }, [token, id]);
+    },
+    [id],
+  );
+
+  useEffect(() => {
+    setToken(readAccessToken());
+  }, []);
+
+  useEffect(() => {
+    if (!token || !id) return;
+    void loadTrip(token);
+  }, [token, id, loadTrip]);
 
   async function login() {
     setError(null);
@@ -70,6 +85,32 @@ export default function TripDetailPage() {
     saveAccessToken(body.accessToken);
     setToken(body.accessToken);
   }
+
+  async function cancelTrip() {
+    if (!token || !trip) return;
+    if (!window.confirm(t(locale, "cancelTripConfirm"))) return;
+    setCancelling(true);
+    setError(null);
+    setMessage(null);
+    const res = await fetch(`${API}/bookings/${trip.id}/cancel`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(cancelNote.trim() ? { note: cancelNote.trim() } : {}),
+    });
+    const body = await res.json();
+    setCancelling(false);
+    if (!res.ok) {
+      setError(body?.message?.message ?? body?.message ?? "Cancel failed");
+      return;
+    }
+    setMessage(t(locale, "cancelTripDone"));
+    setTrip(body);
+  }
+
+  const canCancel = trip && !NON_CANCELLABLE.has(trip.status);
 
   return (
     <SiteChrome locale={locale}>
@@ -134,10 +175,44 @@ export default function TripDetailPage() {
                 </li>
               ))}
             </ol>
+
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 8 }}>
+              <Link href={`/support?lang=${locale}&bookingId=${trip.id}`}>
+                <Button type="button" variant="secondary">
+                  {t(locale, "getSupport")}
+                </Button>
+              </Link>
+            </div>
+
+            {canCancel ? (
+              <div
+                style={{
+                  borderTop: "1px solid rgba(11,31,58,0.1)",
+                  paddingTop: 14,
+                  display: "grid",
+                  gap: 10,
+                }}
+              >
+                <Input
+                  label={t(locale, "cancelTripNote")}
+                  value={cancelNote}
+                  onChange={(e) => setCancelNote(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={cancelling}
+                  onClick={() => void cancelTrip()}
+                >
+                  {t(locale, "cancelTrip")}
+                </Button>
+              </div>
+            ) : null}
           </div>
         ) : (
           <p>…</p>
         )}
+        {message ? <p style={{ color: "#087F6D", margin: 0 }}>{message}</p> : null}
         {error ? (
           <p role="alert" style={{ color: "#B42318" }}>
             {error}
@@ -145,5 +220,13 @@ export default function TripDetailPage() {
         ) : null}
       </div>
     </SiteChrome>
+  );
+}
+
+export default function TripDetailPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 24 }}>…</div>}>
+      <TripDetailInner />
+    </Suspense>
   );
 }
