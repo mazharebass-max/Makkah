@@ -129,6 +129,10 @@ export const createBookingSchema = z.object({
   contactName: z.string().min(1).max(120),
   contactPhone: z.string().min(7).max(32),
   specialInstructions: z.string().max(500).optional(),
+  /** Optional airline flight number for airport meet planning (draft). */
+  flightNumber: z.string().max(32).optional(),
+  /** Optional draft pickup / meeting point code from GET /pickup-points. */
+  pickupPointCode: z.string().max(64).optional(),
   acceptTerms: z.literal(true),
   idempotencyKey: z.string().min(8).max(128).optional(),
 });

@@ -168,6 +168,14 @@ export function publicFaqs(locale: Locale): Array<{ q: string; a: string }> {
         q: "هل الأسعار نهائية؟",
         a: "لا. أسعار الكتالوج مسودة وتتطلب موافقة المالك قبل أي تحصيل حي.",
       },
+      {
+        q: "ماذا لو تأخرت رحلتي الجوية؟",
+        a: "أضف رقم الرحلة عند الدفع التجريبي إن أمكن. نوافذ الانتظار ورسوم التمديد مسودة وتتطلب موافقة المالك — لا نَدّعي تتبعاً حياً للرحلات.",
+      },
+      {
+        q: "هل أختار نقطة التقاء في المطار؟",
+        a: "نعم اختيارياً من نقاط الالتقاء المسودة (مثل صالات جدة). ليست عمليات التقاط مرخّصة مباشرة.",
+      },
     ];
   }
   return [
@@ -190,6 +198,14 @@ export function publicFaqs(locale: Locale): Array<{ q: string; a: string }> {
     {
       q: "Are fares final?",
       a: "No. Catalog fares are DRAFT and require owner approval before any live capture.",
+    },
+    {
+      q: "What if my flight is delayed?",
+      a: "Add your flight number at sandbox checkout when you can. Waiting windows and extended-wait fees stay DRAFT pending owner approval — we do not claim live flight tracking.",
+    },
+    {
+      q: "Can I choose an airport meeting point?",
+      a: "Yes, optionally from draft pickup points (for example Jeddah terminals). These are planning seeds — not live licensed curb operations.",
     },
   ];
 }

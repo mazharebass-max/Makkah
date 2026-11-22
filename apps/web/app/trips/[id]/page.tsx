@@ -21,6 +21,23 @@ type TripDetail = {
   route?: { nameEn: string; nameAr?: string | null; code: string };
   category?: { nameEn: string; nameAr?: string | null };
   tripTimeline?: { from: string | null; to: string; at: string; note?: string | null }[];
+  tripExtras?: {
+    contactName?: string | null;
+    contactPhone?: string | null;
+    specialInstructions?: string | null;
+    flightNumber?: string | null;
+    pickupPointCode?: string | null;
+    pickupPointName?: string | null;
+  };
+  invoices?: {
+    id: string;
+    number: string;
+    totalHalalas: number;
+    currency: string;
+    status: string;
+    draftLabel: string;
+    issuedAt: string | null;
+  }[];
 };
 
 const NON_CANCELLABLE = new Set([
@@ -188,7 +205,30 @@ function TripDetailInner() {
     setTrip(body);
   }
 
+  async function revokeLocation() {
+    if (!token || !trip) return;
+    setLocationBusy(true);
+    setError(null);
+    const res = await fetch(`${API}/bookings/${trip.id}/location/revoke`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ role: "CUSTOMER" }),
+    });
+    const body = await res.json();
+    setLocationBusy(false);
+    if (!res.ok) {
+      setError(body?.message?.message ?? body?.message ?? "Revoke failed");
+      return;
+    }
+    setMessage(t(locale, "revokeLocationDone"));
+    setLive((prev) => (prev ? { ...prev, customer: null } : prev));
+  }
+
   const canCancel = trip && !NON_CANCELLABLE.has(trip.status);
+  const extras = trip?.tripExtras;
 
   return (
     <SiteChrome locale={locale}>
@@ -241,6 +281,59 @@ function TripDetailInner() {
               {(trip.totalHalalas / 100).toFixed(2)} {trip.currency}
             </div>
             <Badge tone="warning">{t(locale, "sandboxOnly")}</Badge>
+
+            {extras &&
+            (extras.flightNumber ||
+              extras.pickupPointName ||
+              extras.pickupPointCode ||
+              extras.specialInstructions) ? (
+              <div style={{ display: "grid", gap: 6 }}>
+                <h2 style={{ margin: "8px 0 0", fontSize: 18 }}>{t(locale, "tripExtras")}</h2>
+                {extras.flightNumber ? (
+                  <div style={{ color: "#526276", fontSize: 14 }}>
+                    {t(locale, "flightNumber")}: <strong>{extras.flightNumber}</strong>
+                  </div>
+                ) : null}
+                {extras.pickupPointName || extras.pickupPointCode ? (
+                  <div style={{ color: "#526276", fontSize: 14 }}>
+                    {t(locale, "pickupPoint")}:{" "}
+                    <strong>
+                      {extras.pickupPointName ?? extras.pickupPointCode}
+                      {extras.pickupPointCode ? ` (${extras.pickupPointCode})` : ""}
+                    </strong>
+                  </div>
+                ) : null}
+                {extras.specialInstructions ? (
+                  <div style={{ color: "#526276", fontSize: 14 }}>
+                    {t(locale, "specialInstructions")}: {extras.specialInstructions}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
+            <div style={{ display: "grid", gap: 8 }}>
+              <h2 style={{ margin: "8px 0 0", fontSize: 18 }}>{t(locale, "invoicesHeading")}</h2>
+              {(trip.invoices ?? []).length === 0 ? (
+                <p style={{ margin: 0, color: "#526276", fontSize: 14 }}>
+                  {t(locale, "invoiceEmpty")}
+                </p>
+              ) : (
+                <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8 }}>
+                  {(trip.invoices ?? []).map((inv) => (
+                    <li key={inv.id}>
+                      <Link
+                        href={`/invoices/${inv.id}?lang=${locale}`}
+                        style={{ color: "#1A5FBF", fontWeight: 600 }}
+                      >
+                        {inv.number} · {(inv.totalHalalas / 100).toFixed(2)} {inv.currency} ·{" "}
+                        {t(locale, "invoiceView")}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
             <h2 style={{ margin: "8px 0 0", fontSize: 18 }}>{t(locale, "timeline")}</h2>
             <ol style={{ margin: 0, paddingInlineStart: 20, display: "grid", gap: 8 }}>
               {(trip.tripTimeline ?? []).map((ev, i) => (
@@ -280,14 +373,24 @@ function TripDetailInner() {
                     : t(locale, "noLiveLocation")}
                 </div>
               </div>
-              <Button
-                type="button"
-                variant="secondary"
-                disabled={locationBusy}
-                onClick={() => void enableAndShareLocation()}
-              >
-                {t(locale, "shareLocationSend")}
-              </Button>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={locationBusy}
+                  onClick={() => void enableAndShareLocation()}
+                >
+                  {t(locale, "shareLocationSend")}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={locationBusy}
+                  onClick={() => void revokeLocation()}
+                >
+                  {t(locale, "revokeLocation")}
+                </Button>
+              </div>
             </div>
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 8 }}>

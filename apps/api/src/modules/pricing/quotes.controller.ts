@@ -90,6 +90,16 @@ class CreateBookingDto {
   @MaxLength(500)
   specialInstructions?: string;
 
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  flightNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  pickupPointCode?: string;
+
   @Equals(true)
   acceptTerms!: true;
 

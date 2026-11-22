@@ -11,17 +11,8 @@ import { whatsappDisplay, whatsappE164, whatsappHref } from "../lib/whatsapp";
 const linkStyle: CSSProperties = {
   color: "#526276",
   textDecoration: "none",
-  fontSize: 14,
-  lineHeight: 1.6,
-};
-
-const colTitle: CSSProperties = {
-  margin: "0 0 10px",
   fontSize: 13,
-  fontWeight: 800,
-  letterSpacing: "0.04em",
-  textTransform: "uppercase",
-  color: "#0B1F3A",
+  lineHeight: 1.4,
 };
 
 function WhatsAppIcon({ size = 16 }: { size?: number }) {
@@ -378,6 +369,20 @@ function SiteChromeInner({
                     {t(locale, "myTrips")}
                   </Link>
                   <Link
+                    href={`/notifications?lang=${locale}`}
+                    onClick={() => setMenuOpen(false)}
+                    style={{
+                      ...quietLink,
+                      display: "block",
+                      padding: "14px 8px",
+                      fontSize: 16,
+                      borderBottom: "1px solid rgba(11,31,58,0.06)",
+                      borderRadius: 0,
+                    }}
+                  >
+                    {t(locale, "notificationsNav")}
+                  </Link>
+                  <Link
                     href={supportHref}
                     onClick={() => setMenuOpen(false)}
                     style={{
@@ -461,11 +466,9 @@ function SiteChromeInner({
                 .hr-nav-mobile-bar { display: none !important; }
                 .hr-nav-drawer { display: none !important; }
               }
-              @media (max-width: 800px) {
-                .hr-footer-grid { grid-template-columns: 1fr 1fr !important; }
-              }
-              @media (max-width: 520px) {
-                .hr-footer-grid { grid-template-columns: 1fr !important; }
+              @media (max-width: 720px) {
+                .hr-footer-top { flex-direction: column !important; align-items: flex-start !important; }
+                .hr-footer-links { gap: 10px 14px !important; }
               }
             `}</style>
           </div>
@@ -473,116 +476,82 @@ function SiteChromeInner({
         footer={
           <footer
             style={{
-              marginTop: 56,
-              paddingTop: 36,
+              marginTop: 28,
+              paddingTop: 18,
               borderTop: "1px solid rgba(11,31,58,0.1)",
               display: "grid",
-              gap: 28,
+              gap: 12,
             }}
           >
             <div
-              className="hr-footer-grid"
+              className="hr-footer-top"
               style={{
-                display: "grid",
-                gridTemplateColumns: "minmax(200px, 1.4fr) repeat(3, minmax(140px, 1fr))",
-                gap: 28,
-                alignItems: "start",
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "12px 24px",
               }}
             >
-              <div style={{ display: "grid", gap: 12 }}>
-                <Link
-                  href={`/?lang=${locale}`}
-                  style={{ textDecoration: "none", color: "inherit", display: "inline-flex", width: "fit-content" }}
-                  aria-label={t(locale, "brand")}
-                >
-                  <BrandLockup brand={t(locale, "brand")} tagline={t(locale, "tagline")} markSize={44} />
-                </Link>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: "#9A4A0A",
-                    background: "rgba(240,119,31,0.12)",
-                    padding: "6px 10px",
-                    borderRadius: 8,
-                    width: "fit-content",
-                  }}
-                >
-                  {t(locale, "pilot")}
-                </p>
+              <Link
+                href={`/?lang=${locale}`}
+                style={{ textDecoration: "none", color: "inherit", display: "inline-flex" }}
+                aria-label={t(locale, "brand")}
+              >
+                <BrandLockup brand={t(locale, "brand")} tagline={t(locale, "tagline")} markSize={28} />
+              </Link>
+              <nav
+                className="hr-footer-links"
+                aria-label={t(locale, "footerHelp")}
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "center",
+                  gap: "8px 18px",
+                }}
+              >
+                {footerLink(`/routes?lang=${locale}`, t(locale, "routesNav"))}
+                {footerLink(`/fleet?lang=${locale}`, t(locale, "fleetNav"))}
+                {footerLink(`/contact?lang=${locale}`, t(locale, "contactNav"))}
+                {footerLink(`/faq?lang=${locale}`, t(locale, "faqNav"))}
+                {footerLink(`/about?lang=${locale}`, t(locale, "aboutNav"))}
+                {footerLink(`/trips?lang=${locale}`, t(locale, "myTrips"))}
+                {footerLink(`/legal/terms?lang=${locale}`, t(locale, "terms"))}
+                {footerLink(`/legal/privacy?lang=${locale}`, t(locale, "privacy"))}
                 {wa ? (
                   <a
                     href={whatsappHref(wa, t(locale, "whatsappPrefill"))}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 8,
-                      marginTop: 4,
-                      minHeight: 40,
-                      padding: "8px 14px",
-                      borderRadius: 10,
-                      background: "#25D366",
-                      color: "#fff",
-                      fontWeight: 700,
-                      fontSize: 14,
-                      textDecoration: "none",
-                      width: "fit-content",
-                    }}
+                    style={{ ...linkStyle, color: "#128C7E", fontWeight: 600 }}
                   >
-                    {t(locale, "whatsappCta")} · {whatsappDisplay(wa)}
+                    {t(locale, "whatsappCta")}
                   </a>
-                ) : (
-                  <Link href={`/contact?lang=${locale}`} style={{ ...linkStyle, color: "#1A5FBF", fontWeight: 600 }}>
-                    {t(locale, "contactNav")}
-                  </Link>
-                )}
-              </div>
-
-              <div style={{ display: "grid", gap: 8 }}>
-                <p style={colTitle}>{t(locale, "footerRide")}</p>
-                {footerLink(`/?lang=${locale}#book`, t(locale, "searchCta"))}
-                {footerLink(`/routes?lang=${locale}`, t(locale, "routesNav"))}
-                {footerLink(`/fleet?lang=${locale}`, t(locale, "fleetNav"))}
-                {footerLink(`/how-it-works?lang=${locale}`, t(locale, "howItWorks"))}
-              </div>
-
-              <div style={{ display: "grid", gap: 8 }}>
-                <p style={colTitle}>{t(locale, "footerHelp")}</p>
-                {footerLink(`/contact?lang=${locale}`, t(locale, "contactNav"))}
-                {footerLink(`/support?lang=${locale}`, t(locale, "supportNav"))}
-                {footerLink(`/trips?lang=${locale}`, t(locale, "myTrips"))}
-                {footerLink(`/faq?lang=${locale}`, t(locale, "faqNav"))}
-                {footerLink(`/about?lang=${locale}`, t(locale, "aboutNav"))}
-                {footerLink(`/login?lang=${locale}`, t(locale, "accountNav"))}
-                {footerLink(`/providers/apply?lang=${locale}`, t(locale, "providerApply"))}
-              </div>
-
-              <div style={{ display: "grid", gap: 8 }}>
-                <p style={colTitle}>{t(locale, "footerPolicies")}</p>
-                {footerLink(`/legal/terms?lang=${locale}`, t(locale, "terms"))}
-                {footerLink(`/legal/privacy?lang=${locale}`, t(locale, "privacy"))}
-                {footerLink(`/legal/cancellation?lang=${locale}`, t(locale, "cancelPolicy"))}
-              </div>
+                ) : null}
+              </nav>
             </div>
 
             <div
               style={{
-                paddingTop: 18,
-                borderTop: "1px solid rgba(11,31,58,0.08)",
                 display: "flex",
                 flexWrap: "wrap",
-                gap: 12,
-                justifyContent: "space-between",
+                gap: "6px 14px",
                 alignItems: "center",
                 color: "#526276",
                 fontSize: 12,
+                lineHeight: 1.4,
               }}
             >
-              <p style={{ margin: 0 }}>{t(locale, "footerRights")}</p>
-              <p style={{ margin: 0, maxWidth: 420, lineHeight: 1.45 }}>{t(locale, "footerAttrPlaces")}</p>
+              <span style={{ fontWeight: 600, color: "#9A4A0A" }}>{t(locale, "pilot")}</span>
+              <span aria-hidden="true" style={{ opacity: 0.35 }}>
+                ·
+              </span>
+              <span>{t(locale, "footerRights")}</span>
+              <span aria-hidden="true" style={{ opacity: 0.35 }}>
+                ·
+              </span>
+              {footerLink(`/legal/cancellation?lang=${locale}`, t(locale, "cancelPolicy"))}
+              {footerLink(`/providers/apply?lang=${locale}`, t(locale, "providerApply"))}
             </div>
           </footer>
         }

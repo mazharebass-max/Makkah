@@ -8,6 +8,9 @@ const publicPaths = [
   "/how-it-works",
   "/fleet",
   "/routes",
+  "/routes/JED-MAKKAH",
+  "/routes/MAKKAH-MADINAH",
+  "/routes/MED-MADINAH",
   "/about",
   "/faq",
   "/legal/terms",
@@ -22,6 +25,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const priorityFor = (path: (typeof publicPaths)[number]) => {
     if (path === "/") return 1;
+    if (path.startsWith("/routes/")) return 0.85;
     if (path === "/routes" || path === "/fleet" || path === "/contact" || path === "/about") return 0.8;
     if (path === "/how-it-works" || path === "/faq" || path === "/search") return 0.75;
     return 0.55;
@@ -32,7 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       entries.push({
         url: absoluteUrl(path, locale),
         lastModified,
-        changeFrequency: path === "/" ? "weekly" : "monthly",
+        changeFrequency: path === "/" || path.startsWith("/routes") ? "weekly" : "monthly",
         priority: priorityFor(path),
         alternates: {
           languages: {
@@ -49,8 +53,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entries.push({
       url: `${siteUrl()}${path === "/" ? "" : path}` || siteUrl(),
       lastModified,
-      changeFrequency: path === "/" ? "weekly" : "monthly",
-      priority: path === "/" ? 0.9 : 0.6,
+      changeFrequency: path === "/" || path.startsWith("/routes") ? "weekly" : "monthly",
+      priority: path === "/" ? 0.9 : path.startsWith("/routes/") ? 0.75 : 0.6,
     });
   }
 

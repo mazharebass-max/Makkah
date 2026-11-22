@@ -30,12 +30,14 @@ const fleetAccents = ["#1A5FBF", "#F0771F", "#D62828", "#1A5FBF", "#F0771F", "#D
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams?: { lang?: string };
+  searchParams?: { lang?: string; routeCode?: string };
 }) {
   const locale: Locale = localeFromSearchParams(searchParams);
   const wa = whatsappE164();
   const routes = await fetchRoutes();
   const waHref = wa ? whatsappHref(wa, t(locale, "whatsappPrefill")) : null;
+  const initialRouteCode =
+    typeof searchParams?.routeCode === "string" ? searchParams.routeCode.toUpperCase() : undefined;
 
   return (
     <SiteChrome locale={locale}>
@@ -166,7 +168,7 @@ export default async function HomePage({
           {t(locale, "bookHeading")}
         </h2>
         <p style={{ margin: 0, color: "#526276", fontSize: 15 }}>{t(locale, "bookHint")}</p>
-        <BookingWidget locale={locale} routes={routes} />
+        <BookingWidget locale={locale} routes={routes} initialRouteCode={initialRouteCode} />
       </section>
 
       {/* 3. Fleet — once */}
