@@ -74,11 +74,11 @@ export function PublicShell({
           {nav}
         </nav>
       </header>
-      <main id="main" style={{ padding: "28px clamp(16px, 4vw, 48px) 64px", flex: 1 }}>
+      <main id="main" style={{ padding: "28px clamp(16px, 4vw, 48px) 36px", flex: 1 }}>
         {children}
       </main>
       {footer ? (
-        <div style={{ padding: "0 clamp(16px, 4vw, 48px) 48px" }}>{footer}</div>
+        <div style={{ padding: "0 clamp(16px, 4vw, 48px) 20px" }}>{footer}</div>
       ) : null}
     </div>
   );
