@@ -84,13 +84,34 @@ export class BookingsService {
         category: true,
         assignment: true,
         statusEvents: { orderBy: { createdAt: "asc" } },
+        invoices: { orderBy: { createdAt: "desc" }, take: 5, include: { lines: true } },
       },
     });
     if (!booking || booking.deletedAt) {
       throw new NotFoundException({ code: "NOT_FOUND", message: "Booking not found" });
     }
+    const snap = (booking.priceSnapshot ?? {}) as Record<string, unknown>;
     return {
       ...booking,
+      tripExtras: {
+        contactName: typeof snap.contactName === "string" ? snap.contactName : null,
+        contactPhone: typeof snap.contactPhone === "string" ? snap.contactPhone : null,
+        specialInstructions:
+          typeof snap.specialInstructions === "string" ? snap.specialInstructions : null,
+        flightNumber: typeof snap.flightNumber === "string" ? snap.flightNumber : null,
+        pickupPointCode: typeof snap.pickupPointCode === "string" ? snap.pickupPointCode : null,
+        pickupPointName: typeof snap.pickupPointName === "string" ? snap.pickupPointName : null,
+      },
+      invoices: booking.invoices.map((inv) => ({
+        id: inv.id,
+        number: inv.number,
+        totalHalalas: inv.totalHalalas,
+        currency: inv.currency,
+        status: inv.status,
+        draftLabel: inv.draftLabel,
+        issuedAt: inv.issuedAt?.toISOString() ?? null,
+        lineCount: inv.lines.length,
+      })),
       tripTimeline: booking.statusEvents.map((e) => ({
         from: e.fromStatus,
         to: e.toStatus,

@@ -5,12 +5,18 @@ import { useSearchParams } from "next/navigation";
 import { Badge, Button } from "@haramain/ui";
 import { SiteChrome } from "../../components/SiteChrome";
 import { t, type Locale } from "../../lib/i18n";
+import { whatsappE164, whatsappHref } from "../../lib/whatsapp";
 
 export default function ConfirmationPage() {
   const params = useSearchParams();
   const locale: Locale = params.get("lang") === "ar" ? "ar" : "en";
   const bookingId = params.get("bookingId") ?? "";
   const reference = params.get("ref") ?? "";
+  const wa = whatsappE164();
+  const waPrefill = reference
+    ? `${t(locale, "confirmWhatsAppPrefill")} ${reference}`
+    : t(locale, "whatsappPrefill");
+  const waHref = wa ? whatsappHref(wa, waPrefill) : null;
 
   return (
     <SiteChrome locale={locale}>
@@ -31,6 +37,15 @@ export default function ConfirmationPage() {
             <strong style={{ fontSize: 22 }}>{reference}</strong>
           </div>
         ) : null}
+
+        <section style={{ display: "grid", gap: 8 }}>
+          <h2 style={{ margin: 0, fontSize: 18 }}>{t(locale, "confirmNextSteps")}</h2>
+          <ul style={{ margin: 0, paddingInlineStart: 20, color: "#526276", lineHeight: 1.55 }}>
+            <li>{t(locale, "corridorInclusion2")}</li>
+            <li>{t(locale, "corridorWaitingBody")}</li>
+          </ul>
+        </section>
+
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           {bookingId ? (
             <Link href={`/trips/${bookingId}?lang=${locale}`}>
@@ -40,6 +55,11 @@ export default function ConfirmationPage() {
           <Link href={`/trips?lang=${locale}`}>
             <Button type="button" variant="secondary">
               {t(locale, "continueTrips")}
+            </Button>
+          </Link>
+          <Link href={`/notifications?lang=${locale}`}>
+            <Button type="button" variant="secondary">
+              {t(locale, "viewNotifications")}
             </Button>
           </Link>
           <Link
@@ -53,6 +73,13 @@ export default function ConfirmationPage() {
               {t(locale, "getSupport")}
             </Button>
           </Link>
+          {waHref ? (
+            <a href={waHref} target="_blank" rel="noopener noreferrer">
+              <Button type="button" variant="secondary">
+                {t(locale, "confirmWhatsApp")}
+              </Button>
+            </a>
+          ) : null}
         </div>
       </div>
     </SiteChrome>

@@ -9,12 +9,18 @@ import { t, type Locale } from "../lib/i18n";
 export function BookingWidget({
   locale,
   routes,
+  initialRouteCode,
 }: {
   locale: Locale;
   routes: RouteRow[];
+  initialRouteCode?: string;
 }) {
   const router = useRouter();
-  const [routeCode, setRouteCode] = useState(routes[0]?.code ?? "JED-MAKKAH");
+  const preferred =
+    initialRouteCode && routes.some((r) => r.code === initialRouteCode)
+      ? initialRouteCode
+      : routes[0]?.code ?? "JED-MAKKAH";
+  const [routeCode, setRouteCode] = useState(preferred);
   const [scheduledAt, setScheduledAt] = useState(defaultScheduleIso().slice(0, 16));
   const [passengers, setPassengers] = useState(2);
   const [luggage, setLuggage] = useState(2);

@@ -366,6 +366,22 @@ export class QuoteService {
       },
     });
 
+    let pickupPointName: string | null = null;
+    const pickupCode = input.pickupPointCode?.trim() || null;
+    if (pickupCode) {
+      const point = await this.prisma.pickupPoint.findUnique({ where: { code: pickupCode } });
+      if (!point) {
+        throw new BadRequestException({
+          code: "PICKUP_POINT_UNKNOWN",
+          message: "Unknown pickup point code",
+        });
+      }
+      pickupPointName = point.nameEn;
+    }
+
+    const flightNumber = input.flightNumber?.trim().toUpperCase() || null;
+    const specialInstructions = input.specialInstructions?.trim() || null;
+
     const booking = await this.prisma.booking.create({
       data: {
         reference: this.bookingReference(),
@@ -384,7 +400,10 @@ export class QuoteService {
           cancellationPolicy: DRAFT_CANCELLATION_POLICY,
           contactName: input.contactName,
           contactPhone: input.contactPhone,
-          specialInstructions: input.specialInstructions ?? null,
+          specialInstructions,
+          flightNumber,
+          pickupPointCode: pickupCode,
+          pickupPointName,
           draftLabel: "DRAFT — OWNER APPROVAL REQUIRED",
         },
         statusEvents: {

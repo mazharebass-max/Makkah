@@ -378,6 +378,20 @@ function SiteChromeInner({
                     {t(locale, "myTrips")}
                   </Link>
                   <Link
+                    href={`/notifications?lang=${locale}`}
+                    onClick={() => setMenuOpen(false)}
+                    style={{
+                      ...quietLink,
+                      display: "block",
+                      padding: "14px 8px",
+                      fontSize: 16,
+                      borderBottom: "1px solid rgba(11,31,58,0.06)",
+                      borderRadius: 0,
+                    }}
+                  >
+                    {t(locale, "notificationsNav")}
+                  </Link>
+                  <Link
                     href={supportHref}
                     onClick={() => setMenuOpen(false)}
                     style={{
@@ -554,6 +568,7 @@ function SiteChromeInner({
                 {footerLink(`/contact?lang=${locale}`, t(locale, "contactNav"))}
                 {footerLink(`/support?lang=${locale}`, t(locale, "supportNav"))}
                 {footerLink(`/trips?lang=${locale}`, t(locale, "myTrips"))}
+                {footerLink(`/notifications?lang=${locale}`, t(locale, "notificationsNav"))}
                 {footerLink(`/faq?lang=${locale}`, t(locale, "faqNav"))}
                 {footerLink(`/about?lang=${locale}`, t(locale, "aboutNav"))}
                 {footerLink(`/login?lang=${locale}`, t(locale, "accountNav"))}

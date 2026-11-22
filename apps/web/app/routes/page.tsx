@@ -113,9 +113,20 @@ export default async function RoutesPage({
                 </div>
                 <div>
                   <strong style={{ fontSize: 17, color: "#0B1F3A" }}>
-                    {locale === "ar" && r.nameAr ? r.nameAr : r.nameEn}
+                    <Link
+                      href={`/routes/${encodeURIComponent(r.code)}?lang=${locale}`}
+                      style={{ color: "inherit", textDecoration: "none" }}
+                    >
+                      {locale === "ar" && r.nameAr ? r.nameAr : r.nameEn}
+                    </Link>
                   </strong>
                   <div style={{ color: "#526276", fontSize: 13, marginTop: 4 }}>{r.code}</div>
+                  <Link
+                    href={`/routes/${encodeURIComponent(r.code)}?lang=${locale}`}
+                    style={{ color: "#1A5FBF", fontWeight: 600, fontSize: 13 }}
+                  >
+                    {t(locale, "corridorBookCta")}
+                  </Link>
                 </div>
                 <Badge tone="warning">{r.draftLabel}</Badge>
               </li>

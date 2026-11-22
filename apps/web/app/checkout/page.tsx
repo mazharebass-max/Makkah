@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Badge, Button, Input } from "@haramain/ui";
 import { SiteChrome } from "../../components/SiteChrome";
-import { API } from "../../lib/api";
+import { API, type PickupPointRow } from "../../lib/api";
 import { t, type Locale } from "../../lib/i18n";
 import { readAccessToken, saveAccessToken } from "../../lib/session";
 
@@ -27,11 +27,15 @@ export default function CheckoutPage() {
   const quoteId = params.get("quoteId") ?? "";
 
   const [quote, setQuote] = useState<Quote | null>(null);
-  const [email, setEmail] = useState("customer@haramain.local");
-  const [password, setPassword] = useState("CustomerDev!234");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [token, setToken] = useState<string | null>(null);
-  const [name, setName] = useState("Pilgrim Guest");
-  const [phone, setPhone] = useState("+966500000001");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("+966");
+  const [flightNumber, setFlightNumber] = useState("");
+  const [pickupPointCode, setPickupPointCode] = useState("");
+  const [specialInstructions, setSpecialInstructions] = useState("");
+  const [pickupPoints, setPickupPoints] = useState<PickupPointRow[]>([]);
   const [accepted, setAccepted] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +54,18 @@ export default function CheckoutPage() {
       else setError(body?.message ?? "Quote not found");
     })();
   }, [quoteId]);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch(`${API}/pickup-points`);
+        const body = await res.json();
+        if (res.ok) setPickupPoints(body.data ?? []);
+      } catch {
+        setPickupPoints([]);
+      }
+    })();
+  }, []);
 
   async function login() {
     setError(null);
@@ -87,6 +103,11 @@ export default function CheckoutPage() {
           contactPhone: phone,
           acceptTerms: accepted,
           idempotencyKey: `web-${quote.id}`,
+          ...(flightNumber.trim() ? { flightNumber: flightNumber.trim() } : {}),
+          ...(pickupPointCode ? { pickupPointCode } : {}),
+          ...(specialInstructions.trim()
+            ? { specialInstructions: specialInstructions.trim() }
+            : {}),
         }),
       });
       const body = await booked.json();
@@ -189,12 +210,18 @@ export default function CheckoutPage() {
             {!token ? (
               <section style={{ display: "grid", gap: 12 }}>
                 <h2 style={{ margin: 0 }}>{t(locale, "signIn")}</h2>
-                <Input label="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input
+                  label="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="username"
+                />
                 <Input
                   label="Password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
                 />
                 <Button type="button" onClick={() => void login()}>
                   {t(locale, "signIn")}
@@ -213,6 +240,58 @@ export default function CheckoutPage() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />
+                <Input
+                  label={t(locale, "flightNumber")}
+                  value={flightNumber}
+                  onChange={(e) => setFlightNumber(e.target.value)}
+                  placeholder="SV123"
+                />
+                <p style={{ margin: 0, color: "#526276", fontSize: 13 }}>
+                  {t(locale, "flightNumberHint")}
+                </p>
+                <label style={{ display: "grid", gap: 6 }}>
+                  <span style={{ fontWeight: 600, fontSize: 14 }}>{t(locale, "pickupPoint")}</span>
+                  <select
+                    value={pickupPointCode}
+                    onChange={(e) => setPickupPointCode(e.target.value)}
+                    style={{
+                      padding: "12px 14px",
+                      borderRadius: 12,
+                      border: "1px solid rgba(11,31,58,0.15)",
+                      fontSize: 15,
+                      background: "#fff",
+                    }}
+                  >
+                    <option value="">{t(locale, "pickupPointNone")}</option>
+                    {pickupPoints.map((p) => (
+                      <option key={p.code} value={p.code}>
+                        {locale === "ar" && p.nameAr ? p.nameAr : p.nameEn} ({p.code})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label style={{ display: "grid", gap: 6 }}>
+                  <span style={{ fontWeight: 600, fontSize: 14 }}>
+                    {t(locale, "specialInstructions")}
+                  </span>
+                  <textarea
+                    value={specialInstructions}
+                    onChange={(e) => setSpecialInstructions(e.target.value)}
+                    rows={3}
+                    maxLength={500}
+                    style={{
+                      padding: "12px 14px",
+                      borderRadius: 12,
+                      border: "1px solid rgba(11,31,58,0.15)",
+                      fontSize: 15,
+                      resize: "vertical",
+                      fontFamily: "inherit",
+                    }}
+                  />
+                  <span style={{ color: "#526276", fontSize: 13 }}>
+                    {t(locale, "specialInstructionsHint")}
+                  </span>
+                </label>
                 <label style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                   <input
                     type="checkbox"
@@ -228,7 +307,7 @@ export default function CheckoutPage() {
                 </label>
                 <Button
                   type="button"
-                  disabled={!accepted || quote.expired || busy}
+                  disabled={!accepted || quote.expired || busy || !name.trim() || phone.length < 7}
                   onClick={() => void placeBooking()}
                 >
                   {t(locale, "paySandbox")}
