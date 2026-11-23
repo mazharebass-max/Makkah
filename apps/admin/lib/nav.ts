@@ -5,6 +5,7 @@ export type AdminNavKey =
   | "finance"
   | "support"
   | "notifications"
+  | "marketing"
   | "analytics"
   | "settings"
   | "ops";
@@ -17,6 +18,7 @@ export function adminNav(active: AdminNavKey) {
     { href: "/finance", label: "Finance", key: "finance" },
     { href: "/support", label: "Support", key: "support" },
     { href: "/notifications", label: "Notifications", key: "notifications" },
+    { href: "/marketing", label: "Marketing", key: "marketing" },
     { href: "/analytics", label: "Analytics", key: "analytics" },
     { href: "/settings", label: "Settings", key: "settings" },
     { href: "/ops", label: "Ops / Gate", key: "ops" },

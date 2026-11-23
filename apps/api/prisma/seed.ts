@@ -2,6 +2,7 @@ import {
   PrismaClient,
   DocumentReviewState,
   FleetOwnership,
+  MarketingPostStatus,
   NotificationChannel,
   PickupPointKind,
   ProviderStatus,
@@ -773,6 +774,115 @@ async function main() {
         },
       });
     }
+  }
+
+  const marketingPack: {
+    slug: string;
+    titleEn: string;
+    captionEn: string;
+    captionAr: string;
+    visualHint: string;
+    dayOffset: number;
+  }[] = [
+    {
+      slug: "post-01-launch",
+      titleEn: "Launch intro",
+      captionEn:
+        "Haramain Ride is here for pilgrims and visitors who want calm private transfers across Jeddah, Makkah and Madinah. Pilot platform — message WhatsApp +966 57 528 4022.",
+      captionAr:
+        "حرمين رايد لتنقلات خاصة هادئة بين جدة ومكة والمدينة لضيوف الرحمن والزوار. منصة تجريبية — واتساب +966 57 528 4022.",
+      visualHint: "Brand + sand",
+      dayOffset: 1,
+    },
+    {
+      slug: "post-02-corridor",
+      titleEn: "Jeddah–Makkah corridor",
+      captionEn:
+        "Jeddah Airport → Makkah hotels. Private SUV corridor with clear seats & luggage. Draft planning notes only. Details: /routes",
+      captionAr:
+        "مطار جدة → فنادق مكة. ممر خاص بسعة واضحة. ملاحظات مسودة فقط. التفاصيل: /routes",
+      visualHint: "Airport curb SUV",
+      dayOffset: 2,
+    },
+    {
+      slug: "post-03-fleet",
+      titleEn: "Fleet classes",
+      captionEn:
+        "Haram Pak · GMC-class · Lexus-class. Pick by passengers and bags. Fares DRAFT — owner approval required. See /fleet",
+      captionAr:
+        "حرم باك · جي إم سي · لكزس. اختر حسب المسافرين والأمتعة. الأجرة مسودة. راجع /fleet",
+      visualHint: "Fleet collage",
+      dayOffset: 3,
+    },
+    {
+      slug: "post-04-how",
+      titleEn: "How it works",
+      captionEn:
+        "1) Search corridor 2) Compare class 3) Sandbox checkout 4) Track trip. Live curb dispatch only after go-live. /how-it-works",
+      captionAr:
+        "1) ابحث عن ممر 2) قارن الفئة 3) ادفع تجريبياً 4) تابع الرحلة. التوزيع الحي بعد الإطلاق. /how-it-works",
+      visualHint: "4-step graphic",
+      dayOffset: 4,
+    },
+    {
+      slug: "post-05-trust",
+      titleEn: "Trust / verification",
+      captionEn:
+        "Owned fleet first. Partners stay in review until a compliance officer verifies documents. We never invent licences. /about",
+      captionAr:
+        "الأسطول المملوك أولاً. الشركاء قيد المراجعة حتى التحقق. لا نختلق تراخيص. /about",
+      visualHint: "Trust graphic",
+      dayOffset: 5,
+    },
+    {
+      slug: "post-06-madinah",
+      titleEn: "Madinah corridors",
+      captionEn:
+        "MED Airport ↔ Madinah hotels and Makkah ↔ Madinah corridors are in the pilot with draft ops notes. Ask WhatsApp for help. /routes",
+      captionAr:
+        "مطار المدينة ↔ فنادق المدينة وممر مكة–المدينة في التجربة بملاحظات مسودة. اسأل واتساب. /routes",
+      visualHint: "Hotel porte-cochere",
+      dayOffset: 6,
+    },
+    {
+      slug: "post-07-faq",
+      titleEn: "FAQ truth",
+      captionEn:
+        "Live licensed today? No — pilot. Live payment? Sandbox only. Auto-approved providers? Never. Full FAQ: /faq",
+      captionAr:
+        "مرخّصون اليوم؟ لا — تجريبي. دفع حي؟ تجريبي فقط. مزودون تلقائياً؟ أبداً. الأسئلة: /faq",
+      visualHint: "FAQ card",
+      dayOffset: 7,
+    },
+  ];
+
+  for (const p of marketingPack) {
+    const scheduledAt = new Date(Date.now() + p.dayOffset * 24 * 3600_000);
+    scheduledAt.setUTCHours(15, 0, 0, 0);
+    await prisma.marketingPost.upsert({
+      where: { slug: p.slug },
+      update: {
+        titleEn: p.titleEn,
+        captionEn: p.captionEn,
+        captionAr: p.captionAr,
+        visualHint: p.visualHint,
+        channels: "INSTAGRAM,FACEBOOK,TIKTOK",
+        status: MarketingPostStatus.SCHEDULED,
+        scheduledAt,
+        livePublish: false,
+      },
+      create: {
+        slug: p.slug,
+        titleEn: p.titleEn,
+        captionEn: p.captionEn,
+        captionAr: p.captionAr,
+        visualHint: p.visualHint,
+        channels: "INSTAGRAM,FACEBOOK,TIKTOK",
+        status: MarketingPostStatus.SCHEDULED,
+        scheduledAt,
+        livePublish: false,
+      },
+    });
   }
 
   // eslint-disable-next-line no-console
