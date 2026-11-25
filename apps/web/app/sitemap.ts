@@ -7,6 +7,12 @@ const publicPaths = [
   "/contact",
   "/how-it-works",
   "/fleet",
+  "/fleet/SEDAN",
+  "/fleet/VAN",
+  "/fleet/TOYOTA_ALPHARD",
+  "/fleet/GMC_CLASS",
+  "/fleet/LEXUS_CLASS",
+  "/fleet/MERCEDES_V",
   "/routes",
   "/routes/JED-MAKKAH",
   "/routes/MAKKAH-MADINAH",
@@ -25,7 +31,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const priorityFor = (path: (typeof publicPaths)[number]) => {
     if (path === "/") return 1;
-    if (path.startsWith("/routes/")) return 0.85;
+    if (path.startsWith("/routes/") || path.startsWith("/fleet/")) return 0.85;
     if (path === "/routes" || path === "/fleet" || path === "/contact" || path === "/about") return 0.8;
     if (path === "/how-it-works" || path === "/faq" || path === "/search") return 0.75;
     return 0.55;

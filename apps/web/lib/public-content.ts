@@ -2,48 +2,77 @@ import { t, type Locale } from "./i18n";
 
 export const fleetRows = [
   {
+    code: "SEDAN",
     src: "/vehicles/haram-pack-suv.jpg",
     labelKey: "fleetHaramPack" as const,
     capKey: "fleetCapHaramPack" as const,
+    bodyKey: "fleetBodyHaramPack" as const,
+    passengers: 6,
+    luggage: 8,
     altEn: "Haram Pak SUV at an airport arrival curb with luggage trolley",
     altAr: "سيارة حرم باك عند رصيف المطار مع عربة أمتعة",
   },
   {
+    code: "VAN",
     src: "/vehicles/hyundai-staria-highroof.jpg",
     labelKey: "fleetStaria" as const,
     capKey: "fleetCapStaria" as const,
+    bodyKey: "fleetBodyStaria" as const,
+    passengers: 7,
+    luggage: 10,
     altEn: "Hyundai Staria high-roof MPV for family pilgrim transfers",
     altAr: "هيونداي ستاريا سقف مرتفع لعائلات الحجاج والزوار",
   },
   {
+    code: "TOYOTA_ALPHARD",
     src: "/vehicles/toyota-alphard-class.jpg",
     labelKey: "fleetToyota" as const,
     capKey: "fleetCapToyota" as const,
+    bodyKey: "fleetBodyToyota" as const,
+    passengers: 6,
+    luggage: 6,
     altEn: "Toyota Alphard-class luxury MPV",
     altAr: "تويوتا ألفارد فاخرة",
   },
   {
+    code: "GMC_CLASS",
     src: "/vehicles/gmc-class-suv.jpg",
     labelKey: "fleetGmc" as const,
     capKey: "fleetCapGmc" as const,
+    bodyKey: "fleetBodyGmc" as const,
+    passengers: 7,
+    luggage: 8,
     altEn: "GMC-class SUV on a desert highway corridor",
     altAr: "سيارة فئة جي إم سي على طريق صحراوي",
   },
   {
+    code: "LEXUS_CLASS",
     src: "/vehicles/lexus-class-suv.jpg",
     labelKey: "fleetLexus" as const,
     capKey: "fleetCapLexus" as const,
+    bodyKey: "fleetBodyLexus" as const,
+    passengers: 4,
+    luggage: 4,
     altEn: "Lexus-class SUV at a hotel porte-cochere",
     altAr: "سيارة فئة لكزس أمام مدخل فندق",
   },
   {
+    code: "MERCEDES_V",
     src: "/vehicles/mercedes-v-class.jpg",
     labelKey: "fleetMercedes" as const,
     capKey: "fleetCapMercedes" as const,
+    bodyKey: "fleetBodyMercedes" as const,
+    passengers: 7,
+    luggage: 7,
     altEn: "Mercedes-Benz V-Class luxury people carrier",
     altAr: "مرسيدس في-كلاس فاخرة",
   },
 ] as const;
+
+export function fleetByCode(code: string) {
+  const upper = code.toUpperCase();
+  return fleetRows.find((r) => r.code === upper) ?? null;
+}
 
 /** Corridor place/vehicle stills — Haram Pak for airport legs, Madinah / Makkah place photos where the route needs them. */
 export function corridorVisual(code: string): {

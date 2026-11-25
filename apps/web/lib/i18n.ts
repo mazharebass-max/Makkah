@@ -117,6 +117,23 @@ export const messages = {
     fleetCapLexus: "4 seats · 4 luggage",
     fleetCapMercedes: "7 seats · 7 luggage",
     fleetFareDraft: "DRAFT — OWNER APPROVAL REQUIRED",
+    fleetBodyHaramPack:
+      "Lead owned-fleet class for Jeddah airport corridors — calm SUV seating for families with solid luggage space.",
+    fleetBodyStaria:
+      "High-roof MPV for larger families and groups who need standing room and more bags on pilot corridors.",
+    fleetBodyToyota:
+      "Luxury MPV feel for visitors who want a quieter cabin between airport and hotel zones.",
+    fleetBodyGmc:
+      "Roomy SUV class for highway corridors with seven seats and generous luggage — draft catalog only.",
+    fleetBodyLexus:
+      "Smaller luxury SUV class when the party is compact and comfort matters more than bag count.",
+    fleetBodyMercedes:
+      "People-carrier class for groups that want a premium van-style cabin on draft corridors.",
+    fleetDetailBook: "Search with this class",
+    fleetDetailBack: "All fleet classes",
+    fleetDetailCapacity: "Capacity (draft)",
+    fleetDetailNote:
+      "Photos are stand-ins until owner fleet shots replace them. Fares and live curb supply stay DRAFT — OWNER APPROVAL REQUIRED.",
     highlightsHeading: "Highlights",
     highlight1: "Private corridor transfers across Jeddah, Makkah and Madinah.",
     highlight2: "Haram Pak, Staria high-roof, Toyota, GMC, Lexus and Mercedes with clear capacity.",
@@ -459,6 +476,23 @@ export const messages = {
     fleetCapLexus: "4 مقاعد · 4 أمتعة",
     fleetCapMercedes: "7 مقاعد · 7 أمتعة",
     fleetFareDraft: "مسودة — تتطلب موافقة المالك",
+    fleetBodyHaramPack:
+      "فئة الأسطول المملوك الرئيسية لممرات مطار جدة — مقاعد هادئة للعائلات مع مساحة أمتعة جيدة.",
+    fleetBodyStaria:
+      "مركبة سقف مرتفع للعائلات والمجموعات الأكبر التي تحتاج مساحة وقوف وأمتعة أكثر على الممرات التجريبية.",
+    fleetBodyToyota:
+      "طابع MPV فاخر لمن يريد مقصورة أهدأ بين المطار ومناطق الفنادق.",
+    fleetBodyGmc:
+      "فئة دفع رباعي واسعة لممرات الطرق السريعة بسبعة مقاعد وأمتعة سخية — كتالوج مسودة فقط.",
+    fleetBodyLexus:
+      "فئة فاخرة أصغر عندما تكون المجموعة صغيرة والراحة أهم من عدد الحقائب.",
+    fleetBodyMercedes:
+      "فئة نقل جماعي لمقصورة فاخرة على شكل فان في الممرات المسودة.",
+    fleetDetailBook: "ابحث بهذه الفئة",
+    fleetDetailBack: "كل فئات الأسطول",
+    fleetDetailCapacity: "السعة (مسودة)",
+    fleetDetailNote:
+      "الصور بديلة حتى تُستبدل بلقطات الأسطول المملوك. الأجرة والتوفر الحي يبقيان مسودة — تتطلب موافقة المالك.",
     highlightsHeading: "أبرز المزايا",
     highlight1: "تنقلات خاصة بين جدة ومكة والمدينة.",
     highlight2: "حرم باك وستاريا وتويوتا وجي إم سي ولكزس ومرسيدس بسعة واضحة.",
