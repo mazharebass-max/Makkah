@@ -50,9 +50,12 @@ export default function FleetPage({
             </thead>
             <tbody>
               {fleetRows.map((row) => (
-                <tr key={row.src} style={{ borderBottom: "1px solid rgba(11,31,58,0.08)" }}>
+                <tr key={row.code} style={{ borderBottom: "1px solid rgba(11,31,58,0.08)" }}>
                   <td style={{ padding: "14px 10px" }}>
-                    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                    <Link
+                      href={`/fleet/${encodeURIComponent(row.code)}?lang=${locale}`}
+                      style={{ display: "flex", gap: 12, alignItems: "center", textDecoration: "none", color: "inherit" }}
+                    >
                       <Image
                         src={row.src}
                         alt={locale === "ar" ? row.altAr : row.altEn}
@@ -61,11 +64,19 @@ export default function FleetPage({
                         style={{ width: 140, height: 80, objectFit: "cover", background: "#E8E2D6", flexShrink: 0 }}
                       />
                       <strong style={{ color: "#0B1F3A" }}>{t(locale, row.labelKey)}</strong>
-                    </div>
+                    </Link>
                   </td>
                   <td style={{ padding: "14px 10px", color: "#526276" }}>{t(locale, row.capKey)}</td>
                   <td style={{ padding: "14px 10px" }}>
-                    <Badge tone="warning">{t(locale, "fleetFareDraft")}</Badge>
+                    <div style={{ display: "grid", gap: 8, justifyItems: "start" }}>
+                      <Badge tone="warning">{t(locale, "fleetFareDraft")}</Badge>
+                      <Link
+                        href={`/fleet/${encodeURIComponent(row.code)}?lang=${locale}`}
+                        style={{ color: "#1A5FBF", fontWeight: 600, fontSize: 13 }}
+                      >
+                        {t(locale, "fleetDetailBook")}
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
