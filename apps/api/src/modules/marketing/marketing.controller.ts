@@ -74,6 +74,12 @@ class ScheduleDto {
 export class MarketingController {
   constructor(@Inject(MarketingService) private readonly marketing: MarketingService) {}
 
+  /** Public — today's site highlight (Asia/Riyadh). No auth. */
+  @Get("marketing/daily")
+  daily() {
+    return this.marketing.dailyHighlight();
+  }
+
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(RoleCode.SUPER_ADMIN, RoleCode.SUPPORT_AGENT)
   @Get("admin/marketing/posts")

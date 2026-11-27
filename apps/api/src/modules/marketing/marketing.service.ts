@@ -104,6 +104,58 @@ export class MarketingService {
     };
   }
 
+  /** Public daily site highlight — rotates approved/scheduled/sandbox posts by Asia/Riyadh calendar day. */
+  async dailyHighlight(now = new Date()) {
+    const dayKey = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Riyadh",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(now);
+
+    const rows = await this.prisma.marketingPost.findMany({
+      where: {
+        status: {
+          in: [
+            MarketingPostStatus.APPROVED,
+            MarketingPostStatus.SCHEDULED,
+            MarketingPostStatus.PUBLISHED_SANDBOX,
+          ],
+        },
+      },
+      orderBy: [{ createdAt: "asc" }, { slug: "asc" }],
+      take: 200,
+    });
+
+    if (!rows.length) {
+      return {
+        mode: "sandbox" as const,
+        liveSocialApi: false as const,
+        timezone: "Asia/Riyadh" as const,
+        dayKey,
+        data: null,
+        note: "No approved marketing posts yet — add drafts in Admin → Marketing.",
+      };
+    }
+
+    const dayIndex = Math.floor(
+      new Date(`${dayKey}T12:00:00+03:00`).getTime() / 86_400_000,
+    );
+    const idx = ((dayIndex % rows.length) + rows.length) % rows.length;
+    const row = rows[idx]!;
+
+    return {
+      mode: "sandbox" as const,
+      liveSocialApi: false as const,
+      timezone: "Asia/Riyadh" as const,
+      dayKey,
+      index: idx,
+      total: rows.length,
+      data: this.map(row),
+      note: "Rotates once per Asia/Riyadh day among approved/scheduled/sandbox posts. Not live social publish.",
+    };
+  }
+
   async create(user: RequestUser, input: UpsertMarketingPostInput) {
     const slug = (input.slug?.trim() || this.slugify(input.titleEn)).slice(0, 80);
     const status = input.status ?? MarketingPostStatus.DRAFT;

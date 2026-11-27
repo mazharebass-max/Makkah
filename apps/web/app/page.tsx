@@ -4,7 +4,7 @@ import Link from "next/link";
 import { BookingWidget } from "../components/BookingWidget";
 import { JsonLd } from "../components/JsonLd";
 import { SiteChrome } from "../components/SiteChrome";
-import { fetchRoutes } from "../lib/api";
+import { fetchDailyHighlight, fetchRoutes } from "../lib/api";
 import { t, type Locale } from "../lib/i18n";
 import { fleetRows } from "../lib/public-content";
 import {
@@ -34,10 +34,16 @@ export default async function HomePage({
 }) {
   const locale: Locale = localeFromSearchParams(searchParams);
   const wa = whatsappE164();
-  const routes = await fetchRoutes();
+  const [routes, daily] = await Promise.all([fetchRoutes(), fetchDailyHighlight()]);
   const waHref = wa ? whatsappHref(wa, t(locale, "whatsappPrefill")) : null;
   const initialRouteCode =
     typeof searchParams?.routeCode === "string" ? searchParams.routeCode.toUpperCase() : undefined;
+  const dailyCaption = daily?.data
+    ? locale === "ar"
+      ? daily.data.captionAr
+      : daily.data.captionEn
+    : null;
+  const dailyTitle = daily?.data?.titleEn ?? null;
 
   return (
     <SiteChrome locale={locale}>
@@ -171,7 +177,39 @@ export default async function HomePage({
         <BookingWidget locale={locale} routes={routes} initialRouteCode={initialRouteCode} />
       </section>
 
-      {/* 3. Fleet — once */}
+      {/* 3. Daily note — rotates Asia/Riyadh; not in the hero */}
+      <section
+        id="today"
+        aria-labelledby="daily-heading"
+        style={{
+          marginTop: 56,
+          display: "grid",
+          gap: 10,
+          maxWidth: 560,
+          padding: "22px 0 0",
+          borderTop: "1px solid rgba(11,31,58,0.1)",
+        }}
+      >
+        <h2 id="daily-heading" style={{ margin: 0, fontSize: 26 }}>
+          {t(locale, "dailyHeading")}
+        </h2>
+        <p style={{ margin: 0, color: "#526276", fontSize: 15 }}>{t(locale, "dailyHint")}</p>
+        {dailyCaption && dailyTitle ? (
+          <div style={{ display: "grid", gap: 8 }}>
+            <strong style={{ color: "#0B1F3A", fontSize: 17 }}>{dailyTitle}</strong>
+            <p style={{ margin: 0, color: "#334155", fontSize: 15, lineHeight: 1.55 }}>{dailyCaption}</p>
+            {daily?.dayKey ? (
+              <p style={{ margin: 0, color: "#94A3B8", fontSize: 13 }}>
+                {daily.dayKey} · {daily.timezone ?? "Asia/Riyadh"} · {t(locale, "pilot")}
+              </p>
+            ) : null}
+          </div>
+        ) : (
+          <p style={{ margin: 0, color: "#64748B", fontSize: 15 }}>{t(locale, "dailyEmpty")}</p>
+        )}
+      </section>
+
+      {/* 4. Fleet — once */}
       <section id="fleet" aria-labelledby="fleet-heading" style={{ marginTop: 56, display: "grid", gap: 14 }}>
         <h2 id="fleet-heading" style={{ margin: 0, fontSize: 26 }}>
           {t(locale, "fleetShowcaseHeading")}
@@ -216,7 +254,7 @@ export default async function HomePage({
         </p>
       </section>
 
-      {/* 4. Help — one place */}
+      {/* 5. Help — one place */}
       <section
         aria-labelledby="help-heading"
         style={{
