@@ -45,3 +45,28 @@ export function defaultScheduleIso() {
   d.setMinutes(0, 0, 0);
   return d.toISOString();
 }
+
+export type DailyHighlight = {
+  dayKey: string;
+  timezone: string;
+  data: {
+    slug: string;
+    titleEn: string;
+    captionEn: string;
+    captionAr: string;
+    visualHint: string | null;
+    status: string;
+  } | null;
+  note?: string;
+};
+
+/** Today's marketing highlight for the public site (rotates daily Asia/Riyadh). */
+export async function fetchDailyHighlight(): Promise<DailyHighlight | null> {
+  try {
+    const res = await fetch(`${API}/marketing/daily`, { next: { revalidate: 300 } });
+    if (!res.ok) return null;
+    return (await res.json()) as DailyHighlight;
+  } catch {
+    return null;
+  }
+}

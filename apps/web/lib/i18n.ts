@@ -60,6 +60,9 @@ export const messages = {
     faqHomeHint: "Straight answers about this pilot — no invented licences or live payment claims.",
     homeContactBody:
       "One place for help: WhatsApp for corridor questions, Contact us for hours, FAQ for straight pilot answers.",
+    dailyHeading: "Today on Haramain Ride",
+    dailyHint: "A short pilot note that rotates each day (Asia/Riyadh). Draft marketing copy — not a live social post.",
+    dailyEmpty: "Daily notes appear here once posts are approved in Admin → Marketing.",
     navBrowse: "Browse",
     navAccount: "Your account",
     footerRide: "Ride",
@@ -419,6 +422,9 @@ export const messages = {
     faqHomeHint: "إجابات مباشرة عن هذا التجريب — بلا تراخيص مختلقة أو مطالبات دفع حية.",
     homeContactBody:
       "مكان واحد للمساعدة: واتساب لأسئلة الممرات، تواصل معنا للساعات، والأسئلة الشائعة لإجابات التجريب.",
+    dailyHeading: "اليوم على حرمين رايد",
+    dailyHint: "ملاحظة تجريبية قصيرة تتغيّر يومياً (توقيت الرياض). نص تسويق مسودة — ليست منشورات اجتماعية حية.",
+    dailyEmpty: "تظهر الملاحظات اليومية هنا بعد اعتماد المنشورات في لوحة الإدارة → التسويق.",
     navBrowse: "تصفح",
     navAccount: "حسابك",
     footerRide: "الرحلة",
